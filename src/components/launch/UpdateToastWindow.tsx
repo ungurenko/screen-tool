@@ -18,7 +18,7 @@ type UpdateToastPayload = {
 	totalBytes?: number;
 	remainingBytes?: number;
 	bytesPerSecond?: number;
-	primaryAction?: "install-and-restart" | "retry-check";
+	primaryAction?: "install-and-restart" | "retry-check" | "retry-install";
 };
 
 const DEFAULT_REMINDER_DELAY_MS = 3 * 60 * 60 * 1000;
@@ -64,7 +64,7 @@ function getToastTitle(payload: UpdateToastPayload, t: ReturnType<typeof useScop
 }
 
 function getPrimaryButtonLabel(payload: UpdateToastPayload, t: ReturnType<typeof useScopedT>) {
-	return payload.primaryAction === "retry-check"
+	return payload.primaryAction === "retry-check" || payload.primaryAction === "retry-install"
 		? t("updateToast.tryAgain", "Try Again")
 		: t("updateToast.installAndRestart", "Install & Restart");
 }
@@ -253,6 +253,11 @@ export function UpdateToastWindow() {
 
 		if (payload.primaryAction === "retry-check") {
 			await window.electronAPI.checkForAppUpdates();
+			return;
+		}
+
+		if (payload.primaryAction === "retry-install") {
+			await window.electronAPI.installDownloadedUpdate();
 			return;
 		}
 

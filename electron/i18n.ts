@@ -5,6 +5,7 @@ import { app } from "electron";
 const LOCALE_STORAGE_KEY = "screentool.locale";
 
 type ElectronLocale = "en" | "ru";
+const DEFAULT_ELECTRON_LOCALE: ElectronLocale = "ru";
 
 const dictionaries: Record<ElectronLocale, Record<string, string>> = {
 	en: {
@@ -42,6 +43,7 @@ const dictionaries: Record<ElectronLocale, Record<string, string>> = {
 		"updates.readyDetail":
 			"The update is ready. Install and restart now, or remind yourself later.",
 		"updates.errorDetail": "The update could not be downloaded. {{error}}",
+		"updates.installErrorDetail": "Could not install the update. {{error}}",
 		"updates.noReadyDownload": "No update is ready to download.",
 		"updates.alreadyDownloaded": "This update has already been downloaded.",
 		"updates.alreadyDownloading": "This update is already downloading.",
@@ -217,6 +219,7 @@ const dictionaries: Record<ElectronLocale, Record<string, string>> = {
 		"updates.readyDetail":
 			"Обновление готово. Установите его сейчас или попросите напомнить позже.",
 		"updates.errorDetail": "Не удалось загрузить обновление. {{error}}",
+		"updates.installErrorDetail": "Не удалось установить обновление. {{error}}",
 		"updates.noReadyDownload": "Нет обновления, готового к загрузке.",
 		"updates.alreadyDownloaded": "Это обновление уже загружено.",
 		"updates.alreadyDownloading": "Это обновление уже загружается.",
@@ -358,9 +361,9 @@ const dictionaries: Record<ElectronLocale, Record<string, string>> = {
 	},
 };
 
-function normalizeLocale(value: unknown): ElectronLocale {
+export function normalizeElectronLocale(value: unknown): ElectronLocale {
 	if (typeof value !== "string") {
-		return "en";
+		return DEFAULT_ELECTRON_LOCALE;
 	}
 
 	return value.toLowerCase().startsWith("ru") ? "ru" : "en";
@@ -375,13 +378,9 @@ export function getElectronLocale(): ElectronLocale {
 		const settingsFile = path.join(app.getPath("userData"), "app-settings.json");
 		const content = readFileSync(settingsFile, "utf-8");
 		const settings = JSON.parse(content.replace(/^\uFEFF/, "")) as Record<string, unknown>;
-		return normalizeLocale(settings[LOCALE_STORAGE_KEY]);
+		return normalizeElectronLocale(settings[LOCALE_STORAGE_KEY]);
 	} catch {
-		try {
-			return normalizeLocale(app.getLocale());
-		} catch {
-			return "en";
-		}
+		return DEFAULT_ELECTRON_LOCALE;
 	}
 }
 

@@ -10,8 +10,8 @@ When you publish a GitHub release tagged like `v1.2.3`, `.github/workflows/relea
 
 - validate that `package.json` is also `1.2.3`
 - build macOS x64 and arm64 artifacts
-- sign and notarize the macOS builds when Apple Developer secrets are configured
-- build unsigned test artifacts when Apple Developer secrets are missing
+- sign, notarize, and verify the macOS builds
+- fail before publishing when Apple Developer signing secrets are missing
 - merge the dual-architecture `latest-mac.yml` metadata into one release asset
 - publish DMG, ZIP, blockmap, checksum, and auto-update metadata files to the GitHub release
 
@@ -44,7 +44,7 @@ base64 < screentool-mac-signing.p12 | pbcopy
 
 Paste the copied base64 into `APPLE_SIGNING_CERTIFICATE_P12_BASE64` and the export password into `APPLE_SIGNING_CERTIFICATE_PASSWORD`.
 
-Without these secrets, GitHub Actions still publishes a public test build, but macOS can show Gatekeeper warnings and auto-updates are not production-grade.
+Without these secrets, GitHub Actions must fail the macOS release. Public releases need Developer ID signing and notarization so Gatekeeper and auto-updates can trust the downloaded app.
 
 ### Temporarily disabled channels
 

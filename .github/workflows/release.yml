@@ -115,9 +115,8 @@ jobs:
           done
 
           if [ ${#missing[@]} -gt 0 ]; then
-            echo "::warning::Missing macOS signing secrets: ${missing[*]}. Building unsigned test artifacts."
-            echo "CSC_IDENTITY_AUTO_DISCOVERY=false" >> "$GITHUB_ENV"
-            exit 0
+            echo "::error::Missing macOS signing secrets: ${missing[*]}. Production macOS releases require Developer ID signing and notarization."
+            exit 1
           fi
 
           CERT_PATH="$RUNNER_TEMP/apple-signing-cert.p12"
@@ -148,6 +147,36 @@ jobs:
           npx tsc
           npx vite build
           npx electron-builder --mac dir dmg zip --x64 --publish never
+
+      - name: Verify macOS x64 signing and notarization
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP_PATH="release/mac/ScreenTool.app"
+          DMG_PATH="release/ScreenTool-x64.dmg"
+
+          if [ ! -d "$APP_PATH" ]; then
+            echo "::error::Packaged app not found at $APP_PATH"
+            exit 1
+          fi
+
+          codesign --verify --deep --strict --verbose=4 "$APP_PATH"
+          SIGNING_DETAILS="$(codesign -dv --verbose=4 "$APP_PATH" 2>&1)"
+          echo "$SIGNING_DETAILS"
+
+          if echo "$SIGNING_DETAILS" | grep -q "Signature=adhoc"; then
+            echo "::error::macOS app was signed with an ad-hoc signature. Auto-updates require Developer ID signing."
+            exit 1
+          fi
+
+          if echo "$SIGNING_DETAILS" | grep -q "TeamIdentifier=not set"; then
+            echo "::error::macOS app is missing TeamIdentifier. Check the Developer ID Application certificate."
+            exit 1
+          fi
+
+          spctl --assess --type execute --verbose=4 "$APP_PATH"
+          xcrun stapler validate "$APP_PATH"
+          xcrun stapler validate "$DMG_PATH"
 
       - name: Smoke test packaged macOS x64 paths
         env:
@@ -215,9 +244,8 @@ jobs:
           done
 
           if [ ${#missing[@]} -gt 0 ]; then
-            echo "::warning::Missing macOS signing secrets: ${missing[*]}. Building unsigned test artifacts."
-            echo "CSC_IDENTITY_AUTO_DISCOVERY=false" >> "$GITHUB_ENV"
-            exit 0
+            echo "::error::Missing macOS signing secrets: ${missing[*]}. Production macOS releases require Developer ID signing and notarization."
+            exit 1
           fi
 
           CERT_PATH="$RUNNER_TEMP/apple-signing-cert.p12"
@@ -248,6 +276,36 @@ jobs:
           npx tsc
           npx vite build
           npx electron-builder --mac dir dmg zip --arm64 --publish never
+
+      - name: Verify macOS arm64 signing and notarization
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP_PATH="release/mac-arm64/ScreenTool.app"
+          DMG_PATH="release/ScreenTool-arm64.dmg"
+
+          if [ ! -d "$APP_PATH" ]; then
+            echo "::error::Packaged app not found at $APP_PATH"
+            exit 1
+          fi
+
+          codesign --verify --deep --strict --verbose=4 "$APP_PATH"
+          SIGNING_DETAILS="$(codesign -dv --verbose=4 "$APP_PATH" 2>&1)"
+          echo "$SIGNING_DETAILS"
+
+          if echo "$SIGNING_DETAILS" | grep -q "Signature=adhoc"; then
+            echo "::error::macOS app was signed with an ad-hoc signature. Auto-updates require Developer ID signing."
+            exit 1
+          fi
+
+          if echo "$SIGNING_DETAILS" | grep -q "TeamIdentifier=not set"; then
+            echo "::error::macOS app is missing TeamIdentifier. Check the Developer ID Application certificate."
+            exit 1
+          fi
+
+          spctl --assess --type execute --verbose=4 "$APP_PATH"
+          xcrun stapler validate "$APP_PATH"
+          xcrun stapler validate "$DMG_PATH"
 
       - name: Smoke test packaged macOS arm64 paths
         env:

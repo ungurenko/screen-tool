@@ -244,24 +244,16 @@ function normalizeLocale(locale: string | null | undefined): AppLocale {
 	return DEFAULT_LOCALE;
 }
 
-function getSystemLocale(): AppLocale {
-	if (typeof navigator === "undefined") {
-		return DEFAULT_LOCALE;
+export function resolveInitialLocalePreference(
+	appSettingLocale: unknown,
+	storedLocale: string | null,
+): AppLocale {
+	if (typeof appSettingLocale === "string" && appSettingLocale) {
+		return normalizeLocale(appSettingLocale);
 	}
 
-	const preferredLocales = Array.isArray(navigator.languages)
-		? navigator.languages
-		: [navigator.language];
-
-	for (const locale of preferredLocales) {
-		if (typeof locale !== "string" || locale.trim().length === 0) {
-			continue;
-		}
-
-		const normalized = normalizeLocale(locale);
-		if (normalized !== DEFAULT_LOCALE || locale.toLowerCase().startsWith(DEFAULT_LOCALE)) {
-			return normalized;
-		}
+	if (storedLocale) {
+		return normalizeLocale(storedLocale);
 	}
 
 	return DEFAULT_LOCALE;
@@ -272,17 +264,10 @@ function getInitialLocale(): AppLocale {
 		return DEFAULT_LOCALE;
 	}
 
-	const appSettingLocale = loadAppSetting<unknown>(LOCALE_STORAGE_KEY);
-	if (typeof appSettingLocale === "string" && appSettingLocale) {
-		return normalizeLocale(appSettingLocale);
-	}
-
-	const storedLocale = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-	if (storedLocale) {
-		return normalizeLocale(storedLocale);
-	}
-
-	return getSystemLocale();
+	return resolveInitialLocalePreference(
+		loadAppSetting<unknown>(LOCALE_STORAGE_KEY),
+		window.localStorage.getItem(LOCALE_STORAGE_KEY),
+	);
 }
 
 function getMessageValue(source: unknown, key: string): string | undefined {

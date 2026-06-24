@@ -54,7 +54,7 @@ interface UpdateToastState {
 	totalBytes?: number;
 	remainingBytes?: number;
 	bytesPerSecond?: number;
-	primaryAction?: "install-and-restart" | "retry-check";
+	primaryAction?: "install-and-restart" | "retry-check" | "retry-install";
 }
 
 interface UpdateStatusSummary {

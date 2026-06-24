@@ -48,7 +48,7 @@ export interface UpdateToastPayload {
 	totalBytes?: number;
 	remainingBytes?: number;
 	bytesPerSecond?: number;
-	primaryAction?: "install-and-restart" | "retry-check";
+	primaryAction?: "install-and-restart" | "retry-check" | "retry-install";
 }
 
 interface DownloadProgressSnapshot {
@@ -76,6 +76,7 @@ let downloadInProgress = false;
 let downloadToastDismissed = false;
 let skippedVersion: string | null = null;
 let installAfterDownloadRequested = false;
+let installInProgress = false;
 let updateStatusSummary: UpdateStatusSummary = {
 	status: "idle",
 	currentVersion: app.getVersion(),
@@ -127,12 +128,7 @@ function configureUpdateFeed() {
 }
 
 function canUseAutoUpdates() {
-	return (
-		!AUTO_UPDATES_DISABLED &&
-		Boolean(UPDATE_FEED_URL) &&
-		app.isPackaged &&
-		!process.mas
-	);
+	return !AUTO_UPDATES_DISABLED && Boolean(UPDATE_FEED_URL) && app.isPackaged && !process.mas;
 }
 
 export function isAutoUpdateFeatureEnabled() {
@@ -271,6 +267,21 @@ function createUpdateErrorToastPayload(version: string, error: unknown): UpdateT
 	};
 }
 
+export function createInstallErrorToastPayload(
+	version: string,
+	error: unknown,
+): UpdateToastPayload {
+	return {
+		version,
+		phase: "error",
+		detail: tElectron("updates.installErrorDetail", "Could not install the update. {{error}}", {
+			error: String(error),
+		}),
+		delayMs: UPDATE_REMINDER_DELAY_MS,
+		primaryAction: "retry-install",
+	};
+}
+
 function getReminderPayload(): UpdateToastPayload | null {
 	if (pendingDownloadedVersion) {
 		return createDownloadedUpdateToastPayload(pendingDownloadedVersion);
@@ -307,6 +318,7 @@ function resetDevPreviewState(sendToRenderer?: UpdateToastSender) {
 	downloadToastDismissed = false;
 	skippedVersion = null;
 	installAfterDownloadRequested = false;
+	installInProgress = false;
 	clearVisibleUpdateToast(sendToRenderer);
 }
 
@@ -376,6 +388,7 @@ export function dismissUpdateToast(
 
 	if (downloadInProgress) {
 		installAfterDownloadRequested = false;
+		installInProgress = false;
 		downloadToastDismissed = true;
 		clearVisibleUpdateToast(sendToRenderer);
 		return { success: true };
@@ -406,10 +419,18 @@ export function installDownloadedUpdateNow(sendToRenderer?: UpdateToastSender) {
 	clearDeferredReminderTimer();
 	downloadToastDismissed = false;
 	installAfterDownloadRequested = false;
+	installInProgress = true;
 	clearVisibleUpdateToast(sendToRenderer);
 	setUpdateStatusSummary({ status: "ready", availableVersion: pendingDownloadedVersion });
 	writeUpdaterLog("Installing downloaded update.");
-	autoUpdater.quitAndInstall();
+	try {
+		autoUpdater.quitAndInstall();
+	} catch (error) {
+		installInProgress = false;
+		writeUpdaterLog("Installing downloaded update failed synchronously.", error);
+		const version = pendingDownloadedVersion ?? availableVersion ?? app.getVersion();
+		emitUpdateToastState(sendToRenderer, createInstallErrorToastPayload(version, error));
+	}
 }
 
 export async function downloadAvailableUpdate(
@@ -449,6 +470,7 @@ export async function downloadAvailableUpdate(
 	downloadToastDismissed = false;
 	installAfterDownloadRequested =
 		Boolean(options?.installAfterDownload) || installAfterDownloadRequested;
+	installInProgress = false;
 	setUpdateStatusSummary({
 		status: "downloading",
 		availableVersion,
@@ -541,6 +563,7 @@ export function skipAvailableUpdateVersion(sendToRenderer?: UpdateToastSender) {
 	downloadInProgress = false;
 	downloadToastDismissed = false;
 	installAfterDownloadRequested = false;
+	installInProgress = false;
 	clearDeferredReminderTimer();
 	clearVisibleUpdateToast(sendToRenderer);
 
@@ -848,10 +871,18 @@ export function setupAutoUpdates(
 			downloadInProgress = false;
 			downloadToastDismissed = false;
 			installAfterDownloadRequested = false;
+			installInProgress = false;
 			emitUpdateToastState(
 				sendToRenderer,
 				createUpdateErrorToastPayload(availableVersion, error),
 			);
+			return;
+		}
+
+		if (installInProgress) {
+			installInProgress = false;
+			const version = pendingDownloadedVersion ?? availableVersion ?? app.getVersion();
+			emitUpdateToastState(sendToRenderer, createInstallErrorToastPayload(version, error));
 		}
 	});
 
