@@ -7,8 +7,8 @@ This checkout is Alexander's ScreenTool workspace.
 - The original upstream repository is not connected.
 - The `main` branch uses Alexander's `origin` repository.
 - Package metadata uses the ScreenTool identity.
-- Electron Builder GitHub publishing is disabled.
-- Auto-updates are disabled by default.
+- GitHub Releases are the public download channel.
+- Packaged releases use Alexander's GitHub Releases feed for updates by default.
 
 ## Do Not Reconnect To Upstream By Default
 
@@ -18,11 +18,13 @@ Do not add the original upstream author repository back as a remote unless Alexa
 
 `origin` should point to `https://github.com/ungurenko/screen-tool.git`.
 
-Before enabling releases or auto-updates, configure a new release workflow and a new update feed. For packaged auto-updates, set:
+Packaged auto-updates use:
 
 ```bash
-SCREENTOOL_UPDATE_FEED_URL=<our-update-feed-url> SCREENTOOL_ENABLE_AUTO_UPDATES=1
+https://github.com/ungurenko/screen-tool/releases/latest/download
 ```
+
+For private staging, override it with `SCREENTOOL_UPDATE_FEED_URL`. For emergency shutdown, launch with `SCREENTOOL_DISABLE_AUTO_UPDATES=1`.
 
 ## Useful Local Checks
 

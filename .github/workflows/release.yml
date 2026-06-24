@@ -100,27 +100,26 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Validate macOS signing secrets
+      - name: Configure macOS signing
         shell: bash
         env:
           APPLE_SIGNING_CERTIFICATE_P12_BASE64: ${{ secrets.APPLE_SIGNING_CERTIFICATE_P12_BASE64 }}
           APPLE_SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_SIGNING_CERTIFICATE_PASSWORD }}
         run: |
           set -euo pipefail
+          missing=()
           for name in APPLE_SIGNING_CERTIFICATE_P12_BASE64 APPLE_SIGNING_CERTIFICATE_PASSWORD APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID; do
             if [ -z "${!name:-}" ]; then
-              echo "Missing required macOS release secret: $name"
-              exit 1
+              missing+=("$name")
             fi
           done
 
-      - name: Prepare macOS signing certificate
-        shell: bash
-        env:
-          APPLE_SIGNING_CERTIFICATE_P12_BASE64: ${{ secrets.APPLE_SIGNING_CERTIFICATE_P12_BASE64 }}
-          APPLE_SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_SIGNING_CERTIFICATE_PASSWORD }}
-        run: |
-          set -euo pipefail
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::warning::Missing macOS signing secrets: ${missing[*]}. Building unsigned test artifacts."
+            echo "CSC_IDENTITY_AUTO_DISCOVERY=false" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
           CERT_PATH="$RUNNER_TEMP/apple-signing-cert.p12"
           echo "$APPLE_SIGNING_CERTIFICATE_P12_BASE64" | base64 --decode > "$CERT_PATH"
           {
@@ -201,27 +200,26 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Validate macOS signing secrets
+      - name: Configure macOS signing
         shell: bash
         env:
           APPLE_SIGNING_CERTIFICATE_P12_BASE64: ${{ secrets.APPLE_SIGNING_CERTIFICATE_P12_BASE64 }}
           APPLE_SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_SIGNING_CERTIFICATE_PASSWORD }}
         run: |
           set -euo pipefail
+          missing=()
           for name in APPLE_SIGNING_CERTIFICATE_P12_BASE64 APPLE_SIGNING_CERTIFICATE_PASSWORD APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID; do
             if [ -z "${!name:-}" ]; then
-              echo "Missing required macOS release secret: $name"
-              exit 1
+              missing+=("$name")
             fi
           done
 
-      - name: Prepare macOS signing certificate
-        shell: bash
-        env:
-          APPLE_SIGNING_CERTIFICATE_P12_BASE64: ${{ secrets.APPLE_SIGNING_CERTIFICATE_P12_BASE64 }}
-          APPLE_SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_SIGNING_CERTIFICATE_PASSWORD }}
-        run: |
-          set -euo pipefail
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::warning::Missing macOS signing secrets: ${missing[*]}. Building unsigned test artifacts."
+            echo "CSC_IDENTITY_AUTO_DISCOVERY=false" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
           CERT_PATH="$RUNNER_TEMP/apple-signing-cert.p12"
           echo "$APPLE_SIGNING_CERTIFICATE_P12_BASE64" | base64 --decode > "$CERT_PATH"
           {
@@ -351,6 +349,7 @@ jobs:
   build-windows-x64:
     name: Build Windows x64
     needs: prepare-release
+    if: ${{ false }}
     runs-on: windows-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -441,6 +440,7 @@ jobs:
   build-linux-x64:
     name: Build Linux x64
     needs: prepare-release
+    if: ${{ false }}
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -519,8 +519,6 @@ jobs:
       - build-macos-x64
       - build-macos-arm64
       - merge-macos-update-metadata
-      - build-windows-x64
-      - build-linux-x64
     runs-on: ubuntu-latest
     steps:
       - name: Download macOS x64 artifacts
@@ -541,18 +539,6 @@ jobs:
           name: macos-merged-metadata
           path: release-assets/macos-merged
 
-      - name: Download Windows x64 artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-x64-release
-          path: release-assets/windows-x64
-
-      - name: Download Linux x64 artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: linux-x64-release
-          path: release-assets/linux-x64
-
       - name: Stage release assets
         shell: bash
         env:
@@ -569,17 +555,11 @@ jobs:
             release-assets/macos-arm64/*.dmg
             release-assets/macos-arm64/*.zip
             release-assets/macos-arm64/*.blockmap
-            release-assets/windows-x64/*.exe
-            release-assets/windows-x64/*.blockmap
-            release-assets/linux-x64/*.AppImage
-            release-assets/linux-x64/*.blockmap
           )
 
           if [ "$IS_PRERELEASE" != "true" ]; then
             assets+=(
               release-assets/macos-merged/latest-mac.yml
-              release-assets/windows-x64/latest*.yml
-              release-assets/linux-x64/latest-linux.yml
             )
           fi
 
@@ -638,7 +618,7 @@ jobs:
       - prepare-release
       - publish-release-assets
     runs-on: ubuntu-latest
-    if: needs.prepare-release.outputs.prerelease != 'true'
+    if: ${{ false }}
     steps:
       - name: Dispatch Homebrew tap workflow
         shell: bash

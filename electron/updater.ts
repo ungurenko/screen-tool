@@ -5,14 +5,13 @@ import { app, BrowserWindow, dialog } from "electron";
 import { autoUpdater } from "electron-updater";
 import { USER_DATA_PATH } from "./appPaths";
 import { tElectron } from "./i18n";
+import { isAutoUpdateDisabledByEnv, resolveUpdateFeedUrl } from "./updateConfig";
 
 const UPDATE_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 export const UPDATE_REMINDER_DELAY_MS = 3 * 60 * 60 * 1000;
 const DISMISSED_READY_REMINDER_DELAY_MS = 5 * 60 * 1000;
-const AUTO_UPDATES_DISABLED =
-	process.env.SCREENTOOL_DISABLE_AUTO_UPDATES === "1" ||
-	process.env.SCREENTOOL_ENABLE_AUTO_UPDATES !== "1";
-const UPDATE_FEED_URL_OVERRIDE = process.env.SCREENTOOL_UPDATE_FEED_URL?.trim() ?? "";
+const AUTO_UPDATES_DISABLED = isAutoUpdateDisabledByEnv(process.env);
+const UPDATE_FEED_URL = resolveUpdateFeedUrl(process.env);
 const UPDATER_LOG_PATH =
 	process.env.SCREENTOOL_UPDATER_LOG_PATH?.trim() || path.join(USER_DATA_PATH, "updater.log");
 const DEV_UPDATE_PREVIEW_VERSION = "9.9.9";
@@ -114,23 +113,23 @@ function writeUpdaterLog(message: string, detail?: unknown) {
 }
 
 function configureUpdateFeed() {
-	if (!UPDATE_FEED_URL_OVERRIDE) {
-		writeUpdaterLog("No custom update feed configured.");
+	if (!UPDATE_FEED_URL) {
+		writeUpdaterLog("No update feed configured.");
 		return;
 	}
 
 	autoUpdater.setFeedURL({
 		provider: "generic",
-		url: UPDATE_FEED_URL_OVERRIDE,
+		url: UPDATE_FEED_URL,
 		channel: "latest",
 	});
-	writeUpdaterLog(`Using overridden update feed: ${UPDATE_FEED_URL_OVERRIDE}`);
+	writeUpdaterLog(`Using update feed: ${UPDATE_FEED_URL}`);
 }
 
 function canUseAutoUpdates() {
 	return (
 		!AUTO_UPDATES_DISABLED &&
-		Boolean(UPDATE_FEED_URL_OVERRIDE) &&
+		Boolean(UPDATE_FEED_URL) &&
 		app.isPackaged &&
 		!process.mas
 	);
@@ -685,11 +684,11 @@ export async function checkForAppUpdates(
 				detail: AUTO_UPDATES_DISABLED
 					? tElectron(
 							"updates.disabledDetail",
-							"This local build disables auto-updates by default. Configure your own update feed, then set SCREENTOOL_ENABLE_AUTO_UPDATES=1.",
+							"Auto-updates were disabled for this launch. Remove SCREENTOOL_DISABLE_AUTO_UPDATES=1 and restart ScreenTool.",
 						)
 					: tElectron(
 							"updates.feedUrlDetail",
-							"Set SCREENTOOL_UPDATE_FEED_URL to your own update feed before enabling packaged auto-updates.",
+							"Install a packaged release to receive updates from ScreenTool's GitHub Releases channel.",
 						),
 			});
 		}

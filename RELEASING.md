@@ -1,6 +1,6 @@
 # Releasing ScreenTool
 
-This repository now uses `electron-builder` + `electron-updater` for macOS, Windows, and Linux auto-updates.
+This repository uses `electron-builder` + `electron-updater` for the ScreenTool macOS download and update channel.
 
 For this Electron app, that is the right path instead of wiring Sparkle.framework directly. On macOS, `electron-updater` handles the release metadata and update flow that Sparkle would otherwise cover in a native app, while still sharing the same GitHub Releases pipeline used by Windows and Linux.
 
@@ -9,25 +9,21 @@ For this Electron app, that is the right path instead of wiring Sparkle.framewor
 When you publish a GitHub release tagged like `v1.2.3`, `.github/workflows/release.yml` will:
 
 - validate that `package.json` is also `1.2.3`
-- build signed macOS x64 and arm64 artifacts
-- notarize the macOS builds
+- build macOS x64 and arm64 artifacts
+- sign and notarize the macOS builds when Apple Developer secrets are configured
+- build unsigned test artifacts when Apple Developer secrets are missing
 - merge the dual-architecture `latest-mac.yml` metadata into one release asset
-- build and sign the Windows NSIS installer
-- build the Linux AppImage
-- publish installer artifacts and auto-update metadata files to the GitHub release
-- dispatch the Homebrew tap workflow after the release assets are available
+- publish DMG, ZIP, blockmap, checksum, and auto-update metadata files to the GitHub release
 
-The packaged app then checks GitHub Releases for:
+The packaged app checks GitHub Releases for:
 
 - `latest-mac.yml`
-- `latest.yml`
-- `latest-linux.yml`
 
 ## Required GitHub secrets
 
-### macOS signing and notarization
+### macOS signing and notarization for production releases
 
-Set these repository secrets:
+Set these repository secrets when an Apple Developer account is available:
 
 - `APPLE_SIGNING_CERTIFICATE_P12_BASE64`
 - `APPLE_SIGNING_CERTIFICATE_PASSWORD`
@@ -48,25 +44,11 @@ base64 < screentool-mac-signing.p12 | pbcopy
 
 Paste the copied base64 into `APPLE_SIGNING_CERTIFICATE_P12_BASE64` and the export password into `APPLE_SIGNING_CERTIFICATE_PASSWORD`.
 
-### Windows signing
+Without these secrets, GitHub Actions still publishes a public test build, but macOS can show Gatekeeper warnings and auto-updates are not production-grade.
 
-Set these repository secrets:
+### Temporarily disabled channels
 
-- `WINDOWS_SIGNING_CERTIFICATE_P12_BASE64`
-- `WINDOWS_SIGNING_CERTIFICATE_PASSWORD`
-
-These should point to an Authenticode code-signing certificate exported as `.p12` and then base64-encoded.
-
-### Homebrew tap automation
-
-Set this repository secret if you want the cask PR to open automatically:
-
-- `HOMEBREW_TAP_TOKEN`
-
-Optional repository variables:
-
-- `HOMEBREW_TAP_REPO`
-- `HOMEBREW_TAP_AUTO_MERGE`
+Windows, Linux, Homebrew, and WinGet publishing are intentionally not part of the first ScreenTool release path. Re-enable them after the macOS release flow is stable.
 
 ## Release flow
 
@@ -87,7 +69,7 @@ npm run release:create -- --tag v1.2.0-beta.2 --title "v1.2.0 beta-2" --prerelea
 
 This uses `gh release create --generate-notes`, which keeps GitHub's generated change summary and contributor list instead of replacing it with a fully manual release body.
 
-5. The `Publish Release` workflow builds, signs, notarizes, uploads, and publishes update metadata.
+5. The `Publish Release` workflow builds, uploads, and publishes update metadata.
 
 That is the normal path if you want “click new release and let CI do the rest.”
 

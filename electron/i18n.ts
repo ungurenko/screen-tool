@@ -67,9 +67,9 @@ const dictionaries: Record<ElectronLocale, Record<string, string>> = {
 		"updates.notEnabledTitle": "Updates Not Enabled",
 		"updates.notEnabledMessage": "Auto-updates are only available in packaged releases.",
 		"updates.disabledDetail":
-			"This local build disables auto-updates by default. Configure your own update feed, then set SCREENTOOL_ENABLE_AUTO_UPDATES=1.",
+			"Auto-updates were disabled for this launch. Remove SCREENTOOL_DISABLE_AUTO_UPDATES=1 and restart ScreenTool.",
 		"updates.feedUrlDetail":
-			"Set SCREENTOOL_UPDATE_FEED_URL to your own update feed before enabling packaged auto-updates.",
+			"Install a packaged release to receive updates from ScreenTool's GitHub Releases channel.",
 		"updates.checking": "Checking for updates...",
 		"updates.availableSummary": "ScreenTool {{version}} is available.",
 		"updates.readySummary": "ScreenTool {{version}} is ready to install.",
@@ -241,9 +241,9 @@ const dictionaries: Record<ElectronLocale, Record<string, string>> = {
 		"updates.notEnabledTitle": "Обновления не включены",
 		"updates.notEnabledMessage": "Автообновления доступны только в собранных релизах.",
 		"updates.disabledDetail":
-			"В этой локальной сборке автообновления по умолчанию выключены. Настройте свой канал обновлений и задайте SCREENTOOL_ENABLE_AUTO_UPDATES=1.",
+			"Автообновления выключены для этого запуска. Уберите SCREENTOOL_DISABLE_AUTO_UPDATES=1 и перезапустите ScreenTool.",
 		"updates.feedUrlDetail":
-			"Перед включением автообновлений укажите свой канал обновлений в SCREENTOOL_UPDATE_FEED_URL.",
+			"Установите собранный релиз, чтобы получать обновления из GitHub Releases ScreenTool.",
 		"updates.checking": "Проверка обновлений...",
 		"updates.availableSummary": "Доступна версия ScreenTool {{version}}.",
 		"updates.readySummary": "ScreenTool {{version}} готова к установке.",

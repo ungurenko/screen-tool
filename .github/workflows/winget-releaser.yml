@@ -1,8 +1,5 @@
 name: Publish release to WinGet
 on:
-  workflow_run:
-    workflows: ["Publish Release"]
-    types: [completed]
   workflow_dispatch:
 jobs:
   publish:
