@@ -140,7 +140,7 @@
 		"renameTitle": "Rename project",
 		"saveCanceled": "Project save canceled",
 		"saved": "Project saved",
-		"saveDescription": "Name this project. It will be saved in your Recordly Projects folder.",
+		"saveDescription": "Name this project. It will be saved in your ScreenTool Projects folder.",
 		"savedTo": "Project saved to {{path}}",
 		"saveFailed": "Failed to save project",
 		"saveNameLabel": "Project name",
@@ -150,7 +150,7 @@
 	},
 	"nativeCaptureUnavailable": {
 		"title": "Nada está roto, pero no podremos renderizar una superposición de cursor animada.",
-		"description": "Tu dispositivo no es compatible con la captura nativa. Esto puede deberse a varias razones que todavía no hemos identificado. Recordly seguirá funcionando, pero hará imposible el suavizado del cursor.",
+		"description": "Tu dispositivo no es compatible con la captura nativa. Esto puede deberse a varias razones que todavía no hemos identificado. ScreenTool seguirá funcionando, pero hará imposible el suavizado del cursor.",
 		"confirm": "Entendido"
 	},
 	"exportStatus": {

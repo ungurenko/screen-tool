@@ -201,9 +201,7 @@ export async function probeMediaDurationSeconds(filePath: string): Promise<numbe
 			return duration;
 		}
 	} finally {
-		console.log(
-			`[PERF:MAIN] probeMediaDurationSeconds: COMPLETED in ${Date.now() - start}ms`,
-		);
+		console.log(`[PERF:MAIN] probeMediaDurationSeconds: COMPLETED in ${Date.now() - start}ms`);
 	}
 	return 0;
 }
@@ -292,9 +290,7 @@ export async function probeVideoStreamDuration(
 	} catch {
 		return null;
 	} finally {
-		console.log(
-			`[PERF:MAIN] probeVideoStreamDuration: COMPLETED in ${Date.now() - start}ms`,
-		);
+		console.log(`[PERF:MAIN] probeVideoStreamDuration: COMPLETED in ${Date.now() - start}ms`);
 	}
 }
 
@@ -314,7 +310,7 @@ function truncateDiagnosticsText(value: string | undefined, maxLength = 12000) {
 		return value;
 	}
 
-	return `${value.slice(-maxLength)}\n[recordly: truncated to last ${maxLength} chars]`;
+	return `${value.slice(-maxLength)}\n[screentool: truncated to last ${maxLength} chars]`;
 }
 
 async function describeMediaFile(filePath: string | null | undefined) {

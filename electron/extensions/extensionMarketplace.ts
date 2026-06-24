@@ -2,7 +2,10 @@
  * Extension Marketplace — Main Process
  *
  * Handles fetching, downloading, and installing extensions from the
- * Recordly marketplace API. Also provides admin review endpoints.
+ * ScreenTool marketplace API. Also provides admin review endpoints.
+ *
+ * Marketplace is intentionally opt-in for this local fork: set
+ * SCREENTOOL_MARKETPLACE_URL when a real ScreenTool service exists.
  */
 
 import { createWriteStream, existsSync } from "node:fs";
@@ -25,7 +28,7 @@ import type {
 // Configuration
 // ---------------------------------------------------------------------------
 
-const MARKETPLACE_API_BASE = "https://marketplace.recordly.dev/extensions/api/v1";
+const MARKETPLACE_URL_ENV = "SCREENTOOL_MARKETPLACE_URL";
 const REQUEST_TIMEOUT_MS = 15_000;
 
 // ---------------------------------------------------------------------------
@@ -53,13 +56,35 @@ async function assertNoEscapedFiles(dir: string, root: string): Promise<void> {
 }
 
 function getMarketplaceUrl(): string {
-	// Allow explicit override for local marketplace development.
-	if (process.env.RECORDLY_MARKETPLACE_URL) return process.env.RECORDLY_MARKETPLACE_URL;
-	return MARKETPLACE_API_BASE;
+	const configuredUrl = process.env[MARKETPLACE_URL_ENV]?.trim();
+	if (!configuredUrl) {
+		throw new Error(`ScreenTool marketplace is not configured (set ${MARKETPLACE_URL_ENV})`);
+	}
+
+	return configuredUrl.replace(/\/$/, "");
 }
 
 function getAdminKey(): string | undefined {
-	return process.env.RECORDLY_ADMIN_KEY;
+	return process.env.SCREENTOOL_ADMIN_KEY;
+}
+
+function getAllowedMarketplaceOrigins(): string[] {
+	const origins = new Set<string>();
+	const configuredUrl = process.env[MARKETPLACE_URL_ENV]?.trim();
+
+	if (configuredUrl) {
+		try {
+			origins.add(new URL(configuredUrl).origin);
+		} catch {
+			// Invalid marketplace URLs fail later when marketplaceFetch constructs the request.
+		}
+	}
+
+	if (!app.isPackaged) {
+		origins.add("http://localhost:3001");
+	}
+
+	return [...origins];
 }
 
 // ---------------------------------------------------------------------------
@@ -77,14 +102,15 @@ async function marketplaceFetch<T>(
 	try {
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
-			"X-Recordly-Version": app.getVersion(),
-			"X-Recordly-Platform": process.platform,
+			"X-ScreenTool-Version": app.getVersion(),
+			"X-ScreenTool-Platform": process.platform,
 		};
 
 		// Attach admin key for privileged endpoints
 		if (options.admin) {
 			const key = getAdminKey();
-			if (!key) throw new Error("Admin key not configured (set RECORDLY_ADMIN_KEY env var)");
+			if (!key)
+				throw new Error("Admin key not configured (set SCREENTOOL_ADMIN_KEY env var)");
 			headers["X-Admin-Key"] = key;
 		}
 
@@ -167,11 +193,11 @@ export async function downloadAndInstallExtension(
 	downloadUrl: string,
 ): Promise<{ success: boolean; error?: string }> {
 	// Validate download URL against allowed marketplace origins
-	const allowedOrigins = [
-		"https://marketplace.recordly.dev",
-		"https://recordly.dev",
-		...(app.isPackaged ? [] : ["http://localhost:3001"]),
-	];
+	const allowedOrigins = getAllowedMarketplaceOrigins();
+	if (allowedOrigins.length === 0) {
+		return { success: false, error: "ScreenTool marketplace is not configured" };
+	}
+
 	try {
 		const url = new URL(downloadUrl);
 		if (!allowedOrigins.some((o) => url.origin === o)) {
@@ -181,7 +207,7 @@ export async function downloadAndInstallExtension(
 		return { success: false, error: "Invalid download URL" };
 	}
 
-	const tempDir = path.join(app.getPath("temp"), `recordly-ext-${extensionId}-${Date.now()}`);
+	const tempDir = path.join(app.getPath("temp"), `screentool-ext-${extensionId}-${Date.now()}`);
 	const zipPath = path.join(tempDir, "extension.zip");
 
 	try {
@@ -197,7 +223,7 @@ export async function downloadAndInstallExtension(
 			response = await fetch(downloadUrl, {
 				signal: controller.signal,
 				headers: {
-					"X-Recordly-Version": app.getVersion(),
+					"X-ScreenTool-Version": app.getVersion(),
 				},
 			});
 		} finally {
@@ -265,14 +291,14 @@ export async function downloadAndInstallExtension(
 
 		// If there's a single directory, look inside it for the manifest.
 		const dirs = entries.filter((e) => e.isDirectory());
-		if (dirs.length === 1 && !existsSync(path.join(extractDir, "recordly-extension.json"))) {
+		if (dirs.length === 1 && !existsSync(path.join(extractDir, "screentool-extension.json"))) {
 			manifestDir = path.join(extractDir, dirs[0].name);
 		}
 
 		// Verify manifest exists
-		if (!existsSync(path.join(manifestDir, "recordly-extension.json"))) {
+		if (!existsSync(path.join(manifestDir, "screentool-extension.json"))) {
 			throw new Error(
-				"Downloaded extension does not contain a recordly-extension.json manifest",
+				"Downloaded extension does not contain a screentool-extension.json manifest",
 			);
 		}
 
@@ -285,7 +311,7 @@ export async function downloadAndInstallExtension(
 		// Track download count (fire-and-forget — CDN may cache the GET, so POST separately)
 		fetch(`${getMarketplaceUrl()}/extensions/${encodeURIComponent(extensionId)}/download`, {
 			method: "POST",
-			headers: { "X-Recordly-Version": app.getVersion() },
+			headers: { "X-ScreenTool-Version": app.getVersion() },
 		}).catch(() => undefined);
 
 		return { success: true };

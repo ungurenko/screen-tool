@@ -56,7 +56,9 @@ describe("exportCaptionSidecars", () => {
 	});
 
 	it("returns a warning result instead of throwing when sidecar writes fail", async () => {
-		const writeFileSpy = vi.spyOn(fs, "writeFile").mockRejectedValueOnce(new Error("disk full"));
+		const writeFileSpy = vi
+			.spyOn(fs, "writeFile")
+			.mockRejectedValueOnce(new Error("disk full"));
 
 		await expect(
 			writeCaptionSidecarsBestEffort("/tmp/export.mp4", {
@@ -72,7 +74,7 @@ describe("exportCaptionSidecars", () => {
 	});
 
 	it("writes requested caption sidecars when the filesystem succeeds", async () => {
-		const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "recordly-sidecar-test-"));
+		const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "screentool-sidecar-test-"));
 		const videoPath = path.join(tempDir, "clip.mp4");
 
 		try {

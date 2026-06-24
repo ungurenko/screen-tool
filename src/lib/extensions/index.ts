@@ -21,9 +21,9 @@ export type {
 	MarketplaceExtension,
 	MarketplaceReviewStatus,
 	MarketplaceSearchResult,
-	RecordlyExtensionAPI,
-	RecordlyExtensionModule,
 	RenderHookContext,
 	RenderHookFn,
 	RenderHookPhase,
+	ScreenToolExtensionAPI,
+	ScreenToolExtensionModule,
 } from "./types";

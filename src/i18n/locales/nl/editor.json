@@ -140,7 +140,7 @@
 		"renameTitle": "Rename project",
 		"saveCanceled": "Project save canceled",
 		"saved": "Project saved",
-		"saveDescription": "Name this project. It will be saved in your Recordly Projects folder.",
+		"saveDescription": "Name this project. It will be saved in your ScreenTool Projects folder.",
 		"savedTo": "Project saved to {{path}}",
 		"saveFailed": "Failed to save project",
 		"saveNameLabel": "Project name",
@@ -150,7 +150,7 @@
 	},
 	"nativeCaptureUnavailable": {
 		"title": "Er is niets kapot, maar we kunnen geen geanimeerde cursor-overlay renderen.",
-		"description": "Je apparaat ondersteunt geen native capture. Dit kan verschillende oorzaken hebben die we nog niet hebben achterhaald. Recordly blijft werken, maar cursor smoothing is dan niet mogelijk.",
+		"description": "Je apparaat ondersteunt geen native capture. Dit kan verschillende oorzaken hebben die we nog niet hebben achterhaald. ScreenTool blijft werken, maar cursor smoothing is dan niet mogelijk.",
 		"confirm": "Oké"
 	},
 	"exportStatus": {

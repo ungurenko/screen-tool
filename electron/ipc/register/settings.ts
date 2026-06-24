@@ -21,7 +21,7 @@ import {
 } from "../state";
 import { parseJsonWithByteOrderMark } from "../utils";
 
-const BROWSER_MICROPHONE_PROFILE_ENV = "RECORDLY_BROWSER_MIC_PROFILE";
+const BROWSER_MICROPHONE_PROFILE_ENV = "SCREENTOOL_BROWSER_MIC_PROFILE";
 const DEFAULT_BROWSER_MICROPHONE_PROFILE = "processed";
 const BROWSER_MICROPHONE_PROFILES = new Set([
 	"processed",
@@ -101,8 +101,8 @@ export function registerSettingsHandlers() {
 			const store = readAppSettingsStore();
 			store[key] = value;
 			writeAppSettingsStore(store);
-			if (key === "recordly.locale") {
-				(app as unknown as NodeJS.EventEmitter).emit("recordly-locale-changed");
+			if (key === "screentool.locale") {
+				(app as unknown as NodeJS.EventEmitter).emit("screentool-locale-changed");
 			}
 			event.returnValue = { success: true };
 		} catch (error) {

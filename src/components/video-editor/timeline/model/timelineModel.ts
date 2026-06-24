@@ -1,10 +1,5 @@
 import { formatClipSpeedLabel } from "../../clipSpeedChange";
-import type {
-	AnnotationRegion,
-	AudioRegion,
-	ClipRegion,
-	ZoomRegion,
-} from "../../types";
+import type { AnnotationRegion, AudioRegion, ClipRegion, ZoomRegion } from "../../types";
 import { CLIP_ROW_ID, ZOOM_ROW_ID } from "../core/constants";
 import {
 	getAnnotationTrackIndex,
@@ -28,7 +23,12 @@ export function getAnnotationLabel(region: AnnotationRegion): string {
 }
 
 export function getAudioLabel(region: AudioRegion): string {
-	return region.audioPath.split(/[\\/]/).pop()?.replace(/\.[^.]+$/, "") || "Audio";
+	return (
+		region.audioPath
+			.split(/[\\/]/)
+			.pop()
+			?.replace(/\.[^.]+$/, "") || "Audio"
+	);
 }
 
 export function buildTimelineItems(params: {

@@ -18,12 +18,14 @@ describe("repairBundledUiohookBinaryForCurrentArch", () => {
 
 	afterEach(async () => {
 		await Promise.all(
-			tempRoots.splice(0).map((tempRoot) => fs.rm(tempRoot, { recursive: true, force: true })),
+			tempRoots
+				.splice(0)
+				.map((tempRoot) => fs.rm(tempRoot, { recursive: true, force: true })),
 		);
 	});
 
 	it("promotes the bundled darwin-arm64 prebuild over a stale incompatible build", async () => {
-		const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "recordly-uiohook-"));
+		const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "screentool-uiohook-"));
 		tempRoots.push(tempRoot);
 
 		const packageRoot = path.join(tempRoot, "uiohook-napi");
@@ -36,9 +38,14 @@ describe("repairBundledUiohookBinaryForCurrentArch", () => {
 
 		const log = vi.fn();
 		const repaired = repairBundledUiohookBinaryForCurrentArch(
-			Object.assign(new Error("mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')"), {
-				code: "ERR_DLOPEN_FAILED",
-			}),
+			Object.assign(
+				new Error(
+					"mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')",
+				),
+				{
+					code: "ERR_DLOPEN_FAILED",
+				},
+			),
 			{ packageRoot, platform: "darwin", arch: "arm64", log },
 		);
 
@@ -50,7 +57,7 @@ describe("repairBundledUiohookBinaryForCurrentArch", () => {
 	});
 
 	it("does not rewrite binaries for unrelated load failures", async () => {
-		const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "recordly-uiohook-"));
+		const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "screentool-uiohook-"));
 		tempRoots.push(tempRoot);
 
 		const packageRoot = path.join(tempRoot, "uiohook-napi");

@@ -43,7 +43,7 @@ describe("getSmokeExportConfig", () => {
 				"&smokeMaxEncodeQueue=8" +
 				"&smokeMaxDecodeQueue=9" +
 				"&smokeMaxPendingFrames=10" +
-				"&smokeProject=/tmp/project.recordly" +
+				"&smokeProject=/tmp/project.screentool" +
 				"&smokeQuality=source" +
 				"&smokeFps=60",
 		);
@@ -64,7 +64,7 @@ describe("getSmokeExportConfig", () => {
 			maxEncodeQueue: 8,
 			maxDecodeQueue: 9,
 			maxPendingFrames: 10,
-			projectPath: "/tmp/project.recordly",
+			projectPath: "/tmp/project.screentool",
 			quality: "source",
 			fps: 60,
 		});
@@ -109,9 +109,7 @@ describe("getSmokeExportConfig", () => {
 describe("getDevOpenRecordingConfig", () => {
 	it("reads dev-open paths independently from smoke export", () => {
 		expect(
-			getDevOpenRecordingConfig(
-				"?devOpenInput=/tmp/input.mp4&devOpenWebcam=/tmp/webcam.mp4",
-			),
+			getDevOpenRecordingConfig("?devOpenInput=/tmp/input.mp4&devOpenWebcam=/tmp/webcam.mp4"),
 		).toEqual({
 			inputPath: "/tmp/input.mp4",
 			webcamInputPath: "/tmp/webcam.mp4",

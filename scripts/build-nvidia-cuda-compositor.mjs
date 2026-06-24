@@ -18,11 +18,11 @@ const bundledDir = path.join(
 	"bin",
 	process.arch === "arm64" ? "win32-arm64" : "win32-x64",
 );
-const bundledExePath = path.join(bundledDir, "recordly-nvidia-cuda-compositor.exe");
-const helperId = "recordly-nvidia-cuda-compositor";
+const bundledExePath = path.join(bundledDir, "screentool-nvidia-cuda-compositor.exe");
+const helperId = "screentool-nvidia-cuda-compositor";
 const generatorArch = process.arch === "arm64" ? "ARM64" : "x64";
 const videoCodecSdkRoot =
-	process.env.RECORDLY_NVIDIA_VIDEO_CODEC_SDK_ROOT?.trim() ||
+	process.env.SCREENTOOL_NVIDIA_VIDEO_CODEC_SDK_ROOT?.trim() ||
 	path.join(projectRoot, ".tmp", "video-sdk-samples");
 
 if (process.platform !== "win32") {
@@ -42,7 +42,7 @@ function fallbackToBundledHelperOrExit(reason) {
 			helperId,
 			sourceDir,
 			binaryPath: bundledExePath,
-			binaryName: "recordly-nvidia-cuda-compositor.exe",
+			binaryName: "screentool-nvidia-cuda-compositor.exe",
 		});
 		if (!verification.ok) {
 			console.warn(
@@ -113,7 +113,7 @@ function findCmake() {
 
 if (!existsSync(path.join(videoCodecSdkRoot, "Samples", "NvCodec"))) {
 	fallbackToBundledHelperOrExit(
-		`NVIDIA Video Codec SDK samples not found at ${videoCodecSdkRoot}. Set RECORDLY_NVIDIA_VIDEO_CODEC_SDK_ROOT to build from source.`,
+		`NVIDIA Video Codec SDK samples not found at ${videoCodecSdkRoot}. Set SCREENTOOL_NVIDIA_VIDEO_CODEC_SDK_ROOT to build from source.`,
 	);
 }
 
@@ -125,21 +125,21 @@ function replaceOrThrow(filePath, content, pattern, replacement, label) {
 	return updated;
 }
 
-function patchNvDecoderForRecordlyCallbacks() {
+function patchNvDecoderForScreenToolCallbacks() {
 	const nvDecoderDir = path.join(videoCodecSdkRoot, "Samples", "NvCodec", "NvDecoder");
 	const headerPath = path.join(nvDecoderDir, "NvDecoder.h");
 	const sourcePath = path.join(nvDecoderDir, "NvDecoder.cpp");
 
 	let header = readFileSync(headerPath, "utf8");
-	if (!header.includes("RecordlyMappedFrameHandler")) {
+	if (!header.includes("ScreenToolMappedFrameHandler")) {
 		header = replaceOrThrow(
 			headerPath,
 			header,
 			/#include "nvcuvid\.h"\r?\n/,
 			`#include "nvcuvid.h"
 
-using RecordlyMappedFrameHandler = void (*)(CUdeviceptr, unsigned int, int, int, int, int64_t, void*);
-using RecordlyDisplayFramePolicy = bool (*)(int, void*);
+using ScreenToolMappedFrameHandler = void (*)(CUdeviceptr, unsigned int, int, int, int, int64_t, void*);
+using ScreenToolDisplayFramePolicy = bool (*)(int, void*);
 `,
 			"NvDecoder callback aliases",
 		);
@@ -148,8 +148,8 @@ using RecordlyDisplayFramePolicy = bool (*)(int, void*);
 			header,
 			/ {4}int setReconfigParams\(const Rect \* pCropRect, const Dim \* pResizeDim\);\r?\n/,
 			`    int setReconfigParams(const Rect * pCropRect, const Dim * pResizeDim);
-    void SetMappedFrameHandler(RecordlyMappedFrameHandler handler, void* userData) { m_recordlyMappedFrameHandler = handler; m_recordlyMappedFrameUserData = userData; }
-    void SetDisplayFramePolicy(RecordlyDisplayFramePolicy policy, void* userData) { m_recordlyDisplayFramePolicy = policy; m_recordlyDisplayFramePolicyUserData = userData; }
+    void SetMappedFrameHandler(ScreenToolMappedFrameHandler handler, void* userData) { m_screentoolMappedFrameHandler = handler; m_screentoolMappedFrameUserData = userData; }
+    void SetDisplayFramePolicy(ScreenToolDisplayFramePolicy policy, void* userData) { m_screentoolDisplayFramePolicy = policy; m_screentoolDisplayFramePolicyUserData = userData; }
     int GetDisplayFrameCount() const { return m_nDisplayFrameCount; }
 `,
 			"NvDecoder public callback methods",
@@ -160,10 +160,10 @@ using RecordlyDisplayFramePolicy = bool (*)(int, void*);
 			/ {4}int m_nDecodedFrame = 0, m_nDecodedFrameReturned = 0;\r?\n/,
 			`    int m_nDecodedFrame = 0, m_nDecodedFrameReturned = 0;
     int m_nDisplayFrameCount = 0;
-    RecordlyMappedFrameHandler m_recordlyMappedFrameHandler = nullptr;
-    void* m_recordlyMappedFrameUserData = nullptr;
-    RecordlyDisplayFramePolicy m_recordlyDisplayFramePolicy = nullptr;
-    void* m_recordlyDisplayFramePolicyUserData = nullptr;
+    ScreenToolMappedFrameHandler m_screentoolMappedFrameHandler = nullptr;
+    void* m_screentoolMappedFrameUserData = nullptr;
+    ScreenToolDisplayFramePolicy m_screentoolDisplayFramePolicy = nullptr;
+    void* m_screentoolDisplayFramePolicyUserData = nullptr;
 `,
 			"NvDecoder callback state",
 		);
@@ -171,7 +171,7 @@ using RecordlyDisplayFramePolicy = bool (*)(int, void*);
 	}
 
 	let source = readFileSync(sourcePath, "utf8");
-	if (!source.includes("Recordly mapped frame callback")) {
+	if (!source.includes("ScreenTool mapped frame callback")) {
 		source = replaceOrThrow(
 			sourcePath,
 			source,
@@ -182,25 +182,25 @@ using RecordlyDisplayFramePolicy = bool (*)(int, void*);
     }
 
     const int displayFrameIndex = m_nDisplayFrameCount++;
-    if (m_recordlyDisplayFramePolicy &&
-        !m_recordlyDisplayFramePolicy(displayFrameIndex, m_recordlyDisplayFramePolicyUserData))
+    if (m_screentoolDisplayFramePolicy &&
+        !m_screentoolDisplayFramePolicy(displayFrameIndex, m_screentoolDisplayFramePolicyUserData))
     {
         NVDEC_API_CALL(cuvidUnmapVideoFrame(m_hDecoder, dpSrcFrame));
         return 1;
     }
 
-    // Recordly mapped frame callback keeps the CUDA helper from making an
+    // ScreenTool mapped frame callback keeps the CUDA helper from making an
     // extra device-to-device copy when the caller can consume mapped NV12.
-    if (m_recordlyMappedFrameHandler)
+    if (m_screentoolMappedFrameHandler)
     {
-        m_recordlyMappedFrameHandler(
+        m_screentoolMappedFrameHandler(
             dpSrcFrame,
             nSrcPitch,
             m_nWidth,
             m_nHeight,
             m_nSurfaceHeight,
             pDispInfo->timestamp,
-            m_recordlyMappedFrameUserData);
+            m_screentoolMappedFrameUserData);
         NVDEC_API_CALL(cuvidUnmapVideoFrame(m_hDecoder, dpSrcFrame));
         return 1;
     }
@@ -214,7 +214,7 @@ using RecordlyDisplayFramePolicy = bool (*)(int, void*);
 }
 
 try {
-	patchNvDecoderForRecordlyCallbacks();
+	patchNvDecoderForScreenToolCallbacks();
 } catch (error) {
 	fallbackToBundledHelperOrExit(
 		`Failed to patch NVIDIA Video Codec SDK samples: ${error instanceof Error ? error.message : String(error)}`,
@@ -239,7 +239,7 @@ console.log("[build-nvidia-cuda-compositor] Configuring CMake...");
 try {
 	clearCmakeCache();
 	execSync(
-		`${cmake} .. -G "Visual Studio 17 2022" -A ${generatorArch} -DRECORDLY_NVIDIA_VIDEO_CODEC_SDK_ROOT="${videoCodecSdkRoot}"`,
+		`${cmake} .. -G "Visual Studio 17 2022" -A ${generatorArch} -DSCREENTOOL_NVIDIA_VIDEO_CODEC_SDK_ROOT="${videoCodecSdkRoot}"`,
 		{
 			cwd: buildDir,
 			stdio: "inherit",
@@ -251,7 +251,7 @@ try {
 	try {
 		clearCmakeCache();
 		execSync(
-			`${cmake} .. -G "Visual Studio 16 2019" -A ${generatorArch} -DRECORDLY_NVIDIA_VIDEO_CODEC_SDK_ROOT="${videoCodecSdkRoot}"`,
+			`${cmake} .. -G "Visual Studio 16 2019" -A ${generatorArch} -DSCREENTOOL_NVIDIA_VIDEO_CODEC_SDK_ROOT="${videoCodecSdkRoot}"`,
 			{
 				cwd: buildDir,
 				stdio: "inherit",
@@ -278,7 +278,7 @@ try {
 	);
 }
 
-const exePath = path.join(buildDir, "Release", "recordly-nvidia-cuda-compositor.exe");
+const exePath = path.join(buildDir, "Release", "screentool-nvidia-cuda-compositor.exe");
 if (!existsSync(exePath)) {
 	console.error("[build-nvidia-cuda-compositor] Expected exe not found at", exePath);
 	process.exit(1);
@@ -292,6 +292,6 @@ const manifestPath = updateNativeHelperManifest({
 	helperId,
 	sourceDir,
 	binaryPath: bundledExePath,
-	binaryName: "recordly-nvidia-cuda-compositor.exe",
+	binaryName: "screentool-nvidia-cuda-compositor.exe",
 });
 console.log(`[build-nvidia-cuda-compositor] Updated helper manifest: ${manifestPath}`);

@@ -75,7 +75,7 @@
 		"unavailableWithCursorLoop": "Автозум недоступен, пока включён зацикленный курсор.",
 		"handlerUnavailable": "Обработчик автозума недоступен",
 		"noCursorTelemetryTitle": "Нет данных движения курсора",
-		"noCursorTelemetryDescription": "Сначала запишите экран, чтобы Recordly мог предложить зумы по движению курсора.",
+		"noCursorTelemetryDescription": "Сначала запишите экран, чтобы ScreenTool мог предложить зумы по движению курсора.",
 		"noUsableTelemetryTitle": "Недостаточно данных курсора",
 		"noUsableTelemetryDescription": "В записи слишком мало данных о движении курсора.",
 		"noInteractionsTitle": "Не найдено заметных действий",

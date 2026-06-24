@@ -162,10 +162,10 @@ import {
 } from "./smokeExportProgress";
 import {
 	APP_HEADER_ICON_BUTTON_CLASS,
-	DiscordLinkButton,
 	FeedbackDialog,
 	openExternalLink,
-	RECORDLY_ISSUES_URL,
+	SCREENTOOL_ISSUES_URL,
+	SupportLinkButton,
 } from "./TutorialHelp";
 import TimelineEditor, { type TimelineEditorHandle } from "./timeline/TimelineEditor";
 import {
@@ -1639,7 +1639,7 @@ export default function VideoEditor() {
 			currentProjectPath?.split(/[\\/]/).pop() ??
 			currentSourcePath?.split(/[\\/]/).pop() ??
 			"";
-		const withoutExtension = fileName.replace(/\.recordly$/i, "").replace(/\.[^.]+$/, "");
+		const withoutExtension = fileName.replace(/\.screentool$/i, "").replace(/\.[^.]+$/, "");
 		return withoutExtension || t("editor.project.untitled", "Untitled");
 	}, [currentProjectPath, currentSourcePath, t]);
 
@@ -5114,7 +5114,7 @@ export default function VideoEditor() {
 			return;
 		}
 
-		// When smoke-export opens a .recordly project, the cursor telemetry
+		// When smoke-export opens a .screentool project, the cursor telemetry
 		// sidecar is loaded asynchronously after the editor state applies.
 		// Without this gate the auto-export fires before telemetry arrives and
 		// produces a video with no cursor/zoom animations.
@@ -5355,7 +5355,7 @@ export default function VideoEditor() {
 
 	const openLightningIssues = useCallback(async () => {
 		await openExternalLink(
-			RECORDLY_ISSUES_URL,
+			SCREENTOOL_ISSUES_URL,
 			t("editor.feedback.openFailed", "Failed to open link."),
 		);
 	}, [t]);
@@ -5533,7 +5533,7 @@ export default function VideoEditor() {
 						<DialogDescription className="text-muted-foreground">
 							{t(
 								"editor.project.saveDescription",
-								"Name this project. It will be saved in your Recordly Projects folder.",
+								"Name this project. It will be saved in your ScreenTool Projects folder.",
 							)}
 						</DialogDescription>
 					</DialogHeader>
@@ -5551,7 +5551,7 @@ export default function VideoEditor() {
 								aria-label={t("editor.project.saveNameLabel", "Project name")}
 							/>
 							<span className="shrink-0 px-3 text-xs font-medium text-muted-foreground/70">
-								.recordly
+								.screentool
 							</span>
 						</div>
 					</div>
@@ -5651,7 +5651,7 @@ export default function VideoEditor() {
 					<DialogDescription className="text-muted-foreground">
 						{t(
 							"editor.nativeCaptureUnavailable.description",
-							"Your device does not support native capture. This could be for a variety of reasons we haven’t figured out yet. This doesn’t break Recordly, but it does make cursor smoothing impossible.",
+							"Your device does not support native capture. This could be for a variety of reasons we haven’t figured out yet. This doesn’t break ScreenTool, but it does make cursor smoothing impossible.",
 						)}
 					</DialogDescription>
 				</DialogHeader>
@@ -5723,7 +5723,7 @@ export default function VideoEditor() {
 					>
 						<FolderOpen className="h-4 w-4" />
 					</Button>
-					<DiscordLinkButton />
+					<SupportLinkButton />
 					<FeedbackDialog />
 					<div className="ml-1 h-5 w-px bg-foreground/10" />
 					<Button
@@ -5783,7 +5783,7 @@ export default function VideoEditor() {
 								aria-label={t("editor.project.renameInput", "Project name")}
 							/>
 							<span className="shrink-0 text-xs font-medium tracking-tight text-muted-foreground/70">
-								.recordly
+								.screentool
 							</span>
 						</form>
 					) : (
@@ -5801,7 +5801,7 @@ export default function VideoEditor() {
 								{projectDisplayName}
 							</span>
 							<span className="shrink-0 text-xs font-medium tracking-tight text-muted-foreground/70">
-								.recordly
+								.screentool
 							</span>
 						</button>
 					)}

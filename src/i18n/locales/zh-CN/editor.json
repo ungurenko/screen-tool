@@ -140,7 +140,7 @@
 		"renameTitle": "Rename project",
 		"saveCanceled": "Project save canceled",
 		"saved": "Project saved",
-		"saveDescription": "Name this project. It will be saved in your Recordly Projects folder.",
+		"saveDescription": "Name this project. It will be saved in your ScreenTool Projects folder.",
 		"savedTo": "Project saved to {{path}}",
 		"saveFailed": "Failed to save project",
 		"saveNameLabel": "Project name",
@@ -150,7 +150,7 @@
 	},
 	"nativeCaptureUnavailable": {
 		"title": "没有出错，但我们无法渲染动画光标叠加层。",
-		"description": "你的设备不支持原生捕获。这可能是由我们尚未确定的多种原因造成的。Recordly 仍可继续运行，但无法进行光标平滑处理。",
+		"description": "你的设备不支持原生捕获。这可能是由我们尚未确定的多种原因造成的。ScreenTool 仍可继续运行，但无法进行光标平滑处理。",
 		"confirm": "好的"
 	},
 	"exportStatus": {

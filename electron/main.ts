@@ -56,9 +56,9 @@ import {
 } from "./windows";
 
 const electronMainDir = path.dirname(fileURLToPath(import.meta.url));
-const IS_SMOKE_EXPORT = process.env.RECORDLY_SMOKE_EXPORT === "1";
+const IS_SMOKE_EXPORT = process.env.SCREENTOOL_SMOKE_EXPORT === "1";
 
-app.setName("Recordly");
+app.setName("ScreenTool");
 
 function ignoreBrokenConsolePipe(stream: NodeJS.WritableStream | undefined) {
 	stream?.on("error", (error: NodeJS.ErrnoException) => {
@@ -204,7 +204,7 @@ let defaultTrayIcon: ReturnType<typeof getTrayIcon> | null = null;
 let recordingTrayIcon: ReturnType<typeof getTrayIcon> | null = null;
 
 function getPlatformAppIconFilename(size: 32 | 128 | 512) {
-	const baseName = process.platform === "darwin" ? "recordlymac" : "recordly";
+	const baseName = process.platform === "darwin" ? "screentoolmac" : "screentool";
 	return `app-icons/${baseName}-${size}.png`;
 }
 
@@ -376,7 +376,7 @@ function setupApplicationMenu() {
 
 	const template: Electron.MenuItemConstructorOptions[] = [];
 	template.push({
-		label: "Recordly",
+		label: "ScreenTool",
 		submenu: [
 			{ role: "about" },
 			{ type: "separator" },
@@ -525,7 +525,7 @@ function getUpdateNotificationTitle(payload: UpdateToastPayload) {
 		case "available":
 			return tElectron(
 				"updates.notification.availableTitle",
-				"Recordly {{version}} is available",
+				"ScreenTool {{version}} is available",
 				{
 					version: payload.version,
 				},
@@ -533,19 +533,19 @@ function getUpdateNotificationTitle(payload: UpdateToastPayload) {
 		case "downloading":
 			return tElectron(
 				"updates.notification.downloadingTitle",
-				"Downloading Recordly {{version}}",
+				"Downloading ScreenTool {{version}}",
 				{
 					version: payload.version,
 				},
 			);
 		case "ready":
-			return tElectron("updates.notification.readyTitle", "Recordly {{version}} is ready", {
+			return tElectron("updates.notification.readyTitle", "ScreenTool {{version}} is ready", {
 				version: payload.version,
 			});
 		case "error":
 			return tElectron(
 				"updates.notification.errorTitle",
-				"Recordly {{version}} needs attention",
+				"ScreenTool {{version}} needs attention",
 				{
 					version: payload.version,
 				},
@@ -558,12 +558,12 @@ function getUpdateNotificationBody(payload: UpdateToastPayload) {
 		case "available":
 			return tElectron(
 				"updates.notification.availableBody",
-				"Click to install the update and restart Recordly.",
+				"Click to install the update and restart ScreenTool.",
 			);
 		case "downloading":
 			return tElectron(
 				"updates.notification.downloadingBody",
-				"Recordly is downloading the update and will restart when it is ready.",
+				"ScreenTool is downloading the update and will restart when it is ready.",
 			);
 		case "ready":
 			return tElectron(
@@ -753,7 +753,7 @@ function updateTrayMenu(recording: boolean = trayRecording) {
 		? tElectron("tray.recording", "Recording: {{source}}", {
 				source: selectedSourceName,
 			})
-		: "Recordly";
+		: "ScreenTool";
 	const menuTemplate = recording
 		? [
 				{
@@ -921,7 +921,7 @@ app.on("second-instance", () => {
 	focusOrCreateMainWindow();
 });
 
-(app as unknown as NodeJS.EventEmitter).on("recordly-locale-changed", () => {
+(app as unknown as NodeJS.EventEmitter).on("screentool-locale-changed", () => {
 	setupApplicationMenu();
 	updateTrayMenu();
 });
@@ -929,7 +929,7 @@ app.on("second-instance", () => {
 // Register all IPC handlers when app is ready
 app.whenReady().then(async () => {
 	if (process.platform === "win32") {
-		app.setAppUserModelId("dev.recordly.app");
+		app.setAppUserModelId("dev.screentool.app");
 	}
 
 	session.defaultSession.setPermissionCheckHandler((_webContents, permission) => {
@@ -1028,17 +1028,17 @@ app.whenReady().then(async () => {
 
 	registerExtensionIpcHandlers();
 
-	if (IS_SMOKE_EXPORT || process.env.RECORDLY_DEV_OPEN_RECORDING_INPUT) {
+	if (IS_SMOKE_EXPORT || process.env.SCREENTOOL_DEV_OPEN_RECORDING_INPUT) {
 		await logSmokeExportGpuDiagnostics();
 		if (IS_SMOKE_EXPORT) {
 			const smokeSource =
-				process.env.RECORDLY_SMOKE_EXPORT_PROJECT ??
-				process.env.RECORDLY_SMOKE_EXPORT_INPUT ??
+				process.env.SCREENTOOL_SMOKE_EXPORT_PROJECT ??
+				process.env.SCREENTOOL_SMOKE_EXPORT_INPUT ??
 				"<missing input>";
 			console.log(`[smoke-export] Starting editor smoke export for ${smokeSource}`);
 		} else {
 			console.log(
-				`[dev-open-recording] Starting editor for ${process.env.RECORDLY_DEV_OPEN_RECORDING_INPUT}`,
+				`[dev-open-recording] Starting editor for ${process.env.SCREENTOOL_DEV_OPEN_RECORDING_INPUT}`,
 			);
 		}
 		createEditorWindowWrapper();

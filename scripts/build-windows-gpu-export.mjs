@@ -18,8 +18,8 @@ const bundledDir = path.join(
 	"bin",
 	process.arch === "arm64" ? "win32-arm64" : "win32-x64",
 );
-const bundledExePath = path.join(bundledDir, "recordly-gpu-export.exe");
-const helperId = "recordly-gpu-export";
+const bundledExePath = path.join(bundledDir, "screentool-gpu-export.exe");
+const helperId = "screentool-gpu-export";
 const generatorArch = process.arch === "arm64" ? "ARM64" : "x64";
 
 if (process.platform !== "win32") {
@@ -90,10 +90,12 @@ if (!cmake) {
 			helperId,
 			sourceDir,
 			binaryPath: bundledExePath,
-			binaryName: "recordly-gpu-export.exe",
+			binaryName: "screentool-gpu-export.exe",
 		});
 		if (!verification.ok) {
-			console.error(formatNativeHelperManifestWarning("build-windows-gpu-export", verification));
+			console.error(
+				formatNativeHelperManifestWarning("build-windows-gpu-export", verification),
+			);
 			process.exit(1);
 		}
 		console.log(`[build-windows-gpu-export] Using bundled helper: ${bundledExePath}`);
@@ -162,6 +164,6 @@ const manifestPath = updateNativeHelperManifest({
 	helperId,
 	sourceDir,
 	binaryPath: bundledExePath,
-	binaryName: "recordly-gpu-export.exe",
+	binaryName: "screentool-gpu-export.exe",
 });
 console.log(`[build-windows-gpu-export] Updated helper manifest: ${manifestPath}`);

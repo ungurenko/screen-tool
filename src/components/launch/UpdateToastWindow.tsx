@@ -43,21 +43,21 @@ function getToastTitle(payload: UpdateToastPayload, t: ReturnType<typeof useScop
 
 	switch (payload.phase) {
 		case "available":
-			return t("updateToast.availableTitle", "Recordly {{version}} is available", {
+			return t("updateToast.availableTitle", "ScreenTool {{version}} is available", {
 				version: payload.version,
 			});
 		case "downloading":
-			return t("updateToast.downloadingTitle", "Installing Recordly {{version}}", {
+			return t("updateToast.downloadingTitle", "Installing ScreenTool {{version}}", {
 				version: payload.version,
 			});
 		case "ready":
-			return t("updateToast.readyTitle", "Recordly {{version}} is ready", {
+			return t("updateToast.readyTitle", "ScreenTool {{version}} is ready", {
 				version: payload.version,
 			});
 		case "error":
 			return payload.primaryAction === "retry-check"
 				? t("updateToast.retryCheckErrorTitle", "Could not check for updates")
-				: t("updateToast.attentionTitle", "Recordly {{version}} needs attention", {
+				: t("updateToast.attentionTitle", "ScreenTool {{version}} needs attention", {
 						version: payload.version,
 					});
 	}

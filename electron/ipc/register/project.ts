@@ -390,11 +390,11 @@ export function registerProjectHandlers() {
 				const defaultName = `${safeName}.${PROJECT_FILE_EXTENSION}`;
 
 				const result = await dialog.showSaveDialog({
-					title: tElectron("project.saveRecordlyProject", "Save Recordly Project"),
+					title: tElectron("project.saveScreenToolProject", "Save ScreenTool Project"),
 					defaultPath: path.join(projectsDir, defaultName),
 					filters: [
 						{
-							name: tElectron("project.recordlyProject", "Recordly Project"),
+							name: tElectron("project.screentoolProject", "ScreenTool Project"),
 							extensions: [PROJECT_FILE_EXTENSION],
 						},
 						{ name: "JSON", extensions: ["json"] },
@@ -545,11 +545,11 @@ export function registerProjectHandlers() {
 		try {
 			const projectsDir = await getProjectsDir();
 			const result = await dialog.showOpenDialog({
-				title: tElectron("project.openRecordlyProject", "Open Recordly Project"),
+				title: tElectron("project.openScreenToolProject", "Open ScreenTool Project"),
 				defaultPath: projectsDir,
 				filters: [
 					{
-						name: tElectron("project.recordlyProject", "Recordly Project"),
+						name: tElectron("project.screentoolProject", "ScreenTool Project"),
 						extensions: [PROJECT_FILE_EXTENSION, ...LEGACY_PROJECT_FILE_EXTENSIONS],
 					},
 					{ name: "JSON", extensions: ["json"] },

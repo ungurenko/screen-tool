@@ -67,7 +67,7 @@
 		"connectedZoomDuration": "Duração do zoom conectado",
 		"connectedZoomEasing": "Curva de pan conectado",
 		"zoomEasingOptions": {
-			"recordly": "Recordly",
+			"screentool": "ScreenTool",
 			"glide": "Glide",
 			"smooth": "Smooth",
 			"snappy": "Snappy",

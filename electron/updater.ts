@@ -10,11 +10,11 @@ const UPDATE_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 export const UPDATE_REMINDER_DELAY_MS = 3 * 60 * 60 * 1000;
 const DISMISSED_READY_REMINDER_DELAY_MS = 5 * 60 * 1000;
 const AUTO_UPDATES_DISABLED =
-	process.env.RECORDLY_DISABLE_AUTO_UPDATES === "1" ||
-	process.env.RECORDLY_ENABLE_AUTO_UPDATES !== "1";
-const UPDATE_FEED_URL_OVERRIDE = process.env.RECORDLY_UPDATE_FEED_URL?.trim() ?? "";
+	process.env.SCREENTOOL_DISABLE_AUTO_UPDATES === "1" ||
+	process.env.SCREENTOOL_ENABLE_AUTO_UPDATES !== "1";
+const UPDATE_FEED_URL_OVERRIDE = process.env.SCREENTOOL_UPDATE_FEED_URL?.trim() ?? "";
 const UPDATER_LOG_PATH =
-	process.env.RECORDLY_UPDATER_LOG_PATH?.trim() || path.join(USER_DATA_PATH, "updater.log");
+	process.env.SCREENTOOL_UPDATER_LOG_PATH?.trim() || path.join(USER_DATA_PATH, "updater.log");
 const DEV_UPDATE_PREVIEW_VERSION = "9.9.9";
 const DEV_UPDATE_PREVIEW_PROGRESS_STEP_MS = 300;
 const DEV_UPDATE_PREVIEW_PROGRESS_INCREMENT = 20;
@@ -225,17 +225,17 @@ function createDownloadingUpdateToastPayload(
 			normalizedProgress >= 100
 				? tElectron(
 						"updates.downloadFinishing",
-						"Finishing the update download. Recordly will restart as soon as the installer is ready.",
+						"Finishing the update download. ScreenTool will restart as soon as the installer is ready.",
 					)
 				: remainingMb !== null
 					? tElectron(
 							"updates.downloadRemaining",
-							"{{mb}} MB left before Recordly restarts.",
+							"{{mb}} MB left before ScreenTool restarts.",
 							{ mb: remainingMb.toFixed(1) },
 						)
 					: tElectron(
 							"updates.downloadingDetail",
-							"Downloading the update now. Recordly will restart when it finishes.",
+							"Downloading the update now. ScreenTool will restart when it finishes.",
 						),
 		delayMs: UPDATE_REMINDER_DELAY_MS,
 		progressPercent: normalizedProgress,
@@ -453,7 +453,7 @@ export async function downloadAvailableUpdate(
 	setUpdateStatusSummary({
 		status: "downloading",
 		availableVersion,
-		detail: tElectron("updates.downloadingSummary", "Downloading Recordly {{version}}", {
+		detail: tElectron("updates.downloadingSummary", "Downloading ScreenTool {{version}}", {
 			version: availableVersion,
 		}),
 	});
@@ -576,7 +576,7 @@ async function showAvailableUpdateDialog(
 	const result = await showMessageBox(getMainWindow, {
 		type: "info",
 		title: tElectron("updates.availableTitle", "Update Available"),
-		message: tElectron("updates.availableMessage", "Recordly {{version}} is available.", {
+		message: tElectron("updates.availableMessage", "ScreenTool {{version}} is available.", {
 			version,
 		}),
 		detail: tElectron(
@@ -612,10 +612,10 @@ async function showDownloadedUpdateDialog(
 		message: isPreview
 			? tElectron(
 					"updates.readyPreviewMessage",
-					"Recordly {{version}} is ready to install.",
+					"ScreenTool {{version}} is ready to install.",
 					{ version },
 				)
-			: tElectron("updates.readyMessage", "Recordly {{version}} has been downloaded.", {
+			: tElectron("updates.readyMessage", "ScreenTool {{version}} has been downloaded.", {
 					version,
 				}),
 		detail: isPreview
@@ -685,11 +685,11 @@ export async function checkForAppUpdates(
 				detail: AUTO_UPDATES_DISABLED
 					? tElectron(
 							"updates.disabledDetail",
-							"This local build disables auto-updates by default. Configure your own update feed, then set RECORDLY_ENABLE_AUTO_UPDATES=1.",
+							"This local build disables auto-updates by default. Configure your own update feed, then set SCREENTOOL_ENABLE_AUTO_UPDATES=1.",
 						)
 					: tElectron(
 							"updates.feedUrlDetail",
-							"Set RECORDLY_UPDATE_FEED_URL to your own update feed before enabling packaged auto-updates.",
+							"Set SCREENTOOL_UPDATE_FEED_URL to your own update feed before enabling packaged auto-updates.",
 						),
 			});
 		}
@@ -764,7 +764,7 @@ export function setupAutoUpdates(
 		setUpdateStatusSummary({
 			status: "available",
 			availableVersion: info.version,
-			detail: tElectron("updates.availableSummary", "Recordly {{version}} is available.", {
+			detail: tElectron("updates.availableSummary", "ScreenTool {{version}} is available.", {
 				version: info.version,
 			}),
 		});
@@ -796,7 +796,7 @@ export function setupAutoUpdates(
 		setUpdateStatusSummary({
 			status: "up-to-date",
 			availableVersion: null,
-			detail: tElectron("updates.upToDateSummary", "Recordly {{version}} is up to date.", {
+			detail: tElectron("updates.upToDateSummary", "ScreenTool {{version}} is up to date.", {
 				version: app.getVersion(),
 			}),
 		});
@@ -813,7 +813,7 @@ export function setupAutoUpdates(
 		setUpdateStatusSummary({
 			status: "downloading",
 			availableVersion,
-			detail: tElectron("updates.downloadingSummary", "Downloading Recordly {{version}}", {
+			detail: tElectron("updates.downloadingSummary", "Downloading ScreenTool {{version}}", {
 				version: availableVersion,
 			}),
 		});
@@ -871,9 +871,13 @@ export function setupAutoUpdates(
 		setUpdateStatusSummary({
 			status: "ready",
 			availableVersion: info.version,
-			detail: tElectron("updates.readySummary", "Recordly {{version}} is ready to install.", {
-				version: info.version,
-			}),
+			detail: tElectron(
+				"updates.readySummary",
+				"ScreenTool {{version}} is ready to install.",
+				{
+					version: info.version,
+				},
+			),
 		});
 		clearDeferredReminderTimer();
 

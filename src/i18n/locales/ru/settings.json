@@ -86,7 +86,7 @@
 		"connectedZoomDuration": "Длительность интервала",
 		"connectedZoomEasing": "Кривая панорамирования",
 		"zoomEasingOptions": {
-			"recordly": "Recordly",
+			"screentool": "ScreenTool",
 			"glide": "Плавно",
 			"smooth": "Мягко",
 			"snappy": "Резко",

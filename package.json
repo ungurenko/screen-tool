@@ -1,6 +1,6 @@
 {
-	"name": "recordly",
-	"productName": "Recordly",
+	"name": "screen-tool",
+	"productName": "ScreenTool",
 	"description": "A free, creator-focused screen recorder with auto-zoom, cursor effects, backgrounds, annotations, and more - built for polished videos out of the box.",
 	"private": true,
 	"version": "1.3.4",

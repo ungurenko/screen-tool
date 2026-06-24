@@ -501,11 +501,11 @@ export function useScreenRecorder(): UseScreenRecorderReturn {
 					options.startup
 						? t(
 								"permissions.screenRecordingNeeded",
-								"Recordly needs Screen Recording permission before you start. System Settings has been opened. After enabling it, quit and reopen Recordly.",
+								"ScreenTool needs Screen Recording permission before you start. System Settings has been opened. After enabling it, quit and reopen ScreenTool.",
 							)
 						: t(
 								"permissions.screenRecordingMissing",
-								"Screen Recording permission is still missing. System Settings has been opened again. Enable it, then quit and reopen Recordly before recording.",
+								"Screen Recording permission is still missing. System Settings has been opened again. Enable it, then quit and reopen ScreenTool before recording.",
 							),
 				);
 				return false;
@@ -532,11 +532,11 @@ export function useScreenRecorder(): UseScreenRecorderReturn {
 				options.startup
 					? t(
 							"permissions.accessibilityNeeded",
-							"Recordly also needs Accessibility permission for cursor tracking. System Settings has been opened. After enabling it, quit and reopen Recordly.",
+							"ScreenTool also needs Accessibility permission for cursor tracking. System Settings has been opened. After enabling it, quit and reopen ScreenTool.",
 						)
 					: t(
 							"permissions.accessibilityMissing",
-							"Accessibility permission is still missing. System Settings has been opened again. Enable it, then quit and reopen Recordly before recording.",
+							"Accessibility permission is still missing. System Settings has been opened again. Enable it, then quit and reopen ScreenTool before recording.",
 						),
 			);
 

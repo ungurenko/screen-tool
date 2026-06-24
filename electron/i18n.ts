@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { app } from "electron";
 
-const LOCALE_STORAGE_KEY = "recordly.locale";
+const LOCALE_STORAGE_KEY = "screentool.locale";
 
 type ElectronLocale = "en" | "ru";
 
@@ -22,23 +22,23 @@ const dictionaries: Record<ElectronLocale, Record<string, string>> = {
 		"tray.stopRecording": "Stop Recording",
 		"tray.open": "Open",
 		"tray.quit": "Quit",
-		"updates.notification.availableTitle": "Recordly {{version}} is available",
-		"updates.notification.downloadingTitle": "Downloading Recordly {{version}}",
-		"updates.notification.readyTitle": "Recordly {{version}} is ready",
-		"updates.notification.errorTitle": "Recordly {{version}} needs attention",
-		"updates.notification.availableBody": "Click to install the update and restart Recordly.",
+		"updates.notification.availableTitle": "ScreenTool {{version}} is available",
+		"updates.notification.downloadingTitle": "Downloading ScreenTool {{version}}",
+		"updates.notification.readyTitle": "ScreenTool {{version}} is ready",
+		"updates.notification.errorTitle": "ScreenTool {{version}} needs attention",
+		"updates.notification.availableBody": "Click to install the update and restart ScreenTool.",
 		"updates.notification.downloadingBody":
-			"Recordly is downloading the update and will restart when it is ready.",
+			"ScreenTool is downloading the update and will restart when it is ready.",
 		"updates.notification.readyBody": "Click to install the downloaded update and restart.",
 		"updates.notification.installRetryBody": "Click to try the install again.",
 		"updates.notification.checkRetryBody": "Click to retry checking for updates.",
 		"updates.availableDetail":
 			"Install the latest version now, or remind yourself to come back to it later.",
 		"updates.downloadFinishing":
-			"Finishing the update download. Recordly will restart as soon as the installer is ready.",
-		"updates.downloadRemaining": "{{mb}} MB left before Recordly restarts.",
+			"Finishing the update download. ScreenTool will restart as soon as the installer is ready.",
+		"updates.downloadRemaining": "{{mb}} MB left before ScreenTool restarts.",
 		"updates.downloadingDetail":
-			"Downloading the update now. Recordly will restart when it finishes.",
+			"Downloading the update now. ScreenTool will restart when it finishes.",
 		"updates.readyDetail":
 			"The update is ready. Install and restart now, or remind yourself later.",
 		"updates.errorDetail": "The update could not be downloaded. {{error}}",
@@ -51,11 +51,11 @@ const dictionaries: Record<ElectronLocale, Record<string, string>> = {
 		"updates.previewReadyDetail":
 			"Development preview: the update is ready to install. No real update will be installed.",
 		"updates.availableTitle": "Update Available",
-		"updates.availableMessage": "Recordly {{version}} is available.",
+		"updates.availableMessage": "ScreenTool {{version}} is available.",
 		"updates.availableDialogDetail": "Install and restart now, or remind me later.",
 		"updates.readyTitle": "Update Ready",
-		"updates.readyMessage": "Recordly {{version}} has been downloaded.",
-		"updates.readyPreviewMessage": "Recordly {{version}} is ready to install.",
+		"updates.readyMessage": "ScreenTool {{version}} has been downloaded.",
+		"updates.readyPreviewMessage": "ScreenTool {{version}} is ready to install.",
 		"updates.readyPreviewDetail":
 			"Development preview of the native update prompt. No real update will be installed.",
 		"updates.previewOnlyTitle": "Preview Only",
@@ -67,25 +67,25 @@ const dictionaries: Record<ElectronLocale, Record<string, string>> = {
 		"updates.notEnabledTitle": "Updates Not Enabled",
 		"updates.notEnabledMessage": "Auto-updates are only available in packaged releases.",
 		"updates.disabledDetail":
-			"This local build disables auto-updates by default. Configure your own update feed, then set RECORDLY_ENABLE_AUTO_UPDATES=1.",
+			"This local build disables auto-updates by default. Configure your own update feed, then set SCREENTOOL_ENABLE_AUTO_UPDATES=1.",
 		"updates.feedUrlDetail":
-			"Set RECORDLY_UPDATE_FEED_URL to your own update feed before enabling packaged auto-updates.",
+			"Set SCREENTOOL_UPDATE_FEED_URL to your own update feed before enabling packaged auto-updates.",
 		"updates.checking": "Checking for updates...",
-		"updates.availableSummary": "Recordly {{version}} is available.",
-		"updates.readySummary": "Recordly {{version}} is ready to install.",
-		"updates.upToDateSummary": "Recordly {{version}} is up to date.",
-		"updates.downloadingSummary": "Downloading Recordly {{version}}",
+		"updates.availableSummary": "ScreenTool {{version}} is available.",
+		"updates.readySummary": "ScreenTool {{version}} is ready to install.",
+		"updates.upToDateSummary": "ScreenTool {{version}} is up to date.",
+		"updates.downloadingSummary": "Downloading ScreenTool {{version}}",
 		"unsaved.buttons.save": "Save & Close",
 		"unsaved.buttons.discard": "Discard & Close",
 		"unsaved.buttons.cancel": "Cancel",
 		"unsaved.title": "Unsaved Changes",
 		"unsaved.message": "You have unsaved changes.",
 		"unsaved.detail": "Do you want to save your project before closing?",
-		"files.importMediaOrProject": "Import Media or Recordly Project",
+		"files.importMediaOrProject": "Import Media or ScreenTool Project",
 		"files.selectVideo": "Select Video File",
-		"files.mediaOrProjects": "Media or Recordly Projects",
+		"files.mediaOrProjects": "Media or ScreenTool Projects",
 		"files.videoFiles": "Video Files",
-		"files.recordlyProjects": "Recordly Projects",
+		"files.screentoolProjects": "ScreenTool Projects",
 		"files.allFiles": "All Files",
 		"files.selectAudio": "Select Audio File",
 		"files.audioFiles": "Audio Files",
@@ -113,12 +113,12 @@ const dictionaries: Record<ElectronLocale, Record<string, string>> = {
 		"project.setRecordingsFolderFailed": "Failed to set recordings folder",
 		"project.saved": "Project saved successfully",
 		"project.pathNoLongerTrusted": "Project path is no longer trusted. Please use Save As.",
-		"project.saveRecordlyProject": "Save Recordly Project",
-		"project.recordlyProject": "Recordly Project",
+		"project.saveScreenToolProject": "Save ScreenTool Project",
+		"project.screentoolProject": "ScreenTool Project",
 		"project.saveCanceled": "Save project canceled",
 		"project.saveFailed": "Failed to save project file",
 		"project.nameRequired": "Project name is required",
-		"project.openRecordlyProject": "Open Recordly Project",
+		"project.openScreenToolProject": "Open ScreenTool Project",
 		"project.openCanceled": "Open project canceled",
 		"project.loadFailed": "Failed to load project file",
 		"project.noActiveProject": "No active project",
@@ -127,14 +127,14 @@ const dictionaries: Record<ElectronLocale, Record<string, string>> = {
 		"project.openProjectsFolderFailed": "Failed to open projects folder.",
 		"recording.screenPermissionTitle": "Screen Recording Permission Required",
 		"recording.screenPermissionMessage":
-			"Recordly needs screen recording permission to capture your screen.",
+			"ScreenTool needs screen recording permission to capture your screen.",
 		"recording.screenPermissionDetail":
-			"Please open System Settings > Privacy & Security > Screen Recording, make sure Recordly is toggled ON, then try recording again.",
+			"Please open System Settings > Privacy & Security > Screen Recording, make sure ScreenTool is toggled ON, then try recording again.",
 		"recording.microphonePermissionTitle": "Microphone Permission Required",
 		"recording.microphonePermissionMessage":
-			"Recordly needs microphone permission to record audio.",
+			"ScreenTool needs microphone permission to record audio.",
 		"recording.microphonePermissionDetail":
-			"Please open System Settings > Privacy & Security > Microphone, make sure Recordly is toggled ON, then try recording again.",
+			"Please open System Settings > Privacy & Security > Microphone, make sure ScreenTool is toggled ON, then try recording again.",
 		"recording.openSystemSettings": "Open System Settings",
 		"recording.cancel": "Cancel",
 		"recording.screenPermissionDenied":
@@ -196,24 +196,24 @@ const dictionaries: Record<ElectronLocale, Record<string, string>> = {
 		"tray.stopRecording": "Остановить запись",
 		"tray.open": "Открыть",
 		"tray.quit": "Выйти",
-		"updates.notification.availableTitle": "Доступна версия Recordly {{version}}",
-		"updates.notification.downloadingTitle": "Загрузка Recordly {{version}}",
-		"updates.notification.readyTitle": "Recordly {{version}} готова к установке",
-		"updates.notification.errorTitle": "Recordly {{version}} требует внимания",
+		"updates.notification.availableTitle": "Доступна версия ScreenTool {{version}}",
+		"updates.notification.downloadingTitle": "Загрузка ScreenTool {{version}}",
+		"updates.notification.readyTitle": "ScreenTool {{version}} готова к установке",
+		"updates.notification.errorTitle": "ScreenTool {{version}} требует внимания",
 		"updates.notification.availableBody":
-			"Нажмите, чтобы установить обновление и перезапустить Recordly.",
+			"Нажмите, чтобы установить обновление и перезапустить ScreenTool.",
 		"updates.notification.downloadingBody":
-			"Recordly загружает обновление и перезапустится, когда оно будет готово.",
+			"ScreenTool загружает обновление и перезапустится, когда оно будет готово.",
 		"updates.notification.readyBody":
 			"Нажмите, чтобы установить загруженное обновление и перезапустить приложение.",
 		"updates.notification.installRetryBody": "Нажмите, чтобы повторить установку.",
 		"updates.notification.checkRetryBody": "Нажмите, чтобы снова проверить обновления.",
 		"updates.availableDetail": "Установите свежую версию сейчас или попросите напомнить позже.",
 		"updates.downloadFinishing":
-			"Загрузка обновления завершается. Recordly перезапустится, когда установщик будет готов.",
-		"updates.downloadRemaining": "Осталось {{mb}} МБ до перезапуска Recordly.",
+			"Загрузка обновления завершается. ScreenTool перезапустится, когда установщик будет готов.",
+		"updates.downloadRemaining": "Осталось {{mb}} МБ до перезапуска ScreenTool.",
 		"updates.downloadingDetail":
-			"Обновление загружается. Recordly перезапустится после завершения.",
+			"Обновление загружается. ScreenTool перезапустится после завершения.",
 		"updates.readyDetail":
 			"Обновление готово. Установите его сейчас или попросите напомнить позже.",
 		"updates.errorDetail": "Не удалось загрузить обновление. {{error}}",
@@ -226,11 +226,11 @@ const dictionaries: Record<ElectronLocale, Record<string, string>> = {
 		"updates.previewReadyDetail":
 			"Тестовый режим: обновление готово к установке. Реальное обновление установлено не будет.",
 		"updates.availableTitle": "Доступно обновление",
-		"updates.availableMessage": "Доступна версия Recordly {{version}}.",
+		"updates.availableMessage": "Доступна версия ScreenTool {{version}}.",
 		"updates.availableDialogDetail": "Установите и перезапустите сейчас или напомнить позже.",
 		"updates.readyTitle": "Обновление готово",
-		"updates.readyMessage": "Recordly {{version}} загружена.",
-		"updates.readyPreviewMessage": "Recordly {{version}} готова к установке.",
+		"updates.readyMessage": "ScreenTool {{version}} загружена.",
+		"updates.readyPreviewMessage": "ScreenTool {{version}} готова к установке.",
 		"updates.readyPreviewDetail":
 			"Тестовое системное окно обновления. Реальное обновление установлено не будет.",
 		"updates.previewOnlyTitle": "Только предпросмотр",
@@ -241,25 +241,25 @@ const dictionaries: Record<ElectronLocale, Record<string, string>> = {
 		"updates.notEnabledTitle": "Обновления не включены",
 		"updates.notEnabledMessage": "Автообновления доступны только в собранных релизах.",
 		"updates.disabledDetail":
-			"В этой локальной сборке автообновления по умолчанию выключены. Настройте свой канал обновлений и задайте RECORDLY_ENABLE_AUTO_UPDATES=1.",
+			"В этой локальной сборке автообновления по умолчанию выключены. Настройте свой канал обновлений и задайте SCREENTOOL_ENABLE_AUTO_UPDATES=1.",
 		"updates.feedUrlDetail":
-			"Перед включением автообновлений укажите свой канал обновлений в RECORDLY_UPDATE_FEED_URL.",
+			"Перед включением автообновлений укажите свой канал обновлений в SCREENTOOL_UPDATE_FEED_URL.",
 		"updates.checking": "Проверка обновлений...",
-		"updates.availableSummary": "Доступна версия Recordly {{version}}.",
-		"updates.readySummary": "Recordly {{version}} готова к установке.",
-		"updates.upToDateSummary": "У вас актуальная версия Recordly {{version}}.",
-		"updates.downloadingSummary": "Загрузка Recordly {{version}}",
+		"updates.availableSummary": "Доступна версия ScreenTool {{version}}.",
+		"updates.readySummary": "ScreenTool {{version}} готова к установке.",
+		"updates.upToDateSummary": "У вас актуальная версия ScreenTool {{version}}.",
+		"updates.downloadingSummary": "Загрузка ScreenTool {{version}}",
 		"unsaved.buttons.save": "Сохранить и закрыть",
 		"unsaved.buttons.discard": "Закрыть без сохранения",
 		"unsaved.buttons.cancel": "Отмена",
 		"unsaved.title": "Есть несохранённые изменения",
 		"unsaved.message": "В проекте есть несохранённые изменения.",
 		"unsaved.detail": "Сохранить проект перед закрытием?",
-		"files.importMediaOrProject": "Импорт медиа или проекта Recordly",
+		"files.importMediaOrProject": "Импорт медиа или проекта ScreenTool",
 		"files.selectVideo": "Выберите видеофайл",
-		"files.mediaOrProjects": "Медиа или проекты Recordly",
+		"files.mediaOrProjects": "Медиа или проекты ScreenTool",
 		"files.videoFiles": "Видеофайлы",
-		"files.recordlyProjects": "Проекты Recordly",
+		"files.screentoolProjects": "Проекты ScreenTool",
 		"files.allFiles": "Все файлы",
 		"files.selectAudio": "Выберите аудиофайл",
 		"files.audioFiles": "Аудиофайлы",
@@ -288,12 +288,12 @@ const dictionaries: Record<ElectronLocale, Record<string, string>> = {
 		"project.saved": "Проект сохранён",
 		"project.pathNoLongerTrusted":
 			"Путь проекта больше не считается доверенным. Используйте «Сохранить как».",
-		"project.saveRecordlyProject": "Сохранить проект Recordly",
-		"project.recordlyProject": "Проект Recordly",
+		"project.saveScreenToolProject": "Сохранить проект ScreenTool",
+		"project.screentoolProject": "Проект ScreenTool",
 		"project.saveCanceled": "Сохранение проекта отменено",
 		"project.saveFailed": "Не удалось сохранить файл проекта",
 		"project.nameRequired": "Введите название проекта",
-		"project.openRecordlyProject": "Открыть проект Recordly",
+		"project.openScreenToolProject": "Открыть проект ScreenTool",
 		"project.openCanceled": "Открытие проекта отменено",
 		"project.loadFailed": "Не удалось загрузить файл проекта",
 		"project.noActiveProject": "Нет активного проекта",
@@ -302,14 +302,14 @@ const dictionaries: Record<ElectronLocale, Record<string, string>> = {
 		"project.openProjectsFolderFailed": "Не удалось открыть папку проектов.",
 		"recording.screenPermissionTitle": "Нужно разрешение на запись экрана",
 		"recording.screenPermissionMessage":
-			"Recordly нужен доступ к записи экрана, чтобы захватывать изображение.",
+			"ScreenTool нужен доступ к записи экрана, чтобы захватывать изображение.",
 		"recording.screenPermissionDetail":
-			"Откройте Системные настройки > Конфиденциальность и безопасность > Запись экрана, включите Recordly и попробуйте снова.",
+			"Откройте Системные настройки > Конфиденциальность и безопасность > Запись экрана, включите ScreenTool и попробуйте снова.",
 		"recording.microphonePermissionTitle": "Нужно разрешение на микрофон",
 		"recording.microphonePermissionMessage":
-			"Recordly нужен доступ к микрофону для записи звука.",
+			"ScreenTool нужен доступ к микрофону для записи звука.",
 		"recording.microphonePermissionDetail":
-			"Откройте Системные настройки > Конфиденциальность и безопасность > Микрофон, включите Recordly и попробуйте снова.",
+			"Откройте Системные настройки > Конфиденциальность и безопасность > Микрофон, включите ScreenTool и попробуйте снова.",
 		"recording.openSystemSettings": "Открыть настройки",
 		"recording.cancel": "Отмена",
 		"recording.screenPermissionDenied":

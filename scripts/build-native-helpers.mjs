@@ -26,19 +26,19 @@ function getTargetConfigs() {
 const helpers = [
 	{
 		source: "ScreenCaptureKitRecorder.swift",
-		output: "recordly-screencapturekit-helper",
+		output: "screentool-screencapturekit-helper",
 	},
 	{
 		source: "ScreenCaptureKitWindowList.swift",
-		output: "recordly-window-list",
+		output: "screentool-window-list",
 	},
 	{
 		source: "SystemCursorAssets.swift",
-		output: "recordly-system-cursors",
+		output: "screentool-system-cursors",
 	},
 	{
 		source: "NativeCursorMonitor.swift",
-		output: "recordly-native-cursor-monitor",
+		output: "screentool-native-cursor-monitor",
 	},
 ];
 

@@ -96,7 +96,7 @@ import zhTWShortcuts from "@/i18n/locales/zh-TW/shortcuts.json";
 import zhTWTimeline from "@/i18n/locales/zh-TW/timeline.json";
 import { loadAppSetting, saveAppSetting } from "@/lib/appSettings";
 
-const LOCALE_STORAGE_KEY = "recordly.locale";
+const LOCALE_STORAGE_KEY = "screentool.locale";
 
 type LocaleBundle = Record<I18nNamespace, Record<string, unknown>>;
 

@@ -27,7 +27,7 @@ export function registerCaptionHandlers() {
 			const recordingsDir = await getRecordingsDir();
 			const result = await dialog.showOpenDialog({
 				title: includeProjects
-					? tElectron("files.importMediaOrProject", "Import Media or Recordly Project")
+					? tElectron("files.importMediaOrProject", "Import Media or ScreenTool Project")
 					: tElectron("files.selectVideo", "Select Video File"),
 				defaultPath: recordingsDir,
 				filters: [
@@ -36,7 +36,7 @@ export function registerCaptionHandlers() {
 								{
 									name: tElectron(
 										"files.mediaOrProjects",
-										"Media or Recordly Projects",
+										"Media or ScreenTool Projects",
 									),
 									extensions: [
 										...VIDEO_FILE_EXTENSIONS,
@@ -52,7 +52,10 @@ export function registerCaptionHandlers() {
 					...(includeProjects
 						? [
 								{
-									name: tElectron("files.recordlyProjects", "Recordly Projects"),
+									name: tElectron(
+										"files.screentoolProjects",
+										"ScreenTool Projects",
+									),
 									extensions: PROJECT_FILE_EXTENSIONS,
 								},
 							]

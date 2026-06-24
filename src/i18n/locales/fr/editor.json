@@ -140,7 +140,7 @@
 		"renameTitle": "Rename project",
 		"saveCanceled": "Project save canceled",
 		"saved": "Project saved",
-		"saveDescription": "Name this project. It will be saved in your Recordly Projects folder.",
+		"saveDescription": "Name this project. It will be saved in your ScreenTool Projects folder.",
 		"savedTo": "Project saved to {{path}}",
 		"saveFailed": "Failed to save project",
 		"saveNameLabel": "Project name",
@@ -150,7 +150,7 @@
 	},
 	"nativeCaptureUnavailable": {
 		"title": "Rien n'est cassé, mais nous ne pourrons pas afficher une superposition animée du curseur.",
-		"description": "Votre appareil ne prend pas en charge la capture native. Cela peut arriver pour plusieurs raisons que nous n'avons pas encore identifiées. Recordly continuera de fonctionner, mais le lissage du curseur sera impossible.",
+		"description": "Votre appareil ne prend pas en charge la capture native. Cela peut arriver pour plusieurs raisons que nous n'avons pas encore identifiées. ScreenTool continuera de fonctionner, mais le lissage du curseur sera impossible.",
 		"confirm": "D'accord"
 	},
 	"exportStatus": {

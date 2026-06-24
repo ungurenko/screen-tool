@@ -140,7 +140,7 @@
 		"renameTitle": "Rename project",
 		"saveCanceled": "Project save canceled",
 		"saved": "Project saved",
-		"saveDescription": "Name this project. It will be saved in your Recordly Projects folder.",
+		"saveDescription": "Name this project. It will be saved in your ScreenTool Projects folder.",
 		"savedTo": "Project saved to {{path}}",
 		"saveFailed": "Failed to save project",
 		"saveNameLabel": "Project name",
@@ -150,7 +150,7 @@
 	},
 	"nativeCaptureUnavailable": {
 		"title": "沒有出錯，但我們無法轉譯動畫游標覆蓋層。",
-		"description": "你的裝置不支援原生擷取。這可能是由我們尚未釐清的多種原因造成的。Recordly 仍可繼續運作，但無法進行游標平滑處理。",
+		"description": "你的裝置不支援原生擷取。這可能是由我們尚未釐清的多種原因造成的。ScreenTool 仍可繼續運作，但無法進行游標平滑處理。",
 		"confirm": "好的"
 	},
 	"exportStatus": {
