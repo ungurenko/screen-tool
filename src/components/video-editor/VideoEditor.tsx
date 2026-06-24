@@ -51,9 +51,16 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Toaster } from "@/components/ui/sonner";
 import { useI18n } from "@/contexts/I18nContext";
 import { useShortcuts } from "@/contexts/ShortcutsContext";
+import { getMp4ExportBitrate, getSourceQualityBitrate } from "@/lib/exporter/exportBitrate";
+import { FrameRenderer } from "@/lib/exporter/frameRenderer";
+import { calculateOutputDimensions, GifExporter } from "@/lib/exporter/gifExporter";
+import { ModernVideoExporter } from "@/lib/exporter/modernVideoExporter";
 import {
-	calculateOutputDimensions,
 	DEFAULT_MP4_CODEC,
+	probeSupportedMp4Dimensions,
+	type SupportedMp4Dimensions,
+} from "@/lib/exporter/mp4Support";
+import {
 	type ExportBackendPreference,
 	type ExportEncodingMode,
 	type ExportFormat,
@@ -62,17 +69,11 @@ import {
 	type ExportProgress,
 	type ExportQuality,
 	type ExportSettings,
-	FrameRenderer,
 	GIF_SIZE_PRESETS,
-	GifExporter,
 	type GifFrameRate,
 	type GifSizePreset,
-	ModernVideoExporter,
-	probeSupportedMp4Dimensions,
-	type SupportedMp4Dimensions,
-	VideoExporter,
-} from "@/lib/exporter";
-import { getMp4ExportBitrate, getSourceQualityBitrate } from "@/lib/exporter/exportBitrate";
+} from "@/lib/exporter/types";
+import { VideoExporter } from "@/lib/exporter/videoExporter";
 import { matchesShortcut } from "@/lib/shortcuts";
 import { cn } from "@/lib/utils";
 import {
