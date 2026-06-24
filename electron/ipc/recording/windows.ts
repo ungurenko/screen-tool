@@ -2,6 +2,7 @@ import type { ChildProcessWithoutNullStreams } from "node:child_process";
 import { constants as fsConstants } from "node:fs";
 import fs from "node:fs/promises";
 import { BrowserWindow } from "electron";
+import { tElectron } from "../../i18n";
 import { getWindowsCaptureExePath } from "../paths/binaries";
 import {
 	selectedSource,
@@ -13,9 +14,7 @@ import {
 	windowsCaptureTargetPath,
 	windowsNativeCaptureActive,
 } from "../state";
-import {
-	AudioSyncAdjustment,
-} from "../types";
+import { AudioSyncAdjustment } from "../types";
 import { moveFileWithOverwrite } from "../utils";
 import { emitRecordingInterrupted } from "./events";
 
@@ -135,7 +134,9 @@ export function waitForWindowsCaptureStop(
 
 		const onClose = (code: number | null) => {
 			finish(() => {
-				const match = windowsCaptureOutputBuffer.match(/Recording stopped\. Output path: (.+)/);
+				const match = windowsCaptureOutputBuffer.match(
+					/Recording stopped\. Output path: (.+)/,
+				);
 				if (match?.[1]) {
 					resolve(match[1].trim());
 					return;
@@ -182,7 +183,7 @@ export function attachWindowsCaptureLifecycle(proc: ChildProcessWithoutNullStrea
 		setWindowsNativeCaptureActive(false);
 		setWindowsCaptureStopRequested(false);
 
-		const sourceName = selectedSource?.name ?? "Screen";
+		const sourceName = selectedSource?.name ?? tElectron("system.screen", "Screen");
 		BrowserWindow.getAllWindows().forEach((window) => {
 			if (!window.isDestroyed()) {
 				window.webContents.send("recording-state-changed", {
@@ -254,9 +255,7 @@ export async function muxNativeWindowsVideoWithAudio(
 		}
 	}
 
-	console.log(
-		`[PERF:MAIN] muxNativeWindowsVideoWithAudio: COMPLETED in ${Date.now() - start}ms`,
-	);
+	console.log(`[PERF:MAIN] muxNativeWindowsVideoWithAudio: COMPLETED in ${Date.now() - start}ms`);
 
 	return {
 		muxed: false,

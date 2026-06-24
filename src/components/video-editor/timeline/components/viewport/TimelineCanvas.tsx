@@ -14,6 +14,7 @@ import type {
 	SourceAudioTrackSettings,
 	SourceAudioTrackWithPeaks,
 } from "@/components/video-editor/audio/audioTypes";
+import { useScopedT } from "@/contexts/I18nContext";
 import { cn } from "@/lib/utils";
 import { CLIP_ROW_ID, SOURCE_AUDIO_ROW_ID, ZOOM_ROW_ID } from "../../core/constants";
 import {
@@ -38,10 +39,6 @@ import {
 import TimelineAxis from "../axis/TimelineAxis";
 import ClipMarkerOverlay from "../overlays/ClipMarkerOverlay";
 import PlaybackCursor from "../playhead/PlaybackCursor";
-
-const HINT_CLIP = "Press C to split clip";
-const HINT_ANNOTATION = "Press A to add annotation";
-const HINT_AUDIO = "Click music icon to add audio";
 
 interface TimelineCanvasProps {
 	items: TimelineRenderItem[];
@@ -318,6 +315,10 @@ const TimelineCanvasRows = memo(function TimelineCanvasRows({
 	onZoomRowMouseDown,
 	onZoomRowClick,
 }: TimelineCanvasRowsProps) {
+	const t = useScopedT("timeline");
+	const hintClip = t("hints.splitClip", "Press C to split clip");
+	const hintAnnotation = t("hints.addAnnotation", "Press A to add annotation");
+	const hintAudio = t("hints.addAudio", "Click music icon to add audio");
 	const hiddenIds = useMemo(() => new Set(liveHiddenItemIds ?? []), [liveHiddenItemIds]);
 	const { clipItems, zoomItems, annotationRows, audioRows } = useMemo(() => {
 		const nextClipItems: TimelineRenderItem[] = [];
@@ -372,7 +373,7 @@ const TimelineCanvasRows = memo(function TimelineCanvasRows({
 
 	return (
 		<>
-			<Row id={CLIP_ROW_ID} isEmpty={clipItems.length === 0} hint={HINT_CLIP}>
+			<Row id={CLIP_ROW_ID} isEmpty={clipItems.length === 0} hint={hintClip}>
 				<ClipMarkerOverlay videoDurationMs={videoDurationMs} />
 				{clipItems.map((item) => (
 					<Item
@@ -485,7 +486,7 @@ const TimelineCanvasRows = memo(function TimelineCanvasRows({
 					key={rowId}
 					id={rowId}
 					isEmpty={rowItems.length === 0}
-					hint={index === 0 ? HINT_ANNOTATION : undefined}
+					hint={index === 0 ? hintAnnotation : undefined}
 				>
 					{rowItems.map((item) => (
 						<Item
@@ -508,7 +509,7 @@ const TimelineCanvasRows = memo(function TimelineCanvasRows({
 					key={rowId}
 					id={rowId}
 					isEmpty={rowItems.length === 0}
-					hint={index === 0 ? HINT_AUDIO : undefined}
+					hint={index === 0 ? hintAudio : undefined}
 				>
 					{rowItems.map((item) => (
 						<AudioItemWithWaveform

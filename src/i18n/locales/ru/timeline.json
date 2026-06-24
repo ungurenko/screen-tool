@@ -14,13 +14,18 @@
 		"addedSuggestions": "Добавлено зумов: {{count}}",
 		"label": "Зум {{index}}",
 		"addZoom": "Добавить зум (Z)",
-		"suggestZooms": "Предложить зумы на основе курсора"
+		"suggestZooms": "Предложить зумы на основе курсора",
+		"auto": "Авто",
+		"manual": "Вручную",
+		"cannotPlaceTitle": "Зум сюда поставить нельзя",
+		"cannotPlaceDescription": "Зум уже есть в этом месте или до следующего зума/конца клипа не хватает места."
 	},
 	"trim": {
 		"cannotPlace": "Нельзя обрезать здесь",
 		"existsOrNoSpace": "Уже обрезано или недостаточно места.",
 		"label": "Обрезка {{index}}",
-		"addTrim": "Обрезать (T)"
+		"addTrim": "Обрезать (T)",
+		"shortLabel": "Обрезка"
 	},
 	"speed": {
 		"cannotPlace": "Нельзя изменить скорость здесь",
@@ -33,9 +38,51 @@
 		"addAnnotation": "Добавить аннотацию (A)"
 	},
 	"audio": {
-		"label": "Аудио"
+		"label": "Аудио",
+		"couldNotReadTitle": "Не удалось прочитать аудиофайл",
+		"couldNotReadDescription": "Файл может быть повреждён или иметь неподдерживаемый формат.",
+		"cannotPlaceTitle": "Аудио сюда поставить нельзя",
+		"noSpaceAtPlayheadDescription": "В текущей позиции ползунка нет свободного места.",
+		"overlapOrNoSpaceDescription": "В этом месте уже есть аудио или недостаточно свободного места."
 	},
 	"addSpeed": "Скорость (S)",
 	"resizeLeft": "Изменить размер слева",
-	"resizeRight": "Изменить размер справа"
+	"resizeRight": "Изменить размер справа",
+	"aspect": {
+		"custom": "Свой",
+		"customHeight": "Своя высота кадра",
+		"customWidth": "Своя ширина кадра",
+		"set": "Задать"
+	},
+	"clip": {
+		"label": "Клип"
+	},
+	"controls": {
+		"pan": "Панорама",
+		"zoom": "Зум",
+		"sideScroll": "Боковая прокрутка"
+	},
+	"hints": {
+		"addAnnotation": "Нажмите A, чтобы добавить аннотацию",
+		"addAudio": "Нажмите на иконку музыки, чтобы добавить аудио",
+		"splitClip": "Нажмите C, чтобы разрезать клип"
+	},
+	"empty": {
+		"noVideoLoaded": "Видео не загружено",
+		"dragDropVideo": "Перетащите видео сюда, чтобы начать монтаж"
+	},
+	"zoomSuggestions": {
+		"unavailableWithCursorLoop": "Автозум недоступен, пока включён зацикленный курсор.",
+		"handlerUnavailable": "Обработчик автозума недоступен",
+		"noCursorTelemetryTitle": "Нет данных движения курсора",
+		"noCursorTelemetryDescription": "Сначала запишите экран, чтобы Recordly мог предложить зумы по движению курсора.",
+		"noUsableTelemetryTitle": "Недостаточно данных курсора",
+		"noUsableTelemetryDescription": "В записи слишком мало данных о движении курсора.",
+		"noInteractionsTitle": "Не найдено заметных действий",
+		"noInteractionsDescription": "Попробуйте запись с паузами или кликами рядом с важными действиями.",
+		"noSlotsTitle": "Нет свободных мест для автозума",
+		"noSlotsDescription": "Найденные точки пересекаются с уже существующими зумами.",
+		"addedOne": "Добавлен {{count}} предложенный зум по действию",
+		"addedMany": "Добавлено предложенных зумов: {{count}}"
+	}
 }

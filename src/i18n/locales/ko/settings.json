@@ -6,7 +6,8 @@
 		"modeAuto": "자동",
 		"modeManual": "수동",
 		"modeManualDescription": "이 확대에 고정 초점을 설정합니다",
-		"modeAutoDescription": "카메라가 커서를 자동으로 따라갑니다"
+		"modeAutoDescription": "카메라가 커서를 자동으로 따라갑니다",
+		"globalSettings": "Animation"
 	},
 	"trim": {
 		"deleteRegion": "트림 구간 삭제"
@@ -105,7 +106,91 @@
 		"paddingBottom": "아래",
 		"paddingLeft": "왼쪽",
 		"paddingRight": "오른쪽",
-		"removeBackground": "배경 제거"
+		"removeBackground": "배경 제거",
+		"cameraDebugTuning": "Camera Debug Tuning",
+		"cameraDebugTuningHint": "Development-only spring tuning controls for camera motion.",
+		"cameraSpringDampingMultiplier": "Camera damping",
+		"cameraSpringMassMultiplier": "Camera mass",
+		"cameraSpringStiffnessMultiplier": "Camera stiffness",
+		"classicZoom": "Classic Animation",
+		"cursorDebugMovedToDev": "Cursor spring tuning is available in Settings > Dev.",
+		"cursorDebugTuning": "Cursor Debug Tuning",
+		"cursorDebugTuningHint": "Development-only spring tuning controls.",
+		"cursorSpringDampingMultiplier": "Spring damping",
+		"cursorSpringMassMultiplier": "Spring mass",
+		"cursorSpringStiffnessMultiplier": "Spring stiffness",
+		"customEffectColorPicker": "Custom effect color picker",
+		"devSection": "Dev",
+		"devSectionHint": "Temporary testing controls for native capture and motion tuning.",
+		"effectColor": "Effect color {{color}}",
+		"exportBlurMovedToDev": "Export blur tuning is available in Settings > Dev.",
+		"motionBlurDebug": "Motion Blur Debug",
+		"motionBlurDebugHint": "Development-only tuning for the split move-vs-zoom blur path. Pan controls drive the streak filter, and zoom controls drive the focus-centered zoom filter.",
+		"motionBlurPanStrength": "Pan max blur",
+		"motionBlurPanThreshold": "Pan threshold",
+		"motionBlurZoomStrength": "Zoom blur strength",
+		"motionBlurZoomThreshold": "Zoom threshold",
+		"nativeCaptureWarningTester": "Native capture warning",
+		"nativeCaptureWarningTesterAvailable": "This project is not marked as unsupported, but you can still open the modal for UI testing.",
+		"nativeCaptureWarningTesterUnavailable": "This project is currently marked as native capture unavailable.",
+		"openNativeCaptureWarning": "Open warning",
+		"paddingAdvanced": "Advanced",
+		"paddingAdvancedHide": "Hide advanced padding controls",
+		"paddingAdvancedShow": "Show advanced padding controls",
+		"pick": "Pick",
+		"webcamCustomPosition": "Custom position",
+		"webcamHorizontal": "Horizontal",
+		"webcamMargin": "Margin",
+		"webcamPosition": "Position",
+		"webcamVertical": "Vertical",
+		"temporalZoomMotionBlur": "Temporal Zoom Blur",
+		"temporalZoomMotionBlurDescription": "Control the shutter window and frame samples used by the newer zoom blur pass.",
+		"zoomMotionBlurSamples": "Blur Samples",
+		"zoomMotionBlurShutter": "Shutter",
+		"auto": "Auto",
+		"motionPresetsTitle": "Motion Presets",
+		"motionPresetsZoomHint": "Zoom motion presets are available in Settings.",
+		"animationPresets": "Animation Presets",
+		"cursorMotionPresets": "Cursor Motion Presets",
+		"motionPresets": {
+			"focused": {
+				"label": "Focused",
+				"description": "Snappier motion for demos, walkthroughs, and everyday recordings."
+			},
+			"smooth": {
+				"label": "Smooth",
+				"description": "Gentler motion for presentations, keynote-style videos, and polished reveals."
+			}
+		},
+		"cursorSpringStiffness": "Cursor Spring Stiffness",
+		"cursorSpringDamping": "Cursor Spring Damping",
+		"cursorSpringMass": "Cursor Spring Mass",
+		"cursorClickEffects": {
+			"title": "Click Effects",
+			"advanced": "Advanced",
+			"advancedShow": "Show advanced click effect controls",
+			"advancedHide": "Hide advanced click effect controls",
+			"color": "Effect Color",
+			"size": "Effect Size",
+			"opacity": "Effect Opacity",
+			"duration": "Effect Duration",
+			"none": {
+				"label": "Off",
+				"description": "No click graphic. Only the cursor motion changes when you click."
+			},
+			"ripple": {
+				"label": "Ripple",
+				"description": "Expanding rings radiate from each click so taps read clearly in motion."
+			},
+			"spotlight": {
+				"label": "Spotlight",
+				"description": "A soft halo flashes around the pointer to emphasize the clicked area."
+			},
+			"echo": {
+				"label": "Echo",
+				"description": "A pair of soft rings that spread outward with a cleaner pulse."
+			}
+		}
 	},
 	"sections": {
 		"scene": "장면",
@@ -114,7 +199,9 @@
 		"cursor": "커서",
 		"webcam": "웹캠",
 		"frame": "프레임",
-		"crop": "자르기"
+		"crop": "자르기",
+		"extensions": "Extensions",
+		"settings": "Settings"
 	},
 	"captions": {
 		"enabled": "표시",
@@ -127,8 +214,8 @@
 		"generateFull": "자막 생성",
 		"regenerateFull": "자막 다시 생성",
 		"clearFull": "자막 지우기",
-		"editCurrent": "현재 자막 편집",
-		"editSaved": "자막이 업데이트되었습니다",
+		"editCurrent": "Edit current caption",
+		"editSaved": "Caption updated",
 		"fontSettings": "글꼴 설정",
 		"defaultFont": "기본값",
 		"fontFamily": "글꼴",
@@ -143,7 +230,18 @@
 		"maxWidth": "최대 너비",
 		"boxRadius": "박스 반경",
 		"backgroundOpacity": "배경 투명도",
-		"textColor": "텍스트 색상"
+		"textColor": "텍스트 색상",
+		"autoDetect": "Auto Detect",
+		"generated": "Generated {{count}} captions",
+		"generateFailed": "Failed to generate captions",
+		"generatingStatus": "Generating captions. This can take a moment.",
+		"selectModel": "Select Model",
+		"selectWhisperModelFirst": "Select a Whisper model or download the small model first",
+		"whisperExecutableSelected": "Whisper executable selected",
+		"whisperModelSelected": "Whisper model selected",
+		"whisperSmallDeleted": "Whisper small model deleted",
+		"whisperSmallDeleteFailed": "Failed to delete Whisper small model",
+		"whisperSmallDownloadFailed": "Failed to download Whisper small model"
 	},
 	"crop": {
 		"title": "비디오 자르기",
@@ -160,10 +258,19 @@
 		"color": "색상",
 		"gradient": "그라데이션",
 		"wallpaperPreview": "배경화면 미리보기",
+		"wallpaperLabel": "배경화면 {{number}}",
 		"uploadCustom": "사용자 이미지 업로드",
 		"uploadSuccess": "사용자 이미지를 업로드했습니다!",
 		"uploadError": "JPG 또는 JPEG 이미지 파일을 업로드해 주세요.",
-		"uploadErrorDescription": "JPG 또는 JPEG 이미지 파일을 업로드해 주세요."
+		"uploadErrorDescription": "JPG 또는 JPEG 이미지 파일을 업로드해 주세요.",
+		"customColorPicker": "Custom color picker",
+		"pick": "Pick",
+		"uploadCustomVideo": "Upload Video",
+		"video": "Video",
+		"unsupportedVideoFormat": "Unsupported format",
+		"selectVideoFileDescription": "Please select a video file (mp4, webm, mov, etc.)",
+		"videoAdded": "Video background added",
+		"videoImportFailed": "Failed to import video background"
 	},
 	"export": {
 		"title": "내보내기",
@@ -185,7 +292,31 @@
 		"saveProject": "프로젝트 저장",
 		"exportVideo": "{{format}} 내보내기",
 		"reportBug": "버그 신고",
-		"starOnGithub": "GitHub에서 별표 주기"
+		"starOnGithub": "GitHub에서 별표 주기",
+		"captionSidecar": {
+			"hint": "Save .srt and .vtt files next to your exported video.",
+			"title": "Export captions file",
+			"toggle": "Export captions sidecar files"
+		},
+		"encoding": {
+			"balanced": "Balanced",
+			"fast": "Fast",
+			"quality": "Quality"
+		},
+		"encodingTitle": "Encoding",
+		"nvidiaCuda": {
+			"badge": "Experimental",
+			"hint": "Try GPU export on this Windows device.",
+			"title": "NVIDIA CUDA",
+			"toggle": "Enable experimental NVIDIA CUDA export"
+		},
+		"pipeline": {
+			"legacy": "Legacy",
+			"legacyHint": "Legacy uses the current stable WebCodecs export path.",
+			"lightningHint": "Lightning (Beta) automatically uses the fastest compatible backend and falls back when needed.",
+			"modern": "Lightning (Beta)"
+		},
+		"pipelineTitle": "Pipeline"
 	},
 	"audio": {
 		"title": "오디오",
@@ -197,5 +328,11 @@
 		"micLabel": "마이크 소스",
 		"mixedLabel": "소스",
 		"deleteRegion": "오디오 삭제"
+	},
+	"annotation": {
+		"delete": "Delete Annotation"
+	},
+	"video": {
+		"webgpuUnavailable": "WebGPU runtime is unavailable in this browser."
 	}
 }

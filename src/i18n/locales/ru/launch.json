@@ -53,7 +53,14 @@
 			"upToDateTitle": "У вас актуальная версия Recordly {{version}}.",
 			"availableTitle": "Доступна новая версия Recordly {{version}}.",
 			"availableGenericTitle": "Доступно обновление."
-		}
+		},
+		"appearance": "Оформление",
+		"preparing": "Подготовка записи",
+		"preparingSubtitle": "Редактор откроется через пару секунд",
+		"previewUpdateUi": "Предпросмотр окна обновления",
+		"themeDark": "Тёмная",
+		"themeLight": "Светлая",
+		"themeSystem": "Как в системе"
 	},
 	"sourceSelector": {
 		"loadingSources": "Загрузка источников...",
@@ -64,7 +71,8 @@
 		"windowsNote": "Записать можно только видимые (не свёрнутые) окна.",
 		"windowPlaceholder": "Окно",
 		"cancel": "Отменить",
-		"share": "Поделиться"
+		"share": "Поделиться",
+		"refreshing": "Обновление..."
 	},
 	"permissions": {
 		"screenRecordingNeeded": "Recordly нужно разрешение на запись экрана. Мы открыли настройки – включите доступ и перезапустите приложение.",
@@ -75,6 +83,37 @@
 		"systemAudioUnavailable": "Системные звуки недоступны для этого источника. Запись продолжится без их захвата.",
 		"microphoneDenied": "Нет доступа к микрофону. Запись продолжится без вашего голоса.",
 		"failedToStart": "Не удалось начать запись: {{error}}",
-		"failedToStartGeneric": "Не удалось начать запись"
+		"failedToStartGeneric": "Не удалось начать запись",
+		"failedToFinalizeRecording": "Не удалось завершить запись. {{message}}",
+		"failedToFinishMacRecording": "Не удалось завершить запись macOS, поэтому редактор не открылся.",
+		"failedToFinishRecording": "Не удалось завершить запись, поэтому редактор не открылся.",
+		"failedToSaveFallbackMicrophone": "Не удалось сохранить резервную дорожку микрофона",
+		"failedToSaveRecording": "Не удалось сохранить запись.",
+		"failedToStoreRecording": "Не удалось записать файл.",
+		"microphoneFallbackFailed": "{{error}}. Запись продолжится без звука микрофона.",
+		"nativeWindowsCheckFailed": "Не удалось проверить нативный захват Windows. Используем захват через браузер.",
+		"nativeWindowsStartFailed": "Нативный захват Windows не запустился. Используем захват через браузер.",
+		"nativeWindowsUnavailable": "Нативный захват Windows недоступен. Используем захват через браузер.",
+		"savedWithoutFallbackMicrophone": "{{error}}. Запись сохранена без резервной дорожки микрофона."
+	},
+	"updateToast": {
+		"attentionTitle": "Recordly {{version}} требует внимания",
+		"availableTitle": "Доступна версия Recordly {{version}}",
+		"completePercent": "Готово: {{percent}}%",
+		"devBadge": "Тест",
+		"downloaded": "Загружено",
+		"downloadingTitle": "Установка Recordly {{version}}",
+		"installAndRestart": "Установить и перезапустить",
+		"later": "Позже",
+		"left": "Осталось",
+		"previewTitle": "Предпросмотр обновления",
+		"readyTitle": "Recordly {{version}} готова",
+		"remindOneHour": "1 час",
+		"remindThreeDays": "3 дня",
+		"remindThreeHours": "3 часа",
+		"remindTomorrow": "Завтра",
+		"retryCheckErrorTitle": "Не удалось проверить обновления",
+		"speed": "Скорость",
+		"tryAgain": "Повторить"
 	}
 }

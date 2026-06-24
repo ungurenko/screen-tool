@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from "react";
+import { useScopedT } from "@/contexts/I18nContext";
 import { resolveMediaElementSource } from "@/lib/exporter/localMediaSource";
 import type { TimelineAudioRegion } from "../../core/timelineTypes";
 import { resolveAudioPlacement } from "../utils/timelineAudioPlacement";
@@ -24,7 +25,11 @@ interface UseTimelineAudioActionsParams {
 	regions: {
 		audio: TimelineAudioRegion[];
 	};
-	onAudioAdded?: (span: { start: number; end: number }, audioPath: string, trackIndex?: number) => void;
+	onAudioAdded?: (
+		span: { start: number; end: number },
+		audioPath: string,
+		trackIndex?: number,
+	) => void;
 	deps?: Partial<TimelineAudioActionsDeps>;
 }
 
@@ -80,6 +85,7 @@ export function useTimelineAudioActions({
 }: UseTimelineAudioActionsParams) {
 	const { videoDuration, totalMs, currentTimeMs } = timeline;
 	const { audio: audioRegions } = regions;
+	const t = useScopedT("timeline");
 	const deps = useMemo(() => buildTimelineAudioActionsDeps(depsOverrides), [depsOverrides]);
 
 	const handleAddAudio = useCallback(
@@ -97,8 +103,11 @@ export function useTimelineAudioActions({
 			const audioDurationMs = await deps.probeAudioDurationMs(audioPath);
 			if (audioDurationMs <= 0) {
 				deps.reportError(
-					"Could not read audio file",
-					"The selected file may be corrupted or in an unsupported format.",
+					t("audio.couldNotReadTitle", "Could not read audio file"),
+					t(
+						"audio.couldNotReadDescription",
+						"The selected file may be corrupted or in an unsupported format.",
+					),
 				);
 				return;
 			}
@@ -106,8 +115,11 @@ export function useTimelineAudioActions({
 			const startPos = Math.max(0, Math.min(currentTimeMs, totalMs));
 			if (totalMs - startPos <= 0) {
 				deps.reportError(
-					"Cannot place audio here",
-					"There is no remaining space at the current playhead position.",
+					t("audio.cannotPlaceTitle", "Cannot place audio here"),
+					t(
+						"audio.noSpaceAtPlayheadDescription",
+						"There is no remaining space at the current playhead position.",
+					),
 				);
 				return;
 			}
@@ -121,8 +133,11 @@ export function useTimelineAudioActions({
 			});
 			if (!placement) {
 				deps.reportError(
-					"Cannot place audio here",
-					"Audio region already exists at this location or not enough space available.",
+					t("audio.cannotPlaceTitle", "Cannot place audio here"),
+					t(
+						"audio.overlapOrNoSpaceDescription",
+						"Audio region already exists at this location or not enough space available.",
+					),
 				);
 				return;
 			}
@@ -133,7 +148,7 @@ export function useTimelineAudioActions({
 				placement.trackIndex,
 			);
 		},
-		[videoDuration, totalMs, onAudioAdded, deps, currentTimeMs, audioRegions],
+		[videoDuration, totalMs, onAudioAdded, deps, currentTimeMs, audioRegions, t],
 	);
 
 	return { handleAddAudio };

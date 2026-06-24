@@ -1,37 +1,25 @@
 import {
+	ArrowClockwiseIcon,
+	DesktopIcon,
 	EyeIcon,
 	EyeSlashIcon,
 	FolderOpenIcon,
+	MoonIcon,
+	SunIcon,
 	TranslateIcon,
 	VideoCameraIcon,
-	ArrowClockwiseIcon,
-	SunIcon,
-	MoonIcon,
-	DesktopIcon,
 } from "@phosphor-icons/react";
 import type { ReactElement } from "react";
-import { useI18n } from "@/contexts/I18nContext";
-import { useScopedT } from "@/contexts/I18nContext";
+import { useI18n, useScopedT } from "@/contexts/I18nContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import type { AppLocale } from "@/i18n/config";
 import { SUPPORTED_LOCALES } from "@/i18n/config";
+import { APP_LANGUAGE_LABELS } from "@/i18n/localeMetadata";
 import styles from "../LaunchWindow.module.css";
 import { useLaunchPopoverCoordinator } from "./LaunchPopoverCoordinator";
 import { DropdownItem, HudPopover } from "./PopoverScaffold";
 
 const POPOVER_ID = "more";
-
-const LOCALE_LABELS: Record<string, string> = {
-	en: "English",
-	es: "Español",
-	fr: "Français",
-	it: "Italiano",
-	nl: "Nederlands",
-	ko: "한국어",
-	"pt-BR": "Português",
-	"zh-CN": "簡體中文",
-	"zh-TW": "繁體中文",
-};
 
 export function MorePopover({
 	trigger,
@@ -135,7 +123,7 @@ export function MorePopover({
 					requestClose(POPOVER_ID);
 				}}
 			>
-				{t("common.light", "Light")}
+				{t("recording.themeLight", "Light")}
 			</DropdownItem>
 			<DropdownItem
 				icon={<MoonIcon size={16} />}
@@ -145,7 +133,7 @@ export function MorePopover({
 					requestClose(POPOVER_ID);
 				}}
 			>
-				{t("common.dark", "Dark")}
+				{t("recording.themeDark", "Dark")}
 			</DropdownItem>
 			<DropdownItem
 				icon={<DesktopIcon size={16} />}
@@ -155,7 +143,7 @@ export function MorePopover({
 					requestClose(POPOVER_ID);
 				}}
 			>
-				{t("common.system", "System")}
+				{t("recording.themeSystem", "System")}
 			</DropdownItem>
 			<div className={styles.ddLabel} style={{ marginTop: 4 }}>
 				{t("recording.language")}
@@ -170,7 +158,7 @@ export function MorePopover({
 						requestClose(POPOVER_ID);
 					}}
 				>
-					{LOCALE_LABELS[code] ?? code}
+					{APP_LANGUAGE_LABELS[code] ?? code}
 				</DropdownItem>
 			))}
 			{appVersion && (

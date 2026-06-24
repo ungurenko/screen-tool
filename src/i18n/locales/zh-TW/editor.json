@@ -42,9 +42,16 @@
 		"imageUploadError": "請上傳 JPG、PNG、GIF 或 WebP 圖片檔案。",
 		"blurStrength": "模糊強度: {{strength}}",
 		"solidColor": "純色 (審查)",
-		"borderRadius": "邊框半徑"
+		"borderRadius": "邊框半徑",
+		"arrowDirectionOption": "Arrow direction: {{direction}}",
+		"black": "Black",
+		"customColor": "Custom Color",
+		"customFonts": "Custom Fonts",
+		"imageUploadErrorDescription": "Supported formats: JPG, PNG, GIF, WebP.",
+		"imageUploadFailed": "Failed to upload image",
+		"imageUploadFailedDescription": "Please try another image file.",
+		"white": "White"
 	},
-
 	"fontStyles": {
 		"classic": "經典",
 		"editor": "編輯器",
@@ -93,7 +100,8 @@
 		"emailLabel": "信箱",
 		"xLabel": "X",
 		"reportIssue": "報告問題 / 提交反饋",
-		"openFailed": "打開連結失敗。"
+		"openFailed": "打開連結失敗。",
+		"discord": "Join Discord"
 	},
 	"keyboardShortcuts": {
 		"trigger": "快速鍵",
@@ -111,7 +119,34 @@
 		"showInFolder": "在資料夾中顯示"
 	},
 	"project": {
-		"untitled": "未命名"
+		"untitled": "未命名",
+		"current": "Current",
+		"import": "Import",
+		"importFailed": "Failed to import file",
+		"invalidFileFormat": "Invalid project file format",
+		"loaded": "Project loaded",
+		"loadedFrom": "Project loaded from {{path}}",
+		"loadFailed": "Failed to load project",
+		"mediaImported": "Media imported",
+		"nameAlreadyUsed": "A different project already uses this name",
+		"nameRequired": "Project name is required",
+		"noMediaSelected": "No media file selected",
+		"noPreview": "No preview yet",
+		"noSavedProjects": "No saved projects yet",
+		"openCanceled": "Open project canceled",
+		"pathNoLongerTrusted": "Project path is no longer trusted. Use Save As to choose a project file.",
+		"projects": "Projects",
+		"renameInput": "Project name",
+		"renameTitle": "Rename project",
+		"saveCanceled": "Project save canceled",
+		"saved": "Project saved",
+		"saveDescription": "Name this project. It will be saved in your Recordly Projects folder.",
+		"savedTo": "Project saved to {{path}}",
+		"saveFailed": "Failed to save project",
+		"saveNameLabel": "Project name",
+		"saveTitle": "Save Project",
+		"saving": "Saving...",
+		"unableToVerifyName": "Unable to verify project identity for the chosen name"
 	},
 	"nativeCaptureUnavailable": {
 		"title": "沒有出錯，但我們無法轉譯動畫游標覆蓋層。",
@@ -125,10 +160,33 @@
 		"completePercent": "已完成 {{percent}}%",
 		"issue": "匯出問題",
 		"complete": "匯出完成",
-		"savedSuccessfully": "檔案已成功保存。"
+		"savedSuccessfully": "檔案已成功保存。",
+		"finalizingPercent": "Finalizing {{percent}}%",
+		"muxingAndSaving": "Muxing audio and saving file...",
+		"muxingAndSavingPercent": "Muxing and saving {{percent}}%",
+		"renderingAudio": "Rendering audio {{percent}}%",
+		"renderSpeed": "Render speed {{fps}} FPS",
+		"saving": "Opening save dialog..."
 	},
 	"export": {
-		"processingAudioEdits": "正在處理帶有速度/疊加編輯的音訊"
+		"processingAudioEdits": "正在處理帶有速度/疊加編輯的音訊",
+		"canceled": "Export canceled",
+		"exportedTo": "Exported successfully to {{path}}",
+		"failed": "Export failed",
+		"failedToSaveGif": "Failed to save GIF",
+		"failedToSaveVideo": "Failed to save video",
+		"failedWithError": "Export failed: {{error}}",
+		"gifFailed": "GIF export failed",
+		"noOutput": "Export produced no output",
+		"noPendingSave": "No pending export to save",
+		"revealError": "Error revealing in folder: {{error}}",
+		"revealFailed": "Failed to reveal item in folder.",
+		"revealFailedWithError": "Failed to reveal item in folder: {{error}}",
+		"saveCanceled": "Export canceled",
+		"saveCanceledRetry": "Save canceled. You can save again without re-exporting.",
+		"saveCanceledTryAgain": "Save canceled. You can try again.",
+		"saveDialogCanceledRetry": "Save dialog canceled. Click Save Again to save without re-rendering.",
+		"videoExported": "Video exported successfully"
 	},
 	"toolbar": {
 		"addLayer": "新增圖層",
@@ -136,7 +194,62 @@
 	},
 	"timeline": {
 		"expand": "展開時間軸",
-		"collapse": "摺疊時間軸"
+		"collapse": "摺疊時間軸",
+		"speedClipOverlap": "Speed change would overlap the next clip. Move or split clips before slowing this section.",
+		"speedZoomOverlap": "Speed change would overlap another zoom. Move or delete the overlapping zoom first."
 	},
-	"openRecordingsFolder": "打開錄製資料夾"
+	"openRecordingsFolder": "打開錄製資料夾",
+	"account": {
+		"comingSoon": "Account coming soon",
+		"title": "Account"
+	},
+	"audioFallback": {
+		"loadFailed": "Could not load companion audio sources. Playback and export may miss microphone audio.",
+		"loadFailedWithError": "Could not load companion audio sources: {{error}}"
+	},
+	"errors": {
+		"unknown": "Unknown error"
+	},
+	"presets": {
+		"deleteAriaLabel": "Delete preset {{name}}",
+		"empty": "No presets yet.",
+		"errors": {
+			"deleteFailed": "Could not delete that preset. Check your browser storage settings and try again.",
+			"duplicateName": "A preset with that name already exists.",
+			"nameRequired": "Enter a preset name.",
+			"saveFailed": "Could not save that preset. Check your browser storage settings and try again."
+		},
+		"label": "Presets",
+		"namePlaceholder": "Preset name",
+		"open": "Open presets",
+		"saveCurrentAs": "Save current preset as",
+		"savedList": "Saved presets",
+		"toasts": {
+			"applied": "Applied preset \"{{name}}\"",
+			"deleted": "Deleted preset \"{{name}}\"",
+			"saved": "Saved preset \"{{name}}\""
+		}
+	},
+	"theme": {
+		"appearance": "Appearance",
+		"dark": "Dark",
+		"light": "Light",
+		"system": "System"
+	},
+	"unsavedChanges": {
+		"actions": {
+			"importFile": "import a file",
+			"openAnotherProject": "open another project"
+		},
+		"description": "Save your current project before you {{action}}?",
+		"discard": "Discard changes",
+		"save": "Save project",
+		"title": "Unsaved changes"
+	},
+	"video": {
+		"loading": "Loading video...",
+		"noSourceLoaded": "No source video is loaded",
+		"notReady": "Video not ready",
+		"noVideoLoaded": "No video loaded"
+	}
 }

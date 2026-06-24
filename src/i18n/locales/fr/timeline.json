@@ -14,13 +14,18 @@
 		"addedSuggestions": "Suggestions de zoom basées sur l'interaction ajoutées : {{count}}",
 		"label": "Zoom {{index}}",
 		"addZoom": "Ajouter un zoom (Z)",
-		"suggestZooms": "Suggérer des zooms à partir du curseur"
+		"suggestZooms": "Suggérer des zooms à partir du curseur",
+		"auto": "Auto",
+		"manual": "Manual",
+		"cannotPlaceTitle": "Cannot place zoom here",
+		"cannotPlaceDescription": "Zoom already exists here or there is not enough room before the next zoom or clip end."
 	},
 	"trim": {
 		"cannotPlace": "Impossible de placer le découpage ici",
 		"existsOrNoSpace": "Un découpage existe déjà à cet emplacement ou il n’y a pas assez d’espace disponible.",
 		"label": "Découpage {{index}}",
-		"addTrim": "Ajouter un découpage (T)"
+		"addTrim": "Ajouter un découpage (T)",
+		"shortLabel": "Trim"
 	},
 	"speed": {
 		"cannotPlace": "Impossible de placer la vitesse ici",
@@ -33,9 +38,51 @@
 		"addAnnotation": "Ajouter une annotation (A)"
 	},
 	"audio": {
-		"label": "Audio"
+		"label": "Audio",
+		"couldNotReadTitle": "Could not read audio file",
+		"couldNotReadDescription": "The selected file may be corrupted or in an unsupported format.",
+		"cannotPlaceTitle": "Cannot place audio here",
+		"noSpaceAtPlayheadDescription": "There is no remaining space at the current playhead position.",
+		"overlapOrNoSpaceDescription": "Audio region already exists at this location or not enough space available."
 	},
 	"addSpeed": "Ajouter une vitesse (S)",
 	"resizeLeft": "Redimensionner vers la gauche",
-	"resizeRight": "Redimensionner vers la droite"
+	"resizeRight": "Redimensionner vers la droite",
+	"aspect": {
+		"custom": "Custom",
+		"customHeight": "Custom aspect height",
+		"customWidth": "Custom aspect width",
+		"set": "Set"
+	},
+	"clip": {
+		"label": "Clip"
+	},
+	"controls": {
+		"pan": "Pan",
+		"zoom": "Zoom",
+		"sideScroll": "Side Scroll"
+	},
+	"hints": {
+		"addAnnotation": "Press A to add annotation",
+		"addAudio": "Click music icon to add audio",
+		"splitClip": "Press C to split clip"
+	},
+	"empty": {
+		"noVideoLoaded": "No Video Loaded",
+		"dragDropVideo": "Drag and drop a video to start editing"
+	},
+	"zoomSuggestions": {
+		"unavailableWithCursorLoop": "Suggested zooms are unavailable while cursor looping is enabled.",
+		"handlerUnavailable": "Zoom suggestion handler unavailable",
+		"noCursorTelemetryTitle": "No cursor telemetry available",
+		"noCursorTelemetryDescription": "Record a screencast first to generate cursor-based suggestions.",
+		"noUsableTelemetryTitle": "No usable cursor telemetry",
+		"noUsableTelemetryDescription": "The recording does not include enough cursor movement data.",
+		"noInteractionsTitle": "No clear interaction moments found",
+		"noInteractionsDescription": "Try a recording with pauses or clicks around important actions.",
+		"noSlotsTitle": "No auto-zoom slots available",
+		"noSlotsDescription": "Detected dwell points overlap existing zoom regions.",
+		"addedOne": "Added {{count}} interaction-based zoom suggestion",
+		"addedMany": "Added {{count}} interaction-based zoom suggestions"
+	}
 }

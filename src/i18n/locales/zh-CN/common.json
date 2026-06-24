@@ -4,7 +4,8 @@
 		"editorTitle": "Recordly 编辑器",
 		"subtitle": "屏幕录制与编辑",
 		"language": "语言",
-		"manageRecordings": "打开录制文件夹"
+		"manageRecordings": "打开录制文件夹",
+		"notifications": "通知"
 	},
 	"actions": {
 		"cancel": "取消",

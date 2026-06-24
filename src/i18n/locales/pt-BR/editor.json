@@ -42,9 +42,16 @@
 		"imageUploadError": "Envie um arquivo de imagem JPG, PNG, GIF ou WebP.",
 		"blurStrength": "Intensidade do blur: {{strength}}",
 		"solidColor": "Cor sólida (censura)",
-		"borderRadius": "Raio da borda"
+		"borderRadius": "Raio da borda",
+		"arrowDirectionOption": "Arrow direction: {{direction}}",
+		"black": "Black",
+		"customColor": "Custom Color",
+		"customFonts": "Custom Fonts",
+		"imageUploadErrorDescription": "Supported formats: JPG, PNG, GIF, WebP.",
+		"imageUploadFailed": "Failed to upload image",
+		"imageUploadFailedDescription": "Please try another image file.",
+		"white": "White"
 	},
-
 	"fontStyles": {
 		"classic": "Classic",
 		"editor": "Editor",
@@ -93,7 +100,8 @@
 		"emailLabel": "E-mail",
 		"xLabel": "X",
 		"reportIssue": "Reportar problema / enviar feedback",
-		"openFailed": "Falha ao abrir link."
+		"openFailed": "Falha ao abrir link.",
+		"discord": "Join Discord"
 	},
 	"keyboardShortcuts": {
 		"trigger": "Atalhos",
@@ -111,7 +119,34 @@
 		"showInFolder": "Mostrar na pasta"
 	},
 	"project": {
-		"untitled": "Sem título"
+		"untitled": "Sem título",
+		"current": "Current",
+		"import": "Import",
+		"importFailed": "Failed to import file",
+		"invalidFileFormat": "Invalid project file format",
+		"loaded": "Project loaded",
+		"loadedFrom": "Project loaded from {{path}}",
+		"loadFailed": "Failed to load project",
+		"mediaImported": "Media imported",
+		"nameAlreadyUsed": "A different project already uses this name",
+		"nameRequired": "Project name is required",
+		"noMediaSelected": "No media file selected",
+		"noPreview": "No preview yet",
+		"noSavedProjects": "No saved projects yet",
+		"openCanceled": "Open project canceled",
+		"pathNoLongerTrusted": "Project path is no longer trusted. Use Save As to choose a project file.",
+		"projects": "Projects",
+		"renameInput": "Project name",
+		"renameTitle": "Rename project",
+		"saveCanceled": "Project save canceled",
+		"saved": "Project saved",
+		"saveDescription": "Name this project. It will be saved in your Recordly Projects folder.",
+		"savedTo": "Project saved to {{path}}",
+		"saveFailed": "Failed to save project",
+		"saveNameLabel": "Project name",
+		"saveTitle": "Save Project",
+		"saving": "Saving...",
+		"unableToVerifyName": "Unable to verify project identity for the chosen name"
 	},
 	"nativeCaptureUnavailable": {
 		"title": "Nada está quebrado, mas não poderemos renderizar uma sobreposição animada do cursor.",
@@ -125,10 +160,33 @@
 		"completePercent": "{{percent}}% concluído",
 		"issue": "Problema na exportação",
 		"complete": "Exportação concluída",
-		"savedSuccessfully": "Seu arquivo foi salvo com sucesso."
+		"savedSuccessfully": "Seu arquivo foi salvo com sucesso.",
+		"finalizingPercent": "Finalizing {{percent}}%",
+		"muxingAndSaving": "Muxing audio and saving file...",
+		"muxingAndSavingPercent": "Muxing and saving {{percent}}%",
+		"renderingAudio": "Rendering audio {{percent}}%",
+		"renderSpeed": "Render speed {{fps}} FPS",
+		"saving": "Opening save dialog..."
 	},
 	"export": {
-		"processingAudioEdits": "Processando áudio com edições de velocidade/sobreposição"
+		"processingAudioEdits": "Processando áudio com edições de velocidade/sobreposição",
+		"canceled": "Export canceled",
+		"exportedTo": "Exported successfully to {{path}}",
+		"failed": "Export failed",
+		"failedToSaveGif": "Failed to save GIF",
+		"failedToSaveVideo": "Failed to save video",
+		"failedWithError": "Export failed: {{error}}",
+		"gifFailed": "GIF export failed",
+		"noOutput": "Export produced no output",
+		"noPendingSave": "No pending export to save",
+		"revealError": "Error revealing in folder: {{error}}",
+		"revealFailed": "Failed to reveal item in folder.",
+		"revealFailedWithError": "Failed to reveal item in folder: {{error}}",
+		"saveCanceled": "Export canceled",
+		"saveCanceledRetry": "Save canceled. You can save again without re-exporting.",
+		"saveCanceledTryAgain": "Save canceled. You can try again.",
+		"saveDialogCanceledRetry": "Save dialog canceled. Click Save Again to save without re-rendering.",
+		"videoExported": "Video exported successfully"
 	},
 	"toolbar": {
 		"addLayer": "Adicionar camada",
@@ -136,7 +194,62 @@
 	},
 	"timeline": {
 		"expand": "Expandir linha do tempo",
-		"collapse": "Recolher linha do tempo"
+		"collapse": "Recolher linha do tempo",
+		"speedClipOverlap": "Speed change would overlap the next clip. Move or split clips before slowing this section.",
+		"speedZoomOverlap": "Speed change would overlap another zoom. Move or delete the overlapping zoom first."
 	},
-	"openRecordingsFolder": "Abrir pasta de gravações"
+	"openRecordingsFolder": "Abrir pasta de gravações",
+	"account": {
+		"comingSoon": "Account coming soon",
+		"title": "Account"
+	},
+	"audioFallback": {
+		"loadFailed": "Could not load companion audio sources. Playback and export may miss microphone audio.",
+		"loadFailedWithError": "Could not load companion audio sources: {{error}}"
+	},
+	"errors": {
+		"unknown": "Unknown error"
+	},
+	"presets": {
+		"deleteAriaLabel": "Delete preset {{name}}",
+		"empty": "No presets yet.",
+		"errors": {
+			"deleteFailed": "Could not delete that preset. Check your browser storage settings and try again.",
+			"duplicateName": "A preset with that name already exists.",
+			"nameRequired": "Enter a preset name.",
+			"saveFailed": "Could not save that preset. Check your browser storage settings and try again."
+		},
+		"label": "Presets",
+		"namePlaceholder": "Preset name",
+		"open": "Open presets",
+		"saveCurrentAs": "Save current preset as",
+		"savedList": "Saved presets",
+		"toasts": {
+			"applied": "Applied preset \"{{name}}\"",
+			"deleted": "Deleted preset \"{{name}}\"",
+			"saved": "Saved preset \"{{name}}\""
+		}
+	},
+	"theme": {
+		"appearance": "Appearance",
+		"dark": "Dark",
+		"light": "Light",
+		"system": "System"
+	},
+	"unsavedChanges": {
+		"actions": {
+			"importFile": "import a file",
+			"openAnotherProject": "open another project"
+		},
+		"description": "Save your current project before you {{action}}?",
+		"discard": "Discard changes",
+		"save": "Save project",
+		"title": "Unsaved changes"
+	},
+	"video": {
+		"loading": "Loading video...",
+		"noSourceLoaded": "No source video is loaded",
+		"notReady": "Video not ready",
+		"noVideoLoaded": "No video loaded"
+	}
 }

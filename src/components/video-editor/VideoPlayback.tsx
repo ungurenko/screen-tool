@@ -11,6 +11,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useScopedT } from "@/contexts/I18nContext";
 import { getAssetPath, getRenderableAssetUrl, getRenderableVideoUrl } from "@/lib/assetPath";
 import {
 	clampMediaTimeToDuration,
@@ -167,16 +168,10 @@ import {
 	SNAP_TO_EDGES_RATIO_AUTO,
 } from "./videoPlayback/cursorFollowCamera";
 import { clampFocusToStage as clampFocusToStageUtil } from "./videoPlayback/focusUtils";
-import {
-	layoutVideoContent as layoutVideoContentUtil,
-	scalePreviewBorderRadius,
-} from "./videoPlayback/layoutUtils";
+import { layoutVideoContent as layoutVideoContentUtil } from "./videoPlayback/layoutUtils";
 import { updateOverlayIndicator } from "./videoPlayback/overlayUtils";
 import { createVideoEventHandlers } from "./videoPlayback/videoEventHandlers";
-import {
-	getWebcamMediaTargetTimeSeconds,
-	shouldSeekWebcamMedia,
-} from "./videoPlayback/webcamSync";
+import { getWebcamMediaTargetTimeSeconds, shouldSeekWebcamMedia } from "./videoPlayback/webcamSync";
 import { findDominantRegion } from "./videoPlayback/zoomRegionUtils";
 import {
 	applyZoomTransform,
@@ -501,6 +496,7 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 		},
 		ref,
 	) => {
+		const t = useScopedT("settings");
 		const videoRef = useRef<HTMLVideoElement | null>(null);
 		const previewFrameRef = useRef<HTMLDivElement | null>(null);
 		const containerRef = useRef<HTMLDivElement | null>(null);
@@ -674,7 +670,10 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 					) {
 						attempts.push({
 							backend,
-							message: "WebGPU runtime is unavailable in this browser.",
+							message: t(
+								"video.webgpuUnavailable",
+								"WebGPU runtime is unavailable in this browser.",
+							),
 						});
 						continue;
 					}
@@ -731,7 +730,7 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 
 				throw new Error(summarizeRendererAttempts(attempts));
 			},
-			[],
+			[t],
 		);
 
 		const activeCaptionLayout = useMemo(() => {
@@ -3117,14 +3116,14 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 								</div>
 							</div>
 						) : null}
-								{activeCaptionLayout && autoCaptionSettings ? (
-									<div
-										className="absolute inset-x-0 flex justify-center"
-										style={{
-											bottom: `${autoCaptionSettings.bottomOffset}%`,
-											pointerEvents: onEditAutoCaption ? "auto" : "none",
-										}}
-									>
+						{activeCaptionLayout && autoCaptionSettings ? (
+							<div
+								className="absolute inset-x-0 flex justify-center"
+								style={{
+									bottom: `${autoCaptionSettings.bottomOffset}%`,
+									pointerEvents: onEditAutoCaption ? "auto" : "none",
+								}}
+							>
 								<div
 									style={{
 										maxWidth: `${autoCaptionSettings.maxWidth}%`,
@@ -3136,32 +3135,38 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 								>
 									<div
 										ref={captionBoxRef}
-												role={
-													onEditAutoCaption && !isCaptionEditing ? "button" : undefined
-												}
-												tabIndex={onEditAutoCaption && !isCaptionEditing ? 0 : undefined}
-												aria-label={
-													onEditAutoCaption && !isCaptionEditing ? "Edit current caption" : undefined
-												}
-												onClick={(event) => {
-													event.stopPropagation();
-													if (!isCaptionEditing) {
-														beginCaptionEdit();
-													}
-												}}
-												onPointerDown={(event) => {
-													event.stopPropagation();
-												}}
-												onKeyDown={(event) => {
-													if (!onEditAutoCaption || isCaptionEditing) {
-														return;
-													}
+										role={
+											onEditAutoCaption && !isCaptionEditing
+												? "button"
+												: undefined
+										}
+										tabIndex={
+											onEditAutoCaption && !isCaptionEditing ? 0 : undefined
+										}
+										aria-label={
+											onEditAutoCaption && !isCaptionEditing
+												? t("captions.editCurrent", "Edit current caption")
+												: undefined
+										}
+										onClick={(event) => {
+											event.stopPropagation();
+											if (!isCaptionEditing) {
+												beginCaptionEdit();
+											}
+										}}
+										onPointerDown={(event) => {
+											event.stopPropagation();
+										}}
+										onKeyDown={(event) => {
+											if (!onEditAutoCaption || isCaptionEditing) {
+												return;
+											}
 
-													if (event.key === "Enter" || event.key === " ") {
-														event.preventDefault();
-														beginCaptionEdit();
-													}
-												}}
+											if (event.key === "Enter" || event.key === " ") {
+												event.preventDefault();
+												beginCaptionEdit();
+											}
+										}}
 										style={{
 											backgroundColor: `rgba(0, 0, 0, ${autoCaptionSettings.backgroundOpacity})`,
 											fontFamily: getDefaultCaptionFontFamily(),
@@ -3199,122 +3204,141 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 												),
 											)}px`,
 											boxSizing: "border-box",
-													cursor:
-														onEditAutoCaption && !isCaptionEditing ? "text" : undefined,
-													pointerEvents: onEditAutoCaption ? "auto" : undefined,
+											cursor:
+												onEditAutoCaption && !isCaptionEditing
+													? "text"
+													: undefined,
+											pointerEvents: onEditAutoCaption ? "auto" : undefined,
 										}}
 									>
-												{captionEditSession ? (
-													<textarea
-														ref={captionEditInputRef}
-														value={captionEditSession.draft}
-														onChange={(event) => {
-															const draft = event.target.value;
-															setCaptionEditSession((session) => {
-																const nextSession = session ? { ...session, draft } : session;
-																captionEditSessionRef.current = nextSession;
-																return nextSession;
-															});
-														}}
-														onBlur={commitCaptionEdit}
-														onClick={(event) => event.stopPropagation()}
-														onKeyDown={(event) => {
-															if (event.key === "Escape") {
-																event.preventDefault();
-																cancelCaptionEdit();
-																return;
-															}
-
-															if (event.key === "Enter" && !event.shiftKey) {
-																event.preventDefault();
-																event.currentTarget.blur();
-															}
-														}}
-														rows={Math.max(1, activeCaptionLayout.visibleLines.length)}
-														aria-label="Edit current caption"
-														style={{
-															display: "block",
-															width: `${
-																captionEditTextMetrics?.widthPx ??
-																Math.max(
-																	48,
-																	activeCaptionLayout.visibleLines.reduce(
-																		(width, line) => Math.max(width, line.width),
-																		0,
-																	),
-																)
-															}px`,
-															maxWidth: `${
-																captionEditTextMetrics?.maxTextWidthPx ??
-																getCaptionTextMaxWidth(
-																	overlayRef.current?.clientWidth || 960,
-																	autoCaptionSettings.maxWidth,
-																	getCaptionScaledFontSize(
-																		autoCaptionSettings.fontSize,
-																		overlayRef.current?.clientWidth || 960,
-																		autoCaptionSettings.maxWidth,
-																	),
-																)
-															}px`,
-															minHeight: `${
-																Math.max(1, activeCaptionLayout.visibleLines.length) *
-																(captionEditTextMetrics?.fontSize ??
-																	getCaptionScaledFontSize(
-																		autoCaptionSettings.fontSize,
-																		overlayRef.current?.clientWidth || 960,
-																		autoCaptionSettings.maxWidth,
-																	)) *
-																CAPTION_LINE_HEIGHT
-															}px`,
-															resize: "none",
-															border: "0",
-															outline: "0",
-															padding: "0",
-															margin: "0",
-															overflow: "hidden",
-															background: "transparent",
-															color: autoCaptionSettings.textColor,
-															font: "inherit",
-															lineHeight: "inherit",
-															textAlign: "center",
-														}}
-													/>
-												) : (
-													activeCaptionLayout.visibleLines.map((line) => (
-											<div
-												key={`${activeCaptionLayout.blockKey}-${line.startWordIndex}`}
-												style={{
-													display: "flex",
-													justifyContent: "center",
-													flexWrap: "nowrap",
-													whiteSpace: "nowrap",
+										{captionEditSession ? (
+											<textarea
+												ref={captionEditInputRef}
+												value={captionEditSession.draft}
+												onChange={(event) => {
+													const draft = event.target.value;
+													setCaptionEditSession((session) => {
+														const nextSession = session
+															? { ...session, draft }
+															: session;
+														captionEditSessionRef.current = nextSession;
+														return nextSession;
+													});
 												}}
-											>
-												{line.words.map((word) => {
-													const visualState = getCaptionWordVisualState(
-														activeCaptionLayout.hasWordTimings,
-														word.state,
-													);
+												onBlur={commitCaptionEdit}
+												onClick={(event) => event.stopPropagation()}
+												onKeyDown={(event) => {
+													if (event.key === "Escape") {
+														event.preventDefault();
+														cancelCaptionEdit();
+														return;
+													}
 
-													return (
-														<span
-															key={`${activeCaptionLayout.blockKey}-${word.index}`}
-															style={{
-																display: "inline-block",
-																whiteSpace: "pre",
-																color: visualState.isInactive
-																	? autoCaptionSettings.inactiveTextColor
-																	: autoCaptionSettings.textColor,
-																opacity: visualState.opacity,
-															}}
-														>
-															{`${word.leadingSpace ? " " : ""}${word.text}`}
-														</span>
-													);
-												})}
-											</div>
-													))
+													if (event.key === "Enter" && !event.shiftKey) {
+														event.preventDefault();
+														event.currentTarget.blur();
+													}
+												}}
+												rows={Math.max(
+													1,
+													activeCaptionLayout.visibleLines.length,
 												)}
+												aria-label={t(
+													"captions.editCurrent",
+													"Edit current caption",
+												)}
+												style={{
+													display: "block",
+													width: `${
+														captionEditTextMetrics?.widthPx ??
+														Math.max(
+															48,
+															activeCaptionLayout.visibleLines.reduce(
+																(width, line) =>
+																	Math.max(width, line.width),
+																0,
+															),
+														)
+													}px`,
+													maxWidth: `${
+														captionEditTextMetrics?.maxTextWidthPx ??
+														getCaptionTextMaxWidth(
+															overlayRef.current?.clientWidth || 960,
+															autoCaptionSettings.maxWidth,
+															getCaptionScaledFontSize(
+																autoCaptionSettings.fontSize,
+																overlayRef.current?.clientWidth ||
+																	960,
+																autoCaptionSettings.maxWidth,
+															),
+														)
+													}px`,
+													minHeight: `${
+														Math.max(
+															1,
+															activeCaptionLayout.visibleLines.length,
+														) *
+														(
+															captionEditTextMetrics?.fontSize ??
+																getCaptionScaledFontSize(
+																	autoCaptionSettings.fontSize,
+																	overlayRef.current
+																		?.clientWidth || 960,
+																	autoCaptionSettings.maxWidth,
+																)
+														) *
+														CAPTION_LINE_HEIGHT
+													}px`,
+													resize: "none",
+													border: "0",
+													outline: "0",
+													padding: "0",
+													margin: "0",
+													overflow: "hidden",
+													background: "transparent",
+													color: autoCaptionSettings.textColor,
+													font: "inherit",
+													lineHeight: "inherit",
+													textAlign: "center",
+												}}
+											/>
+										) : (
+											activeCaptionLayout.visibleLines.map((line) => (
+												<div
+													key={`${activeCaptionLayout.blockKey}-${line.startWordIndex}`}
+													style={{
+														display: "flex",
+														justifyContent: "center",
+														flexWrap: "nowrap",
+														whiteSpace: "nowrap",
+													}}
+												>
+													{line.words.map((word) => {
+														const visualState =
+															getCaptionWordVisualState(
+																activeCaptionLayout.hasWordTimings,
+																word.state,
+															);
+
+														return (
+															<span
+																key={`${activeCaptionLayout.blockKey}-${word.index}`}
+																style={{
+																	display: "inline-block",
+																	whiteSpace: "pre",
+																	color: visualState.isInactive
+																		? autoCaptionSettings.inactiveTextColor
+																		: autoCaptionSettings.textColor,
+																	opacity: visualState.opacity,
+																}}
+															>
+																{`${word.leadingSpace ? " " : ""}${word.text}`}
+															</span>
+														);
+													})}
+												</div>
+											))
+										)}
 									</div>
 								</div>
 							</div>
@@ -3335,32 +3359,44 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 									top: annotationRecordingRect.y || 0,
 									width:
 										annotationRecordingRect.width ||
-										(overlayRef.current?.clientWidth || 800),
+										overlayRef.current?.clientWidth ||
+										800,
 									height:
 										annotationRecordingRect.height ||
-										(overlayRef.current?.clientHeight || 600),
+										overlayRef.current?.clientHeight ||
+										600,
 								}}
 							>
 								{(() => {
-									const filtered = (annotationRegions || []).filter((annotation) => {
-										if (
-											typeof annotation.startMs !== "number" ||
-											typeof annotation.endMs !== "number"
-										)
-											return false;
+									const filtered = (annotationRegions || []).filter(
+										(annotation) => {
+											if (
+												typeof annotation.startMs !== "number" ||
+												typeof annotation.endMs !== "number"
+											)
+												return false;
 
-										if (annotation.id === selectedAnnotationId) return true;
+											if (annotation.id === selectedAnnotationId) return true;
 
-										const timeMs = Math.round(currentTime * 1000);
-										return timeMs >= annotation.startMs && timeMs <= annotation.endMs;
-									});
+											const timeMs = Math.round(currentTime * 1000);
+											return (
+												timeMs >= annotation.startMs &&
+												timeMs <= annotation.endMs
+											);
+										},
+									);
 
-									const sorted = [...filtered].sort((a, b) => a.zIndex - b.zIndex);
+									const sorted = [...filtered].sort(
+										(a, b) => a.zIndex - b.zIndex,
+									);
 
 									const handleAnnotationClick = (clickedId: string) => {
 										if (!onSelectAnnotation) return;
 
-										if (clickedId === selectedAnnotationId && sorted.length > 1) {
+										if (
+											clickedId === selectedAnnotationId &&
+											sorted.length > 1
+										) {
 											const currentIndex = sorted.findIndex(
 												(a) => a.id === clickedId,
 											);
@@ -3378,21 +3414,25 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 											isSelected={annotation.id === selectedAnnotationId}
 											containerWidth={
 												annotationRecordingRect.width ||
-												(overlayRef.current?.clientWidth || 800)
+												overlayRef.current?.clientWidth ||
+												800
 											}
 											containerHeight={
 												annotationRecordingRect.height ||
-												(overlayRef.current?.clientHeight || 600)
+												overlayRef.current?.clientHeight ||
+												600
 											}
 											recordingRect={{
 												x: 0,
 												y: 0,
 												width:
 													annotationRecordingRect.width ||
-													(overlayRef.current?.clientWidth || 800),
+													overlayRef.current?.clientWidth ||
+													800,
 												height:
 													annotationRecordingRect.height ||
-													(overlayRef.current?.clientHeight || 600),
+													overlayRef.current?.clientHeight ||
+													600,
 											}}
 											sceneTransform={{ scale: 1, x: 0, y: 0 }}
 											interactionScale={annotationSceneTransform.scale}

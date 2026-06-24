@@ -14,13 +14,18 @@
 		"addedSuggestions": "已新增 {{count}} 個依互動產生的縮放建議",
 		"label": "縮放 {{index}}",
 		"addZoom": "新增縮放（Z）",
-		"suggestZooms": "依游標建議縮放"
+		"suggestZooms": "依游標建議縮放",
+		"auto": "Auto",
+		"manual": "Manual",
+		"cannotPlaceTitle": "Cannot place zoom here",
+		"cannotPlaceDescription": "Zoom already exists here or there is not enough room before the next zoom or clip end."
 	},
 	"trim": {
 		"cannotPlace": "無法在此處新增修剪",
 		"existsOrNoSpace": "此位置已存在修剪，或可用空間不足。",
 		"label": "修剪 {{index}}",
-		"addTrim": "新增修剪（T）"
+		"addTrim": "新增修剪（T）",
+		"shortLabel": "Trim"
 	},
 	"speed": {
 		"cannotPlace": "無法在此處新增速度區域",
@@ -33,9 +38,51 @@
 		"addAnnotation": "新增註解（A）"
 	},
 	"audio": {
-		"label": "音訊"
+		"label": "音訊",
+		"couldNotReadTitle": "Could not read audio file",
+		"couldNotReadDescription": "The selected file may be corrupted or in an unsupported format.",
+		"cannotPlaceTitle": "Cannot place audio here",
+		"noSpaceAtPlayheadDescription": "There is no remaining space at the current playhead position.",
+		"overlapOrNoSpaceDescription": "Audio region already exists at this location or not enough space available."
 	},
 	"addSpeed": "新增速度（S）",
 	"resizeLeft": "向左調整大小",
-	"resizeRight": "向右調整大小"
+	"resizeRight": "向右調整大小",
+	"aspect": {
+		"custom": "Custom",
+		"customHeight": "Custom aspect height",
+		"customWidth": "Custom aspect width",
+		"set": "Set"
+	},
+	"clip": {
+		"label": "Clip"
+	},
+	"controls": {
+		"pan": "Pan",
+		"zoom": "Zoom",
+		"sideScroll": "Side Scroll"
+	},
+	"hints": {
+		"addAnnotation": "Press A to add annotation",
+		"addAudio": "Click music icon to add audio",
+		"splitClip": "Press C to split clip"
+	},
+	"empty": {
+		"noVideoLoaded": "No Video Loaded",
+		"dragDropVideo": "Drag and drop a video to start editing"
+	},
+	"zoomSuggestions": {
+		"unavailableWithCursorLoop": "Suggested zooms are unavailable while cursor looping is enabled.",
+		"handlerUnavailable": "Zoom suggestion handler unavailable",
+		"noCursorTelemetryTitle": "No cursor telemetry available",
+		"noCursorTelemetryDescription": "Record a screencast first to generate cursor-based suggestions.",
+		"noUsableTelemetryTitle": "No usable cursor telemetry",
+		"noUsableTelemetryDescription": "The recording does not include enough cursor movement data.",
+		"noInteractionsTitle": "No clear interaction moments found",
+		"noInteractionsDescription": "Try a recording with pauses or clicks around important actions.",
+		"noSlotsTitle": "No auto-zoom slots available",
+		"noSlotsDescription": "Detected dwell points overlap existing zoom regions.",
+		"addedOne": "Added {{count}} interaction-based zoom suggestion",
+		"addedMany": "Added {{count}} interaction-based zoom suggestions"
+	}
 }

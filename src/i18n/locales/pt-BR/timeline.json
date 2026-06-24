@@ -14,13 +14,18 @@
 		"addedSuggestions": "{{count}} sugestão(ões) de zoom por interação adicionada(s)",
 		"label": "Zoom {{index}}",
 		"addZoom": "Adicionar zoom (Z)",
-		"suggestZooms": "Sugerir zooms pelo cursor"
+		"suggestZooms": "Sugerir zooms pelo cursor",
+		"auto": "Auto",
+		"manual": "Manual",
+		"cannotPlaceTitle": "Cannot place zoom here",
+		"cannotPlaceDescription": "Zoom already exists here or there is not enough room before the next zoom or clip end."
 	},
 	"trim": {
 		"cannotPlace": "Não é possível inserir corte aqui",
 		"existsOrNoSpace": "Já existe corte nesse local ou não há espaço suficiente.",
 		"label": "Corte {{index}}",
-		"addTrim": "Adicionar corte (T)"
+		"addTrim": "Adicionar corte (T)",
+		"shortLabel": "Trim"
 	},
 	"speed": {
 		"cannotPlace": "Não é possível inserir velocidade aqui",
@@ -33,9 +38,51 @@
 		"addAnnotation": "Adicionar anotação (A)"
 	},
 	"audio": {
-		"label": "Áudio"
+		"label": "Áudio",
+		"couldNotReadTitle": "Could not read audio file",
+		"couldNotReadDescription": "The selected file may be corrupted or in an unsupported format.",
+		"cannotPlaceTitle": "Cannot place audio here",
+		"noSpaceAtPlayheadDescription": "There is no remaining space at the current playhead position.",
+		"overlapOrNoSpaceDescription": "Audio region already exists at this location or not enough space available."
 	},
 	"addSpeed": "Adicionar velocidade (S)",
 	"resizeLeft": "Redimensionar para a esquerda",
-	"resizeRight": "Redimensionar para a direita"
+	"resizeRight": "Redimensionar para a direita",
+	"aspect": {
+		"custom": "Custom",
+		"customHeight": "Custom aspect height",
+		"customWidth": "Custom aspect width",
+		"set": "Set"
+	},
+	"clip": {
+		"label": "Clip"
+	},
+	"controls": {
+		"pan": "Pan",
+		"zoom": "Zoom",
+		"sideScroll": "Side Scroll"
+	},
+	"hints": {
+		"addAnnotation": "Press A to add annotation",
+		"addAudio": "Click music icon to add audio",
+		"splitClip": "Press C to split clip"
+	},
+	"empty": {
+		"noVideoLoaded": "No Video Loaded",
+		"dragDropVideo": "Drag and drop a video to start editing"
+	},
+	"zoomSuggestions": {
+		"unavailableWithCursorLoop": "Suggested zooms are unavailable while cursor looping is enabled.",
+		"handlerUnavailable": "Zoom suggestion handler unavailable",
+		"noCursorTelemetryTitle": "No cursor telemetry available",
+		"noCursorTelemetryDescription": "Record a screencast first to generate cursor-based suggestions.",
+		"noUsableTelemetryTitle": "No usable cursor telemetry",
+		"noUsableTelemetryDescription": "The recording does not include enough cursor movement data.",
+		"noInteractionsTitle": "No clear interaction moments found",
+		"noInteractionsDescription": "Try a recording with pauses or clicks around important actions.",
+		"noSlotsTitle": "No auto-zoom slots available",
+		"noSlotsDescription": "Detected dwell points overlap existing zoom regions.",
+		"addedOne": "Added {{count}} interaction-based zoom suggestion",
+		"addedMany": "Added {{count}} interaction-based zoom suggestions"
+	}
 }

@@ -5,6 +5,7 @@ import {
 	Rocket,
 } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
+import { useScopedT } from "@/contexts/I18nContext";
 
 type UpdateToastPayload = {
 	version: string;
@@ -21,12 +22,6 @@ type UpdateToastPayload = {
 };
 
 const DEFAULT_REMINDER_DELAY_MS = 3 * 60 * 60 * 1000;
-const REMINDER_OPTIONS = [
-	{ label: "1 hour", value: 1 * 60 * 60 * 1000 },
-	{ label: "3 hours", value: 3 * 60 * 60 * 1000 },
-	{ label: "Tomorrow", value: 24 * 60 * 60 * 1000 },
-	{ label: "3 days", value: 3 * 24 * 60 * 60 * 1000 },
-];
 
 function formatBytes(value: number | undefined) {
 	if (value === undefined || !Number.isFinite(value) || value <= 0) {
@@ -41,27 +36,37 @@ function formatBytes(value: number | undefined) {
 	return `${megabytes.toFixed(megabytes >= 100 ? 0 : 1)} MB`;
 }
 
-function getToastTitle(payload: UpdateToastPayload) {
+function getToastTitle(payload: UpdateToastPayload, t: ReturnType<typeof useScopedT>) {
 	if (payload.isPreview) {
-		return "Update Prompt Preview";
+		return t("updateToast.previewTitle", "Update Prompt Preview");
 	}
 
 	switch (payload.phase) {
 		case "available":
-			return `Recordly ${payload.version} is available`;
+			return t("updateToast.availableTitle", "Recordly {{version}} is available", {
+				version: payload.version,
+			});
 		case "downloading":
-			return `Installing Recordly ${payload.version}`;
+			return t("updateToast.downloadingTitle", "Installing Recordly {{version}}", {
+				version: payload.version,
+			});
 		case "ready":
-			return `Recordly ${payload.version} is ready`;
+			return t("updateToast.readyTitle", "Recordly {{version}} is ready", {
+				version: payload.version,
+			});
 		case "error":
 			return payload.primaryAction === "retry-check"
-				? "Could not check for updates"
-				: `Recordly ${payload.version} needs attention`;
+				? t("updateToast.retryCheckErrorTitle", "Could not check for updates")
+				: t("updateToast.attentionTitle", "Recordly {{version}} needs attention", {
+						version: payload.version,
+					});
 	}
 }
 
-function getPrimaryButtonLabel(payload: UpdateToastPayload) {
-	return payload.primaryAction === "retry-check" ? "Try Again" : "Install & Restart";
+function getPrimaryButtonLabel(payload: UpdateToastPayload, t: ReturnType<typeof useScopedT>) {
+	return payload.primaryAction === "retry-check"
+		? t("updateToast.tryAgain", "Try Again")
+		: t("updateToast.installAndRestart", "Install & Restart");
 }
 
 function getPhaseIcon(payload: UpdateToastPayload) {
@@ -78,8 +83,15 @@ function getPhaseIcon(payload: UpdateToastPayload) {
 }
 
 export function UpdateToastWindow() {
+	const t = useScopedT("launch");
 	const [payload, setPayload] = useState<UpdateToastPayload | null>(null);
 	const [reminderDelayMs, setReminderDelayMs] = useState(DEFAULT_REMINDER_DELAY_MS);
+	const reminderOptions = [
+		{ label: t("updateToast.remindOneHour", "1 hour"), value: 1 * 60 * 60 * 1000 },
+		{ label: t("updateToast.remindThreeHours", "3 hours"), value: 3 * 60 * 60 * 1000 },
+		{ label: t("updateToast.remindTomorrow", "Tomorrow"), value: 24 * 60 * 60 * 1000 },
+		{ label: t("updateToast.remindThreeDays", "3 days"), value: 3 * 24 * 60 * 60 * 1000 },
+	];
 
 	useEffect(() => {
 		let mounted = true;
@@ -131,15 +143,21 @@ export function UpdateToastWindow() {
 	const phaseStats: Array<{ label: string; value: string }> = [];
 	if (payload?.phase === "downloading") {
 		if (downloadedLabel && totalLabel) {
-			phaseStats.push({ label: "Downloaded", value: `${downloadedLabel} / ${totalLabel}` });
+			phaseStats.push({
+				label: t("updateToast.downloaded", "Downloaded"),
+				value: `${downloadedLabel} / ${totalLabel}`,
+			});
 		} else if (downloadedLabel) {
-			phaseStats.push({ label: "Downloaded", value: downloadedLabel });
+			phaseStats.push({
+				label: t("updateToast.downloaded", "Downloaded"),
+				value: downloadedLabel,
+			});
 		}
 		if (remainingLabel) {
-			phaseStats.push({ label: "Left", value: remainingLabel });
+			phaseStats.push({ label: t("updateToast.left", "Left"), value: remainingLabel });
 		}
 		if (speedLabel) {
-			phaseStats.push({ label: "Speed", value: `${speedLabel}/s` });
+			phaseStats.push({ label: t("updateToast.speed", "Speed"), value: `${speedLabel}/s` });
 		}
 	}
 
@@ -269,7 +287,7 @@ export function UpdateToastWindow() {
 				<div style={iconBoxStyle}>{getPhaseIcon(payload)}</div>
 				<div style={{ minWidth: 0, flex: 1 }}>
 					<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-						<p style={titleStyle}>{getToastTitle(payload)}</p>
+						<p style={titleStyle}>{getToastTitle(payload, t)}</p>
 						{payload.isPreview ? (
 							<span
 								style={{
@@ -284,7 +302,7 @@ export function UpdateToastWindow() {
 									border: "1px solid rgba(37, 99, 235, 0.18)",
 								}}
 							>
-								Dev
+								{t("updateToast.devBadge", "Dev")}
 							</span>
 						) : null}
 					</div>
@@ -326,7 +344,9 @@ export function UpdateToastWindow() {
 										color: "#dbeafe",
 									}}
 								>
-									{normalizedProgress}% complete
+									{t("updateToast.completePercent", "{{percent}}% complete", {
+										percent: normalizedProgress,
+									})}
 								</span>
 								{phaseStats.map((stat) => (
 									<span
@@ -364,7 +384,7 @@ export function UpdateToastWindow() {
 									onClick={handlePrimaryAction}
 									style={primaryButtonStyle}
 								>
-									{getPrimaryButtonLabel(payload)}
+									{getPrimaryButtonLabel(payload, t)}
 								</button>
 								<select
 									value={String(reminderDelayMs)}
@@ -373,7 +393,7 @@ export function UpdateToastWindow() {
 									}}
 									style={selectStyle}
 								>
-									{REMINDER_OPTIONS.map((option) => (
+									{reminderOptions.map((option) => (
 										<option key={option.value} value={option.value}>
 											{option.label}
 										</option>
@@ -384,7 +404,7 @@ export function UpdateToastWindow() {
 									onClick={handleLater}
 									style={subtleButtonStyle}
 								>
-									Later
+									{t("updateToast.later", "Later")}
 								</button>
 							</>
 						) : null}

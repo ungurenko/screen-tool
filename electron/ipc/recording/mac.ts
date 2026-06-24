@@ -1,6 +1,7 @@
 import type { ChildProcessWithoutNullStreams } from "node:child_process";
 import fs from "node:fs/promises";
 import { BrowserWindow } from "electron";
+import { tElectron } from "../../i18n";
 import {
 	persistPendingCursorTelemetry,
 	snapshotCursorTelemetryForPersistence,
@@ -163,7 +164,7 @@ export function attachNativeCaptureLifecycle(process: ChildProcessWithoutNullStr
 		setNativeCaptureSystemAudioPath(null);
 		setNativeCaptureMicrophonePath(null);
 
-		const sourceName = selectedSource?.name ?? "Screen";
+		const sourceName = selectedSource?.name ?? tElectron("system.screen", "Screen");
 		BrowserWindow.getAllWindows().forEach((window) => {
 			if (!window.isDestroyed()) {
 				window.webContents.send("recording-state-changed", {

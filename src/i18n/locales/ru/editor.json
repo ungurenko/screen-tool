@@ -42,9 +42,16 @@
 		"imageUploadError": "Загрузите файл JPG, PNG, GIF, или WebP.",
 		"blurStrength": "Сила размытия: {{strength}}",
 		"solidColor": "Сплошной цвет (цензура)",
-		"borderRadius": "Скругление углов"
+		"borderRadius": "Скругление углов",
+		"arrowDirectionOption": "Направление стрелки: {{direction}}",
+		"black": "Чёрный",
+		"customColor": "Свой цвет",
+		"customFonts": "Свои шрифты",
+		"imageUploadErrorDescription": "Поддерживаются JPG, PNG, GIF и WebP.",
+		"imageUploadFailed": "Не удалось загрузить изображение",
+		"imageUploadFailedDescription": "Попробуйте другой файл изображения.",
+		"white": "Белый"
 	},
-
 	"fontStyles": {
 		"classic": "Классический",
 		"editor": "Базовый",
@@ -93,7 +100,8 @@
 		"emailLabel": "Email",
 		"xLabel": "X",
 		"reportIssue": "Сообщить о проблеме / отправить отзыв",
-		"openFailed": "Не удалось открыть ссылку."
+		"openFailed": "Не удалось открыть ссылку.",
+		"discord": "Открыть Discord"
 	},
 	"keyboardShortcuts": {
 		"trigger": "Горячие клавиши",
@@ -111,7 +119,34 @@
 		"showInFolder": "Показать в папке"
 	},
 	"project": {
-		"untitled": "Без названия"
+		"untitled": "Без названия",
+		"current": "Текущий",
+		"import": "Импорт",
+		"importFailed": "Не удалось импортировать файл",
+		"invalidFileFormat": "Неверный формат файла проекта",
+		"loaded": "Проект загружен",
+		"loadedFrom": "Проект загружен из {{path}}",
+		"loadFailed": "Не удалось загрузить проект",
+		"mediaImported": "Медиа импортировано",
+		"nameAlreadyUsed": "Другое имя проекта уже занято",
+		"nameRequired": "Введите название проекта",
+		"noMediaSelected": "Медиафайл не выбран",
+		"noPreview": "Предпросмотра пока нет",
+		"noSavedProjects": "Сохранённых проектов пока нет",
+		"openCanceled": "Открытие проекта отменено",
+		"pathNoLongerTrusted": "Путь проекта больше не считается доверенным. Используйте «Сохранить как», чтобы выбрать файл проекта.",
+		"projects": "Проекты",
+		"renameInput": "Название проекта",
+		"renameTitle": "Переименовать проект",
+		"saveCanceled": "Сохранение проекта отменено",
+		"saved": "Проект сохранён",
+		"saveDescription": "Назовите проект. Он будет сохранён в папку проектов Recordly.",
+		"savedTo": "Проект сохранён в {{path}}",
+		"saveFailed": "Не удалось сохранить проект",
+		"saveNameLabel": "Название проекта",
+		"saveTitle": "Сохранить проект",
+		"saving": "Сохранение...",
+		"unableToVerifyName": "Не удалось проверить проект для выбранного имени"
 	},
 	"nativeCaptureUnavailable": {
 		"title": "Всё в порядке, но мы не можем отобразить анимированное наложение курсора.",
@@ -125,10 +160,33 @@
 		"completePercent": "Готово: {{percent}}%",
 		"issue": "Ошибка экспорта",
 		"complete": "Экспорт завершён",
-		"savedSuccessfully": "Файл сохранён"
+		"savedSuccessfully": "Файл сохранён",
+		"finalizingPercent": "Завершение: {{percent}}%",
+		"muxingAndSaving": "Собираем звук и сохраняем файл...",
+		"muxingAndSavingPercent": "Сборка и сохранение: {{percent}}%",
+		"renderingAudio": "Обработка звука: {{percent}}%",
+		"renderSpeed": "Скорость обработки: {{fps}} FPS",
+		"saving": "Открываем окно сохранения..."
 	},
 	"export": {
-		"processingAudioEdits": "Обработка звука (скорость, наложения)"
+		"processingAudioEdits": "Обработка звука (скорость, наложения)",
+		"canceled": "Экспорт отменён",
+		"exportedTo": "Экспортировано в {{path}}",
+		"failed": "Не удалось экспортировать",
+		"failedToSaveGif": "Не удалось сохранить GIF",
+		"failedToSaveVideo": "Не удалось сохранить видео",
+		"failedWithError": "Не удалось экспортировать: {{error}}",
+		"gifFailed": "Не удалось экспортировать GIF",
+		"noOutput": "Экспорт не создал файл",
+		"noPendingSave": "Нет готового экспорта для сохранения",
+		"revealError": "Не удалось показать в папке: {{error}}",
+		"revealFailed": "Не удалось показать файл в папке.",
+		"revealFailedWithError": "Не удалось показать файл в папке: {{error}}",
+		"saveCanceled": "Сохранение экспорта отменено",
+		"saveCanceledRetry": "Сохранение отменено. Можно сохранить снова без повторного экспорта.",
+		"saveCanceledTryAgain": "Сохранение отменено. Можно попробовать ещё раз.",
+		"saveDialogCanceledRetry": "Окно сохранения закрыто. Нажмите «Сохранить ещё раз», чтобы сохранить без повторной обработки.",
+		"videoExported": "Видео успешно экспортировано"
 	},
 	"toolbar": {
 		"addLayer": "Добавить слой",
@@ -136,7 +194,62 @@
 	},
 	"timeline": {
 		"expand": "Развернуть таймлайн",
-		"collapse": "Свернуть таймлайн"
+		"collapse": "Свернуть таймлайн",
+		"speedClipOverlap": "Изменение скорости наложится на следующий клип. Перед замедлением переместите или разделите клипы.",
+		"speedZoomOverlap": "Изменение скорости наложится на другой зум. Сначала переместите или удалите пересекающийся зум."
 	},
-	"openRecordingsFolder": "Открыть папку с записями"
+	"openRecordingsFolder": "Открыть папку с записями",
+	"account": {
+		"comingSoon": "Аккаунт скоро появится",
+		"title": "Аккаунт"
+	},
+	"audioFallback": {
+		"loadFailed": "Не удалось загрузить дополнительные аудиодорожки. В воспроизведении и экспорте может не быть звука микрофона.",
+		"loadFailedWithError": "Не удалось загрузить дополнительные аудиодорожки: {{error}}"
+	},
+	"errors": {
+		"unknown": "Неизвестная ошибка"
+	},
+	"presets": {
+		"deleteAriaLabel": "Удалить пресет {{name}}",
+		"empty": "Пресетов пока нет.",
+		"errors": {
+			"deleteFailed": "Не удалось удалить пресет. Проверьте настройки хранилища браузера и попробуйте снова.",
+			"duplicateName": "Пресет с таким названием уже есть.",
+			"nameRequired": "Введите название пресета.",
+			"saveFailed": "Не удалось сохранить пресет. Проверьте настройки хранилища браузера и попробуйте снова."
+		},
+		"label": "Пресеты",
+		"namePlaceholder": "Название пресета",
+		"open": "Открыть пресеты",
+		"saveCurrentAs": "Сохранить текущий пресет как",
+		"savedList": "Сохранённые пресеты",
+		"toasts": {
+			"applied": "Пресет «{{name}}» применён",
+			"deleted": "Пресет «{{name}}» удалён",
+			"saved": "Пресет «{{name}}» сохранён"
+		}
+	},
+	"theme": {
+		"appearance": "Оформление",
+		"dark": "Тёмная",
+		"light": "Светлая",
+		"system": "Как в системе"
+	},
+	"unsavedChanges": {
+		"actions": {
+			"importFile": "импортировать файл",
+			"openAnotherProject": "открыть другой проект"
+		},
+		"description": "Сохранить текущий проект перед тем, как {{action}}?",
+		"discard": "Сбросить изменения",
+		"save": "Сохранить проект",
+		"title": "Есть несохранённые изменения"
+	},
+	"video": {
+		"loading": "Загрузка видео...",
+		"noSourceLoaded": "Исходное видео не загружено",
+		"notReady": "Видео ещё не готово",
+		"noVideoLoaded": "Видео не загружено"
+	}
 }

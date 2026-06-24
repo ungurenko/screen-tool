@@ -4,7 +4,8 @@
 		"editorTitle": "Recordly Editor",
 		"subtitle": "Schermopname en bewerking",
 		"language": "Taal",
-		"manageRecordings": "Opnamemap openen"
+		"manageRecordings": "Opnamemap openen",
+		"notifications": "Meldingen"
 	},
 	"actions": {
 		"cancel": "Annuleren",

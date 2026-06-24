@@ -5,12 +5,7 @@ import path from "node:path";
 import type { Readable, Writable } from "node:stream";
 import type { SaveDialogOptions } from "electron";
 import { app, BrowserWindow, dialog, ipcMain } from "electron";
-import {
-	parseCaptionSidecarPayload,
-	type CaptionSidecarPayload,
-	withCaptionSidecarMessage,
-	writeCaptionSidecarsBestEffort,
-} from "./exportCaptionSidecars";
+import { tElectron } from "../../i18n";
 import {
 	closeExportStream,
 	isOwnedExportPath,
@@ -51,6 +46,12 @@ import {
 } from "../nativeVideoExport";
 import { isAllowedLocalReadPath, resolveApprovedLocalMediaPath } from "../project/manager";
 import { approveUserPath } from "../utils";
+import {
+	type CaptionSidecarPayload,
+	parseCaptionSidecarPayload,
+	withCaptionSidecarMessage,
+	writeCaptionSidecarsBestEffort,
+} from "./exportCaptionSidecars";
 
 function getPartialExportDestinationPath(destinationPath: string) {
 	const parsed = path.parse(destinationPath);
@@ -65,7 +66,10 @@ function getInMemoryExportTooLargeMessage(byteLength: number) {
 		return null;
 	}
 
-	return "Export is too large for the legacy in-memory save path. Please retry with temp-file streaming enabled.";
+	return tElectron(
+		"export.tooLarge",
+		"Export is too large for the legacy in-memory save path. Please retry with temp-file streaming enabled.",
+	);
 }
 
 export async function moveExportedTempFile(tempPath: string, destinationPath: string) {
@@ -75,12 +79,7 @@ export async function moveExportedTempFile(tempPath: string, destinationPath: st
 		return;
 	} catch (error) {
 		const code = (error as NodeJS.ErrnoException).code;
-		if (
-			code !== "EXDEV" &&
-			code !== "EPERM" &&
-			code !== "ENOTEMPTY" &&
-			code !== "EEXIST"
-		) {
+		if (code !== "EXDEV" && code !== "EPERM" && code !== "ENOTEMPTY" && code !== "EEXIST") {
 			throw error;
 		}
 		// Cross-device or Windows permission quirks — fall back to copy + unlink so
@@ -113,9 +112,7 @@ export async function moveExportedTempFile(tempPath: string, destinationPath: st
 				await fs.rename(partialDestinationPath, destinationPath);
 			} catch (replaceError) {
 				if (movedExistingDestination) {
-					await fs
-						.rename(backupDestinationPath, destinationPath)
-						.catch(() => undefined);
+					await fs.rename(backupDestinationPath, destinationPath).catch(() => undefined);
 				}
 				throw replaceError;
 			}
@@ -855,11 +852,13 @@ export function registerExportHandlers() {
 				// Determine file type from extension
 				const isGif = fileName.toLowerCase().endsWith(".gif");
 				const filters = isGif
-					? [{ name: "GIF Image", extensions: ["gif"] }]
-					: [{ name: "MP4 Video", extensions: ["mp4"] }];
+					? [{ name: tElectron("export.gifImage", "GIF Image"), extensions: ["gif"] }]
+					: [{ name: tElectron("export.mp4Video", "MP4 Video"), extensions: ["mp4"] }];
 				const parentWindow = BrowserWindow.fromWebContents(event.sender);
 				const saveDialogOptions: SaveDialogOptions = {
-					title: isGif ? "Save Exported GIF" : "Save Exported Video",
+					title: isGif
+						? tElectron("export.saveGif", "Save Exported GIF")
+						: tElectron("export.saveVideo", "Save Exported Video"),
 					defaultPath: path.join(app.getPath("downloads"), fileName),
 					filters,
 					properties: ["createDirectory", "showOverwriteConfirmation"],
@@ -873,7 +872,7 @@ export function registerExportHandlers() {
 					return {
 						success: false,
 						canceled: true,
-						message: "Export canceled",
+						message: tElectron("export.canceled", "Export canceled"),
 					};
 				}
 
@@ -888,7 +887,7 @@ export function registerExportHandlers() {
 					success: true,
 					path: result.filePath,
 					message: withCaptionSidecarMessage(
-						"Video exported successfully",
+						tElectron("export.videoExported", "Video exported successfully"),
 						captionSidecarResult,
 					),
 				};
@@ -896,7 +895,7 @@ export function registerExportHandlers() {
 				console.error("Failed to save exported video:", error);
 				return {
 					success: false,
-					message: "Failed to save exported video",
+					message: tElectron("export.failedSaveVideo", "Failed to save exported video"),
 					error: String(error),
 				};
 			}
@@ -936,7 +935,7 @@ export function registerExportHandlers() {
 					success: true,
 					path: resolvedPath,
 					message: withCaptionSidecarMessage(
-						"Video exported successfully",
+						tElectron("export.videoExported", "Video exported successfully"),
 						captionSidecarResult,
 					),
 					canceled: false,
@@ -945,7 +944,7 @@ export function registerExportHandlers() {
 				console.error("Failed to write exported video to path:", error);
 				return {
 					success: false,
-					message: "Failed to write exported video",
+					message: tElectron("export.failedSaveVideo", "Failed to save exported video"),
 					canceled: false,
 					error: String(error),
 				};
@@ -1002,7 +1001,7 @@ export function registerExportHandlers() {
 						path: resolvedPath,
 						canceled: false,
 						message: withCaptionSidecarMessage(
-							"Video exported successfully",
+							tElectron("export.videoExported", "Video exported successfully"),
 							captionSidecarResult,
 						),
 					};
@@ -1010,11 +1009,13 @@ export function registerExportHandlers() {
 
 				const isGif = fileName.toLowerCase().endsWith(".gif");
 				const filters = isGif
-					? [{ name: "GIF Image", extensions: ["gif"] }]
-					: [{ name: "MP4 Video", extensions: ["mp4"] }];
+					? [{ name: tElectron("export.gifImage", "GIF Image"), extensions: ["gif"] }]
+					: [{ name: tElectron("export.mp4Video", "MP4 Video"), extensions: ["mp4"] }];
 				const parentWindow = BrowserWindow.fromWebContents(event.sender);
 				const saveDialogOptions: SaveDialogOptions = {
-					title: isGif ? "Save Exported GIF" : "Save Exported Video",
+					title: isGif
+						? tElectron("export.saveGif", "Save Exported GIF")
+						: tElectron("export.saveVideo", "Save Exported Video"),
 					defaultPath: path.join(app.getPath("downloads"), fileName),
 					filters,
 					properties: ["createDirectory", "showOverwriteConfirmation"],
@@ -1030,7 +1031,7 @@ export function registerExportHandlers() {
 					return {
 						success: false,
 						canceled: true,
-						message: "Export canceled",
+						message: tElectron("export.canceled", "Export canceled"),
 					};
 				}
 
@@ -1047,7 +1048,7 @@ export function registerExportHandlers() {
 					path: result.filePath,
 					canceled: false,
 					message: withCaptionSidecarMessage(
-						"Video exported successfully",
+						tElectron("export.videoExported", "Video exported successfully"),
 						captionSidecarResult,
 					),
 				};
@@ -1056,7 +1057,7 @@ export function registerExportHandlers() {
 				return {
 					success: false,
 					canceled: false,
-					message: "Failed to save exported video",
+					message: tElectron("export.failedSaveVideo", "Failed to save exported video"),
 					error: String(error),
 				};
 			}

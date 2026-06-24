@@ -4,6 +4,7 @@ import type { MessageBoxOptions, MessageBoxReturnValue } from "electron";
 import { app, BrowserWindow, dialog } from "electron";
 import { autoUpdater } from "electron-updater";
 import { USER_DATA_PATH } from "./appPaths";
+import { tElectron } from "./i18n";
 
 const UPDATE_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 export const UPDATE_REMINDER_DELAY_MS = 3 * 60 * 60 * 1000;
@@ -182,7 +183,10 @@ function createAvailableUpdateToastPayload(version: string): UpdateToastPayload 
 	return {
 		version,
 		phase: "available",
-		detail: "Install the latest version now, or remind yourself to come back to it later.",
+		detail: tElectron(
+			"updates.availableDetail",
+			"Install the latest version now, or remind yourself to come back to it later.",
+		),
 		delayMs: UPDATE_REMINDER_DELAY_MS,
 		primaryAction: "install-and-restart",
 	};
@@ -219,10 +223,20 @@ function createDownloadingUpdateToastPayload(
 		phase: "downloading",
 		detail:
 			normalizedProgress >= 100
-				? "Finishing the update download. Recordly will restart as soon as the installer is ready."
+				? tElectron(
+						"updates.downloadFinishing",
+						"Finishing the update download. Recordly will restart as soon as the installer is ready.",
+					)
 				: remainingMb !== null
-					? `${remainingMb.toFixed(1)} MB left before Recordly restarts.`
-					: "Downloading the update now. Recordly will restart when it finishes.",
+					? tElectron(
+							"updates.downloadRemaining",
+							"{{mb}} MB left before Recordly restarts.",
+							{ mb: remainingMb.toFixed(1) },
+						)
+					: tElectron(
+							"updates.downloadingDetail",
+							"Downloading the update now. Recordly will restart when it finishes.",
+						),
 		delayMs: UPDATE_REMINDER_DELAY_MS,
 		progressPercent: normalizedProgress,
 		transferredBytes,
@@ -237,7 +251,10 @@ function createDownloadedUpdateToastPayload(version: string): UpdateToastPayload
 	return {
 		version,
 		phase: "ready",
-		detail: "The update is ready. Install and restart now, or remind yourself later.",
+		detail: tElectron(
+			"updates.readyDetail",
+			"The update is ready. Install and restart now, or remind yourself later.",
+		),
 		delayMs: UPDATE_REMINDER_DELAY_MS,
 		primaryAction: "install-and-restart",
 	};
@@ -247,7 +264,9 @@ function createUpdateErrorToastPayload(version: string, error: unknown): UpdateT
 	return {
 		version,
 		phase: "error",
-		detail: `The update could not be downloaded. ${String(error)}`,
+		detail: tElectron("updates.errorDetail", "The update could not be downloaded. {{error}}", {
+			error: String(error),
+		}),
 		delayMs: UPDATE_REMINDER_DELAY_MS,
 		primaryAction: "install-and-restart",
 	};
@@ -321,7 +340,10 @@ function simulateDevPreviewDownload(sendToRenderer?: UpdateToastSender) {
 			emitUpdateToastState(sendToRenderer, {
 				...createDownloadedUpdateToastPayload(DEV_UPDATE_PREVIEW_VERSION),
 				isPreview: true,
-				detail: "Development preview: the update is ready to install. No real update will be installed.",
+				detail: tElectron(
+					"updates.previewReadyDetail",
+					"Development preview: the update is ready to install. No real update will be installed.",
+				),
 			});
 			return;
 		}
@@ -400,15 +422,27 @@ export async function downloadAvailableUpdate(
 	}
 
 	if (!availableVersion) {
-		return { success: false, message: "No update is ready to download." };
+		return {
+			success: false,
+			message: tElectron("updates.noReadyDownload", "No update is ready to download."),
+		};
 	}
 
 	if (pendingDownloadedVersion === availableVersion) {
-		return { success: false, message: "This update has already been downloaded." };
+		return {
+			success: false,
+			message: tElectron(
+				"updates.alreadyDownloaded",
+				"This update has already been downloaded.",
+			),
+		};
 	}
 
 	if (downloadInProgress) {
-		return { success: false, message: "This update is already downloading." };
+		return {
+			success: false,
+			message: tElectron("updates.alreadyDownloading", "This update is already downloading."),
+		};
 	}
 
 	clearDeferredReminderTimer();
@@ -419,7 +453,9 @@ export async function downloadAvailableUpdate(
 	setUpdateStatusSummary({
 		status: "downloading",
 		availableVersion,
-		detail: `Downloading Recordly ${availableVersion}`,
+		detail: tElectron("updates.downloadingSummary", "Downloading Recordly {{version}}", {
+			version: availableVersion,
+		}),
 	});
 	emitUpdateToastState(
 		sendToRenderer,
@@ -457,7 +493,10 @@ export function deferUpdateReminder(
 ) {
 	const payload = getReminderPayload();
 	if (!payload) {
-		return { success: false, message: "No update reminder is ready yet." };
+		return {
+			success: false,
+			message: tElectron("updates.noReminder", "No update reminder is ready yet."),
+		};
 	}
 
 	clearDeferredReminderTimer();
@@ -487,7 +526,10 @@ export function deferUpdateReminder(
 export function skipAvailableUpdateVersion(sendToRenderer?: UpdateToastSender) {
 	const versionToSkip = pendingDownloadedVersion ?? availableVersion;
 	if (!versionToSkip) {
-		return { success: false, message: "No update is available to skip." };
+		return {
+			success: false,
+			message: tElectron("updates.noSkipAvailable", "No update is available to skip."),
+		};
 	}
 
 	skippedVersion = versionToSkip;
@@ -517,7 +559,10 @@ export function previewUpdateToast(sendToRenderer: UpdateToastSender) {
 	return emitUpdateToastState(sendToRenderer, {
 		version: DEV_UPDATE_PREVIEW_VERSION,
 		phase: "available",
-		detail: "This is a development preview of the in-app update toast.",
+		detail: tElectron(
+			"updates.previewDetail",
+			"This is a development preview of the in-app update toast.",
+		),
 		delayMs: UPDATE_REMINDER_DELAY_MS,
 		isPreview: true,
 	});
@@ -530,10 +575,18 @@ async function showAvailableUpdateDialog(
 ) {
 	const result = await showMessageBox(getMainWindow, {
 		type: "info",
-		title: "Update Available",
-		message: `Recordly ${version} is available.`,
-		detail: "Install and restart now, or remind me later.",
-		buttons: ["Install & Restart", "Later"],
+		title: tElectron("updates.availableTitle", "Update Available"),
+		message: tElectron("updates.availableMessage", "Recordly {{version}} is available.", {
+			version,
+		}),
+		detail: tElectron(
+			"updates.availableDialogDetail",
+			"Install and restart now, or remind me later.",
+		),
+		buttons: [
+			tElectron("updates.installRestart", "Install & Restart"),
+			tElectron("updates.later", "Later"),
+		],
 		defaultId: 0,
 		cancelId: 1,
 		noLink: true,
@@ -555,14 +608,29 @@ async function showDownloadedUpdateDialog(
 	const isPreview = Boolean(options?.isPreview);
 	const result = await showMessageBox(getMainWindow, {
 		type: "info",
-		title: "Update Ready",
+		title: tElectron("updates.readyTitle", "Update Ready"),
 		message: isPreview
-			? `Recordly ${version} is ready to install.`
-			: `Recordly ${version} has been downloaded.`,
+			? tElectron(
+					"updates.readyPreviewMessage",
+					"Recordly {{version}} is ready to install.",
+					{ version },
+				)
+			: tElectron("updates.readyMessage", "Recordly {{version}} has been downloaded.", {
+					version,
+				}),
 		detail: isPreview
-			? "Development preview of the native update prompt. No real update will be installed."
-			: "Install and restart now, or remind me later.",
-		buttons: ["Install & Restart", "Later"],
+			? tElectron(
+					"updates.readyPreviewDetail",
+					"Development preview of the native update prompt. No real update will be installed.",
+				)
+			: tElectron(
+					"updates.availableDialogDetail",
+					"Install and restart now, or remind me later.",
+				),
+		buttons: [
+			tElectron("updates.installRestart", "Install & Restart"),
+			tElectron("updates.later", "Later"),
+		],
 		defaultId: 0,
 		cancelId: 1,
 		noLink: true,
@@ -572,9 +640,12 @@ async function showDownloadedUpdateDialog(
 		if (isPreview) {
 			await showMessageBox(getMainWindow, {
 				type: "info",
-				title: "Preview Only",
-				message: "No real update was installed.",
-				detail: "This was only a manual development preview of the update prompt.",
+				title: tElectron("updates.previewOnlyTitle", "Preview Only"),
+				message: tElectron("updates.previewOnlyMessage", "No real update was installed."),
+				detail: tElectron(
+					"updates.previewOnlyDetail",
+					"This was only a manual development preview of the update prompt.",
+				),
 			});
 			return;
 		}
@@ -606,11 +677,20 @@ export async function checkForAppUpdates(
 		if (options?.manual) {
 			await showMessageBox(getMainWindow, {
 				type: "info",
-				title: "Updates Not Enabled",
-				message: "Auto-updates are only available in packaged releases.",
+				title: tElectron("updates.notEnabledTitle", "Updates Not Enabled"),
+				message: tElectron(
+					"updates.notEnabledMessage",
+					"Auto-updates are only available in packaged releases.",
+				),
 				detail: AUTO_UPDATES_DISABLED
-					? "This local build disables auto-updates by default. Configure your own update feed, then set RECORDLY_ENABLE_AUTO_UPDATES=1."
-					: "Set RECORDLY_UPDATE_FEED_URL to your own update feed before enabling packaged auto-updates.",
+					? tElectron(
+							"updates.disabledDetail",
+							"This local build disables auto-updates by default. Configure your own update feed, then set RECORDLY_ENABLE_AUTO_UPDATES=1.",
+						)
+					: tElectron(
+							"updates.feedUrlDetail",
+							"Set RECORDLY_UPDATE_FEED_URL to your own update feed before enabling packaged auto-updates.",
+						),
 			});
 		}
 		return;
@@ -623,7 +703,10 @@ export async function checkForAppUpdates(
 
 	manualCheckRequested = Boolean(options?.manual);
 	updateCheckInProgress = true;
-	setUpdateStatusSummary({ status: "checking", detail: "Checking for updates..." });
+	setUpdateStatusSummary({
+		status: "checking",
+		detail: tElectron("updates.checking", "Checking for updates..."),
+	});
 	writeUpdaterLog(`Starting ${manualCheckRequested ? "manual" : "automatic"} update check.`);
 
 	try {
@@ -665,7 +748,7 @@ export function setupAutoUpdates(
 		setUpdateStatusSummary({
 			status: "checking",
 			availableVersion: null,
-			detail: "Checking for updates...",
+			detail: tElectron("updates.checking", "Checking for updates..."),
 		});
 		writeUpdaterLog("electron-updater emitted checking-for-update.");
 	});
@@ -681,7 +764,9 @@ export function setupAutoUpdates(
 		setUpdateStatusSummary({
 			status: "available",
 			availableVersion: info.version,
-			detail: `Recordly ${info.version} is available.`,
+			detail: tElectron("updates.availableSummary", "Recordly {{version}} is available.", {
+				version: info.version,
+			}),
 		});
 		if (skippedVersion === info.version) {
 			manualCheckRequested = false;
@@ -711,7 +796,9 @@ export function setupAutoUpdates(
 		setUpdateStatusSummary({
 			status: "up-to-date",
 			availableVersion: null,
-			detail: `Recordly ${app.getVersion()} is up to date.`,
+			detail: tElectron("updates.upToDateSummary", "Recordly {{version}} is up to date.", {
+				version: app.getVersion(),
+			}),
 		});
 		clearVisibleUpdateToast(sendToRenderer);
 		manualCheckRequested = false;
@@ -726,7 +813,9 @@ export function setupAutoUpdates(
 		setUpdateStatusSummary({
 			status: "downloading",
 			availableVersion,
-			detail: `Downloading Recordly ${availableVersion}`,
+			detail: tElectron("updates.downloadingSummary", "Downloading Recordly {{version}}", {
+				version: availableVersion,
+			}),
 		});
 		writeUpdaterLog(
 			`Download progress for ${availableVersion}: ${progress.percent.toFixed(1)}%`,
@@ -782,7 +871,9 @@ export function setupAutoUpdates(
 		setUpdateStatusSummary({
 			status: "ready",
 			availableVersion: info.version,
-			detail: `Recordly ${info.version} is ready to install.`,
+			detail: tElectron("updates.readySummary", "Recordly {{version}} is ready to install.", {
+				version: info.version,
+			}),
 		});
 		clearDeferredReminderTimer();
 

@@ -4,7 +4,8 @@
 		"editorTitle": "Editor de Recordly",
 		"subtitle": "Grabación de pantalla y edición",
 		"language": "Idioma",
-		"manageRecordings": "Abrir carpeta de grabaciones"
+		"manageRecordings": "Abrir carpeta de grabaciones",
+		"notifications": "Notificaciones"
 	},
 	"actions": {
 		"cancel": "Cancelar",

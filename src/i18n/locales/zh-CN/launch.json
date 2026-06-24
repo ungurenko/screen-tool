@@ -53,7 +53,14 @@
 			"upToDateTitle": "Recordly {{version}} 已是最新版本。",
 			"availableTitle": "Recordly {{version}} 可更新。",
 			"availableGenericTitle": "有可用更新。"
-		}
+		},
+		"appearance": "Appearance",
+		"preparing": "Preparing recording",
+		"preparingSubtitle": "Opening the editor in a moment",
+		"previewUpdateUi": "Preview Update UI",
+		"themeDark": "Dark",
+		"themeLight": "Light",
+		"themeSystem": "System"
 	},
 	"sourceSelector": {
 		"loadingSources": "正在加载源...",
@@ -64,7 +71,8 @@
 		"windowsNote": "仅可录制可见（非最小化）窗口。",
 		"windowPlaceholder": "窗口",
 		"cancel": "取消",
-		"share": "共享"
+		"share": "共享",
+		"refreshing": "Refreshing..."
 	},
 	"permissions": {
 		"screenRecordingNeeded": "Recordly 需要屏幕录制权限才能开始。系统设置已打开。启用后请退出并重新打开 Recordly。",
@@ -75,6 +83,37 @@
 		"systemAudioUnavailable": "此源不支持系统音频。将继续录制但不包含系统音频。",
 		"microphoneDenied": "麦克风访问被拒绝。将继续录制但不包含麦克风音频。",
 		"failedToStart": "录制启动失败：{{error}}",
-		"failedToStartGeneric": "录制启动失败"
+		"failedToStartGeneric": "录制启动失败",
+		"failedToFinalizeRecording": "Failed to finalize the recording. {{message}}",
+		"failedToFinishMacRecording": "Failed to finish the macOS recording, so the editor was not opened.",
+		"failedToFinishRecording": "Failed to finish the recording, so the editor was not opened.",
+		"failedToSaveFallbackMicrophone": "Failed to save the fallback microphone audio track",
+		"failedToSaveRecording": "Failed to save the recording.",
+		"failedToStoreRecording": "Failed to store the recording.",
+		"microphoneFallbackFailed": "{{error}}. Recording will continue without microphone audio.",
+		"nativeWindowsCheckFailed": "Unable to check native Windows capture. Falling back to browser capture.",
+		"nativeWindowsStartFailed": "Native Windows capture failed to start. Falling back to browser capture.",
+		"nativeWindowsUnavailable": "Native Windows capture is unavailable. Falling back to browser capture.",
+		"savedWithoutFallbackMicrophone": "{{error}}. Recording was saved without the fallback microphone track."
+	},
+	"updateToast": {
+		"attentionTitle": "Recordly {{version}} needs attention",
+		"availableTitle": "Recordly {{version}} is available",
+		"completePercent": "{{percent}}% complete",
+		"devBadge": "Dev",
+		"downloaded": "Downloaded",
+		"downloadingTitle": "Installing Recordly {{version}}",
+		"installAndRestart": "Install & Restart",
+		"later": "Later",
+		"left": "Left",
+		"previewTitle": "Update Prompt Preview",
+		"readyTitle": "Recordly {{version}} is ready",
+		"remindOneHour": "1 hour",
+		"remindThreeDays": "3 days",
+		"remindThreeHours": "3 hours",
+		"remindTomorrow": "Tomorrow",
+		"retryCheckErrorTitle": "Could not check for updates",
+		"speed": "Speed",
+		"tryAgain": "Try Again"
 	}
 }

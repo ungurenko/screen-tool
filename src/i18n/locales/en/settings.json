@@ -6,7 +6,8 @@
 		"modeAuto": "Auto",
 		"modeManual": "Manual",
 		"modeManualDescription": "Set a fixed focus point for this zoom",
-		"modeAutoDescription": "Camera recenters when the cursor nears the edge of the zoomed view"
+		"modeAutoDescription": "Camera recenters when the cursor nears the edge of the zoomed view",
+		"globalSettings": "Animation"
 	},
 	"trim": {
 		"deleteRegion": "Delete Trim Region"
@@ -153,7 +154,43 @@
 		"paddingBottom": "Bottom",
 		"paddingLeft": "Left",
 		"paddingRight": "Right",
-		"removeBackground": "Remove background"
+		"removeBackground": "Remove background",
+		"cameraDebugTuning": "Camera Debug Tuning",
+		"cameraDebugTuningHint": "Development-only spring tuning controls for camera motion.",
+		"cameraSpringDampingMultiplier": "Camera damping",
+		"cameraSpringMassMultiplier": "Camera mass",
+		"cameraSpringStiffnessMultiplier": "Camera stiffness",
+		"classicZoom": "Classic Animation",
+		"cursorDebugMovedToDev": "Cursor spring tuning is available in Settings > Dev.",
+		"cursorDebugTuning": "Cursor Debug Tuning",
+		"cursorDebugTuningHint": "Development-only spring tuning controls.",
+		"cursorSpringDampingMultiplier": "Spring damping",
+		"cursorSpringMassMultiplier": "Spring mass",
+		"cursorSpringStiffnessMultiplier": "Spring stiffness",
+		"customEffectColorPicker": "Custom effect color picker",
+		"devSection": "Dev",
+		"devSectionHint": "Temporary testing controls for native capture and motion tuning.",
+		"effectColor": "Effect color {{color}}",
+		"exportBlurMovedToDev": "Export blur tuning is available in Settings > Dev.",
+		"motionBlurDebug": "Motion Blur Debug",
+		"motionBlurDebugHint": "Development-only tuning for the split move-vs-zoom blur path. Pan controls drive the streak filter, and zoom controls drive the focus-centered zoom filter.",
+		"motionBlurPanStrength": "Pan max blur",
+		"motionBlurPanThreshold": "Pan threshold",
+		"motionBlurZoomStrength": "Zoom blur strength",
+		"motionBlurZoomThreshold": "Zoom threshold",
+		"nativeCaptureWarningTester": "Native capture warning",
+		"nativeCaptureWarningTesterAvailable": "This project is not marked as unsupported, but you can still open the modal for UI testing.",
+		"nativeCaptureWarningTesterUnavailable": "This project is currently marked as native capture unavailable.",
+		"openNativeCaptureWarning": "Open warning",
+		"paddingAdvanced": "Advanced",
+		"paddingAdvancedHide": "Hide advanced padding controls",
+		"paddingAdvancedShow": "Show advanced padding controls",
+		"pick": "Pick",
+		"webcamCustomPosition": "Custom position",
+		"webcamHorizontal": "Horizontal",
+		"webcamMargin": "Margin",
+		"webcamPosition": "Position",
+		"webcamVertical": "Vertical"
 	},
 	"sections": {
 		"scene": "Scene",
@@ -162,7 +199,9 @@
 		"cursor": "Cursor",
 		"webcam": "Webcam",
 		"frame": "Frame",
-		"crop": "Crop"
+		"crop": "Crop",
+		"extensions": "Extensions",
+		"settings": "Settings"
 	},
 	"captions": {
 		"enabled": "Show",
@@ -189,7 +228,20 @@
 		"maxWidth": "Max Width",
 		"boxRadius": "Box Radius",
 		"backgroundOpacity": "Background Opacity",
-		"textColor": "Text Color"
+		"textColor": "Text Color",
+		"autoDetect": "Auto Detect",
+		"editCurrent": "Edit current caption",
+		"editSaved": "Caption updated",
+		"generated": "Generated {{count}} captions",
+		"generateFailed": "Failed to generate captions",
+		"generatingStatus": "Generating captions. This can take a moment.",
+		"selectModel": "Select Model",
+		"selectWhisperModelFirst": "Select a Whisper model or download the small model first",
+		"whisperExecutableSelected": "Whisper executable selected",
+		"whisperModelSelected": "Whisper model selected",
+		"whisperSmallDeleted": "Whisper small model deleted",
+		"whisperSmallDeleteFailed": "Failed to delete Whisper small model",
+		"whisperSmallDownloadFailed": "Failed to download Whisper small model"
 	},
 	"crop": {
 		"title": "Crop Video",
@@ -206,10 +258,19 @@
 		"color": "Color",
 		"gradient": "Gradient",
 		"wallpaperPreview": "Wallpaper preview",
+		"wallpaperLabel": "Wallpaper {{number}}",
 		"uploadCustom": "Upload Custom",
 		"uploadSuccess": "Custom image uploaded successfully!",
 		"uploadError": "Please upload a JPG or JPEG image file.",
-		"uploadErrorDescription": "Only JPG and JPEG images are supported."
+		"uploadErrorDescription": "Only JPG and JPEG images are supported.",
+		"customColorPicker": "Custom color picker",
+		"pick": "Pick",
+		"uploadCustomVideo": "Upload Video",
+		"video": "Video",
+		"unsupportedVideoFormat": "Unsupported format",
+		"selectVideoFileDescription": "Please select a video file (mp4, webm, mov, etc.)",
+		"videoAdded": "Video background added",
+		"videoImportFailed": "Failed to import video background"
 	},
 	"export": {
 		"title": "Export",
@@ -231,7 +292,31 @@
 		"saveProject": "Save Project",
 		"exportVideo": "Export {{format}}",
 		"reportBug": "Report Bug",
-		"starOnGithub": "Star on GitHub"
+		"starOnGithub": "Star on GitHub",
+		"captionSidecar": {
+			"hint": "Save .srt and .vtt files next to your exported video.",
+			"title": "Export captions file",
+			"toggle": "Export captions sidecar files"
+		},
+		"encoding": {
+			"balanced": "Balanced",
+			"fast": "Fast",
+			"quality": "Quality"
+		},
+		"encodingTitle": "Encoding",
+		"nvidiaCuda": {
+			"badge": "Experimental",
+			"hint": "Try GPU export on this Windows device.",
+			"title": "NVIDIA CUDA",
+			"toggle": "Enable experimental NVIDIA CUDA export"
+		},
+		"pipeline": {
+			"legacy": "Legacy",
+			"legacyHint": "Legacy uses the current stable WebCodecs export path.",
+			"lightningHint": "Lightning (Beta) automatically uses the fastest compatible backend and falls back when needed.",
+			"modern": "Lightning (Beta)"
+		},
+		"pipelineTitle": "Pipeline"
 	},
 	"audio": {
 		"title": "Audio",
@@ -243,5 +328,11 @@
 		"micLabel": "Source Mic",
 		"mixedLabel": "Source",
 		"deleteRegion": "Delete Audio"
+	},
+	"annotation": {
+		"delete": "Delete Annotation"
+	},
+	"video": {
+		"webgpuUnavailable": "WebGPU runtime is unavailable in this browser."
 	}
 }

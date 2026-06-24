@@ -44,16 +44,23 @@
 		"cancel": "取消",
 		"more": "更多",
 		"update": {
-		"update": "更新",
-		"updated": "已更新",
-		"idleTitle": "檢查更新。",
-		"checkingTitle": "正在檢查更新...",
-		"downloadingTitle": "正在下載更新...",
-		"errorTitle": "檢查更新失敗，點一下重試。",
-		"upToDateTitle": "Recordly {{version}} 已是最新版本。",
-		"availableTitle": "Recordly {{version}} 已推出新版本。",
-		"availableGenericTitle": "有可用更新。"
-		}
+			"update": "更新",
+			"updated": "已更新",
+			"idleTitle": "檢查更新。",
+			"checkingTitle": "正在檢查更新...",
+			"downloadingTitle": "正在下載更新...",
+			"errorTitle": "檢查更新失敗，點一下重試。",
+			"upToDateTitle": "Recordly {{version}} 已是最新版本。",
+			"availableTitle": "Recordly {{version}} 已推出新版本。",
+			"availableGenericTitle": "有可用更新。"
+		},
+		"appearance": "Appearance",
+		"preparing": "Preparing recording",
+		"preparingSubtitle": "Opening the editor in a moment",
+		"previewUpdateUi": "Preview Update UI",
+		"themeDark": "Dark",
+		"themeLight": "Light",
+		"themeSystem": "System"
 	},
 	"sourceSelector": {
 		"loadingSources": "正在載入來源...",
@@ -64,7 +71,8 @@
 		"windowsNote": "僅能錄製可見的視窗（非最小化）。",
 		"windowPlaceholder": "視窗",
 		"cancel": "取消",
-		"share": "分享"
+		"share": "分享",
+		"refreshing": "Refreshing..."
 	},
 	"permissions": {
 		"screenRecordingNeeded": "Recordly 需要「螢幕錄製」權限才能開始。已開啟系統設定。啟用後，請結束並重新開啟 Recordly。",
@@ -75,6 +83,37 @@
 		"systemAudioUnavailable": "此來源不支援系統音訊，將在沒有系統音訊的情況下繼續錄製。",
 		"microphoneDenied": "麥克風存取遭拒，將在沒有麥克風音訊的情況下繼續錄製。",
 		"failedToStart": "無法開始錄製：{{error}}",
-		"failedToStartGeneric": "無法開始錄製"
+		"failedToStartGeneric": "無法開始錄製",
+		"failedToFinalizeRecording": "Failed to finalize the recording. {{message}}",
+		"failedToFinishMacRecording": "Failed to finish the macOS recording, so the editor was not opened.",
+		"failedToFinishRecording": "Failed to finish the recording, so the editor was not opened.",
+		"failedToSaveFallbackMicrophone": "Failed to save the fallback microphone audio track",
+		"failedToSaveRecording": "Failed to save the recording.",
+		"failedToStoreRecording": "Failed to store the recording.",
+		"microphoneFallbackFailed": "{{error}}. Recording will continue without microphone audio.",
+		"nativeWindowsCheckFailed": "Unable to check native Windows capture. Falling back to browser capture.",
+		"nativeWindowsStartFailed": "Native Windows capture failed to start. Falling back to browser capture.",
+		"nativeWindowsUnavailable": "Native Windows capture is unavailable. Falling back to browser capture.",
+		"savedWithoutFallbackMicrophone": "{{error}}. Recording was saved without the fallback microphone track."
+	},
+	"updateToast": {
+		"attentionTitle": "Recordly {{version}} needs attention",
+		"availableTitle": "Recordly {{version}} is available",
+		"completePercent": "{{percent}}% complete",
+		"devBadge": "Dev",
+		"downloaded": "Downloaded",
+		"downloadingTitle": "Installing Recordly {{version}}",
+		"installAndRestart": "Install & Restart",
+		"later": "Later",
+		"left": "Left",
+		"previewTitle": "Update Prompt Preview",
+		"readyTitle": "Recordly {{version}} is ready",
+		"remindOneHour": "1 hour",
+		"remindThreeDays": "3 days",
+		"remindThreeHours": "3 hours",
+		"remindTomorrow": "Tomorrow",
+		"retryCheckErrorTitle": "Could not check for updates",
+		"speed": "Speed",
+		"tryAgain": "Try Again"
 	}
 }

@@ -18,6 +18,7 @@ import { RECORDINGS_DIR } from "./appPaths";
 import { showCursor } from "./cursorHider";
 import { registerExtensionIpcHandlers } from "./extensions/extensionIpc";
 import { getGpuSwitches } from "./gpuSwitches";
+import { tElectron } from "./i18n";
 import {
 	cleanupAllExportStreams,
 	cleanupNativeVideoExportSessions,
@@ -56,6 +57,8 @@ import {
 
 const electronMainDir = path.dirname(fileURLToPath(import.meta.url));
 const IS_SMOKE_EXPORT = process.env.RECORDLY_SMOKE_EXPORT === "1";
+
+app.setName("Recordly");
 
 function ignoreBrokenConsolePipe(stream: NodeJS.WritableStream | undefined) {
 	stream?.on("error", (error: NodeJS.ErrnoException) => {
@@ -144,6 +147,7 @@ let isCreatingMainWindow = false;
 let isCreatingEditorWindow = false;
 let activeUpdateNotification: Notification | null = null;
 let activeUpdateNotificationKey: string | null = null;
+let trayRecording = false;
 const shouldEnforceSingleInstanceLock = !IS_DEV;
 const hasSingleInstanceLock = shouldEnforceSingleInstanceLock
 	? app.requestSingleInstanceLock()
@@ -372,7 +376,7 @@ function setupApplicationMenu() {
 
 	const template: Electron.MenuItemConstructorOptions[] = [];
 	template.push({
-		label: app.name,
+		label: "Recordly",
 		submenu: [
 			{ role: "about" },
 			{ type: "separator" },
@@ -388,20 +392,20 @@ function setupApplicationMenu() {
 
 	template.push(
 		{
-			label: "File",
+			label: tElectron("menu.file", "File"),
 			submenu: [
 				{
-					label: "Open Projects…",
+					label: tElectron("menu.openProjects", "Open Projects..."),
 					accelerator: "CmdOrCtrl+O",
 					click: () => sendEditorMenuAction("menu-load-project"),
 				},
 				{
-					label: "Save Project…",
+					label: tElectron("menu.saveProject", "Save Project..."),
 					accelerator: "CmdOrCtrl+S",
 					click: () => sendEditorMenuAction("menu-save-project"),
 				},
 				{
-					label: "Save Project As…",
+					label: tElectron("menu.saveProjectAs", "Save Project As..."),
 					accelerator: "CmdOrCtrl+Shift+S",
 					click: () => sendEditorMenuAction("menu-save-project-as"),
 				},
@@ -409,7 +413,7 @@ function setupApplicationMenu() {
 			],
 		},
 		{
-			label: "Edit",
+			label: tElectron("menu.edit", "Edit"),
 			submenu: [
 				{ role: "undo" },
 				{ role: "redo" },
@@ -421,7 +425,7 @@ function setupApplicationMenu() {
 			],
 		},
 		{
-			label: "View",
+			label: tElectron("menu.view", "View"),
 			submenu: [
 				{ role: "reload" },
 				{ role: "forceReload" },
@@ -435,16 +439,16 @@ function setupApplicationMenu() {
 			],
 		},
 		{
-			label: "Window",
+			label: tElectron("menu.window", "Window"),
 			submenu: isMac
 				? [{ role: "minimize" }, { role: "zoom" }, { type: "separator" }, { role: "front" }]
 				: [{ role: "minimize" }, { role: "close" }],
 		},
 		{
-			label: "Help",
+			label: tElectron("menu.help", "Help"),
 			submenu: [
 				{
-					label: "Check for Updates…",
+					label: tElectron("menu.checkForUpdates", "Check for Updates..."),
 					click: () => {
 						void checkForAppUpdates(getUpdateDialogWindow, { manual: true });
 					},
@@ -519,28 +523,63 @@ function syncDockIcon() {
 function getUpdateNotificationTitle(payload: UpdateToastPayload) {
 	switch (payload.phase) {
 		case "available":
-			return `Recordly ${payload.version} is available`;
+			return tElectron(
+				"updates.notification.availableTitle",
+				"Recordly {{version}} is available",
+				{
+					version: payload.version,
+				},
+			);
 		case "downloading":
-			return `Downloading Recordly ${payload.version}`;
+			return tElectron(
+				"updates.notification.downloadingTitle",
+				"Downloading Recordly {{version}}",
+				{
+					version: payload.version,
+				},
+			);
 		case "ready":
-			return `Recordly ${payload.version} is ready`;
+			return tElectron("updates.notification.readyTitle", "Recordly {{version}} is ready", {
+				version: payload.version,
+			});
 		case "error":
-			return `Recordly ${payload.version} needs attention`;
+			return tElectron(
+				"updates.notification.errorTitle",
+				"Recordly {{version}} needs attention",
+				{
+					version: payload.version,
+				},
+			);
 	}
 }
 
 function getUpdateNotificationBody(payload: UpdateToastPayload) {
 	switch (payload.phase) {
 		case "available":
-			return "Click to install the update and restart Recordly.";
+			return tElectron(
+				"updates.notification.availableBody",
+				"Click to install the update and restart Recordly.",
+			);
 		case "downloading":
-			return "Recordly is downloading the update and will restart when it is ready.";
+			return tElectron(
+				"updates.notification.downloadingBody",
+				"Recordly is downloading the update and will restart when it is ready.",
+			);
 		case "ready":
-			return "Click to install the downloaded update and restart.";
+			return tElectron(
+				"updates.notification.readyBody",
+				"Click to install the downloaded update and restart.",
+			);
 		case "error":
 			return payload.primaryAction === "install-and-restart"
-				? "Click to try the install again."
-				: "Click to retry checking for updates.";
+				? tElectron(
+						"updates.notification.installRetryBody",
+						"Click to try the install again.",
+					)
+				: tElectron(
+						"updates.notification.checkRetryBody",
+						"Click to retry checking for updates.",
+					);
 	}
 }
 
@@ -706,14 +745,19 @@ ipcMain.handle("check-for-app-updates", async () => {
 	return { success: true, logPath: getUpdaterLogPath() };
 });
 
-function updateTrayMenu(recording: boolean = false) {
+function updateTrayMenu(recording: boolean = trayRecording) {
 	if (!tray) return;
+	trayRecording = recording;
 	const trayIcon = recording ? getRecordingTrayIcon() : getDefaultTrayIcon();
-	const trayToolTip = recording ? `Recording: ${selectedSourceName}` : "Recordly";
+	const trayToolTip = recording
+		? tElectron("tray.recording", "Recording: {{source}}", {
+				source: selectedSourceName,
+			})
+		: "Recordly";
 	const menuTemplate = recording
 		? [
 				{
-					label: "Show Controls",
+					label: tElectron("tray.showControls", "Show Controls"),
 					click: () => {
 						if (!showHudOverlayFromTray()) {
 							focusOrCreateMainWindow();
@@ -721,7 +765,7 @@ function updateTrayMenu(recording: boolean = false) {
 					},
 				},
 				{
-					label: "Stop Recording",
+					label: tElectron("tray.stopRecording", "Stop Recording"),
 					click: () => {
 						if (mainWindow && !mainWindow.isDestroyed()) {
 							mainWindow.webContents.send("stop-recording-from-tray");
@@ -731,7 +775,7 @@ function updateTrayMenu(recording: boolean = false) {
 			]
 		: [
 				{
-					label: "Open",
+					label: tElectron("tray.open", "Open"),
 					click: () => {
 						if (!showHudOverlayFromTray()) {
 							focusOrCreateMainWindow();
@@ -739,7 +783,7 @@ function updateTrayMenu(recording: boolean = false) {
 					},
 				},
 				{
-					label: "Quit",
+					label: tElectron("tray.quit", "Quit"),
 					click: () => {
 						app.quit();
 					},
@@ -817,12 +861,16 @@ function createEditorWindowWrapper() {
 
 		const choice = dialog.showMessageBoxSync(editorWindow, {
 			type: "warning",
-			buttons: ["Save & Close", "Discard & Close", "Cancel"],
+			buttons: [
+				tElectron("unsaved.buttons.save", "Save & Close"),
+				tElectron("unsaved.buttons.discard", "Discard & Close"),
+				tElectron("unsaved.buttons.cancel", "Cancel"),
+			],
 			defaultId: 0,
 			cancelId: 2,
-			title: "Unsaved Changes",
-			message: "You have unsaved changes.",
-			detail: "Do you want to save your project before closing?",
+			title: tElectron("unsaved.title", "Unsaved Changes"),
+			message: tElectron("unsaved.message", "You have unsaved changes."),
+			detail: tElectron("unsaved.detail", "Do you want to save your project before closing?"),
 		});
 
 		if (choice === 0) {
@@ -871,6 +919,11 @@ app.on("activate", () => {
 
 app.on("second-instance", () => {
 	focusOrCreateMainWindow();
+});
+
+(app as unknown as NodeJS.EventEmitter).on("recordly-locale-changed", () => {
+	setupApplicationMenu();
+	updateTrayMenu();
 });
 
 // Register all IPC handlers when app is ready
@@ -1021,7 +1074,12 @@ app.whenReady().then(async () => {
 			const isLinuxPortalSentinel =
 				process.platform === "linux" && (sourceId === "screen:linux-portal" || !sourceId);
 			if (isLinuxPortalSentinel) {
-				callback({ video: { id: "screen:0:0", name: "Entire screen" } });
+				callback({
+					video: {
+						id: "screen:0:0",
+						name: tElectron("system.entireScreen", "Entire screen"),
+					},
+				});
 				return;
 			}
 			const sources = await desktopCapturer.getSources({ types: ["screen", "window"] });

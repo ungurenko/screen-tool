@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { tElectron } from "../../i18n";
 
 export type CaptionSidecarCue = {
 	startMs: number;
@@ -153,5 +154,8 @@ export function withCaptionSidecarMessage(
 		return baseMessage;
 	}
 
-	return `${baseMessage} Captions could not be saved alongside the video.`;
+	return `${baseMessage} ${tElectron(
+		"export.captionSidecarFailed",
+		"Captions could not be saved alongside the video.",
+	)}`;
 }

@@ -7,7 +7,7 @@ import {
 	X,
 } from "@phosphor-icons/react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import minimalCursorUrl from "@/assets/cursors/custom/minimal-cursor.svg";
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,7 @@ import { type AspectRatio } from "@/utils/aspectRatioUtils";
 import { useI18n, useScopedT } from "../../contexts/I18nContext";
 import type { AppLocale } from "../../i18n/config";
 import { SUPPORTED_LOCALES } from "../../i18n/config";
+import { APP_LANGUAGE_LABELS } from "../../i18n/localeMetadata";
 import { AnnotationSettingsPanel } from "./AnnotationSettingsPanel";
 import {
 	CURSOR_MOTION_PRESETS,
@@ -179,9 +180,10 @@ function isHexWallpaper(value: string): boolean {
 
 function hexToRgba(hex: string, alpha: number) {
 	const normalized = isHexWallpaper(hex) ? hex : DEFAULT_CURSOR_CLICK_EFFECT_COLOR;
-	const value = normalized.length === 4
-		? `#${normalized[1]}${normalized[1]}${normalized[2]}${normalized[2]}${normalized[3]}${normalized[3]}`
-		: normalized;
+	const value =
+		normalized.length === 4
+			? `#${normalized[1]}${normalized[1]}${normalized[2]}${normalized[2]}${normalized[3]}${normalized[3]}`
+			: normalized;
 	const color = Number.parseInt(value.slice(1), 16);
 	const red = (color >> 16) & 255;
 	const green = (color >> 8) & 255;
@@ -529,8 +531,23 @@ function CursorClickEffectPreview({
 					viewBox="0 0 40 40"
 					aria-hidden="true"
 				>
-					<circle cx="20" cy="20" r="11.5" fill="none" stroke="currentColor" strokeWidth="1.8" opacity="0.75" />
-					<path d="M12.5 27.5 27.5 12.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2.2" opacity="0.92" />
+					<circle
+						cx="20"
+						cy="20"
+						r="11.5"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="1.8"
+						opacity="0.75"
+					/>
+					<path
+						d="M12.5 27.5 27.5 12.5"
+						fill="none"
+						stroke="currentColor"
+						strokeLinecap="round"
+						strokeWidth="2.2"
+						opacity="0.92"
+					/>
 				</svg>
 			) : null}
 			{effect === "ripple" ? (
@@ -571,13 +588,17 @@ function CursorClickEffectPreview({
 					viewBox="0 0 48 48"
 					aria-hidden="true"
 				>
-					<g
-						fill="none"
-						stroke="currentColor"
-					>
+					<g fill="none" stroke="currentColor">
 						<circle cx="24" cy="24" r="9" strokeWidth="1.8" opacity="0.72" />
 						<circle cx="24" cy="24" r="14.5" strokeWidth="1.5" opacity="0.4" />
-						<circle cx="24" cy="24" r="4.25" fill="currentColor" opacity="0.22" stroke="none" />
+						<circle
+							cx="24"
+							cy="24"
+							r="4.25"
+							fill="currentColor"
+							opacity="0.22"
+							stroke="none"
+						/>
 					</g>
 				</svg>
 			) : null}
@@ -660,7 +681,10 @@ function CursorClickEffectCards({
 						>
 							<div className="flex h-full flex-col items-center justify-between gap-3">
 								<div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-[8px] px-2 py-1.5">
-									<CursorClickEffectPreview effect={effect.id} color={effectColor} />
+									<CursorClickEffectPreview
+										effect={effect.id}
+										color={effectColor}
+									/>
 								</div>
 							</div>
 						</ToggleGroupItem>
@@ -861,29 +885,17 @@ const BUILTIN_CURSOR_STYLE_OPTIONS: CursorStyleOption[] = [
 ];
 
 const CAPTION_LANGUAGE_OPTIONS = [
-	{ value: "auto", label: "Auto Detect" },
-	{ value: "en", label: "English" },
-	{ value: "es", label: "Spanish" },
-	{ value: "fr", label: "French" },
-	{ value: "de", label: "German" },
-	{ value: "it", label: "Italian" },
-	{ value: "pt", label: "Portuguese" },
-	{ value: "zh", label: "Chinese (Simplified)" },
-	{ value: "ja", label: "Japanese" },
-	{ value: "ko", label: "Korean" },
+	{ value: "auto", languageCode: null, fallbackLabel: "Auto Detect" },
+	{ value: "en", languageCode: "en", fallbackLabel: "English" },
+	{ value: "es", languageCode: "es", fallbackLabel: "Spanish" },
+	{ value: "fr", languageCode: "fr", fallbackLabel: "French" },
+	{ value: "de", languageCode: "de", fallbackLabel: "German" },
+	{ value: "it", languageCode: "it", fallbackLabel: "Italian" },
+	{ value: "pt", languageCode: "pt", fallbackLabel: "Portuguese" },
+	{ value: "zh", languageCode: "zh-Hans", fallbackLabel: "Chinese (Simplified)" },
+	{ value: "ja", languageCode: "ja", fallbackLabel: "Japanese" },
+	{ value: "ko", languageCode: "ko", fallbackLabel: "Korean" },
 ] as const;
-
-const APP_LANGUAGE_LABELS: Record<AppLocale, string> = {
-	en: "English",
-	es: "Español",
-	fr: "Français",
-	it: "Italiano",
-	nl: "Nederlands",
-	ko: "한국어",
-	"pt-BR": "Português",
-	"zh-CN": "簡體中文",
-	"zh-TW": "繁體中文",
-};
 
 function loadPreviewImage(url: string) {
 	return new Promise<HTMLImageElement>((resolve, reject) => {
@@ -1255,6 +1267,20 @@ export function SettingsPanel({
 	const tSettings = useScopedT("settings");
 	const { locale, setLocale, t } = useI18n();
 	const { preference: themePreference, setPreference: setThemePreference } = useTheme();
+	const captionLanguageOptions = useMemo(() => {
+		const displayNames =
+			typeof Intl !== "undefined" && "DisplayNames" in Intl
+				? new Intl.DisplayNames([locale], { type: "language" })
+				: null;
+
+		return CAPTION_LANGUAGE_OPTIONS.map((option) => ({
+			value: option.value,
+			label:
+				option.languageCode === null
+					? tSettings("captions.autoDetect", option.fallbackLabel)
+					: (displayNames?.of(option.languageCode) ?? option.fallbackLabel),
+		}));
+	}, [locale, tSettings]);
 	const isBackgroundPanel = panelMode === "background";
 	const initialEditorPreferences = useMemo(() => loadEditorPreferences(), []);
 	const [builtInWallpapers, setBuiltInWallpapers] =
@@ -1531,6 +1557,20 @@ export function SettingsPanel({
 		}
 	}, [builtInWallpaperPaths, extensionWallpaperPaths, selected, wallpaperPreviewPaths]);
 
+	const localizeWallpaperLabel = useCallback(
+		(label: string) => {
+			const match = /^Wallpaper\s+(\d+)$/i.exec(label.trim());
+			if (!match) {
+				return label;
+			}
+
+			return tSettings("background.wallpaperLabel", "Wallpaper {{number}}", {
+				number: match[1],
+			});
+		},
+		[tSettings],
+	);
+
 	const imageWallpaperTiles = useMemo<WallpaperTile[]>(() => {
 		const imageWallpapers = builtInWallpapers.filter(
 			(wallpaper) => !isVideoWallpaperSource(wallpaper.publicPath),
@@ -1543,7 +1583,7 @@ export function SettingsPanel({
 				const wallpaper = imageWallpapers[index];
 				return {
 					key: wallpaper ? `builtin/${wallpaper.id}` : previewPath,
-					label: wallpaper?.label ?? `Wallpaper ${index + 1}`,
+					label: localizeWallpaperLabel(wallpaper?.label ?? `Wallpaper ${index + 1}`),
 					value: wallpaper?.publicPath ?? previewPath,
 					previewUrl: previewPath,
 				};
@@ -1565,6 +1605,7 @@ export function SettingsPanel({
 		builtInWallpapers,
 		extensionWallpaperPreviewUrls,
 		extensionWallpapers,
+		localizeWallpaperLabel,
 		wallpaperPreviewPaths,
 	]);
 
@@ -1961,16 +2002,16 @@ export function SettingsPanel({
 			if (!result?.success || !result.path) return;
 			const filePath = result.path;
 			if (!isVideoWallpaperSource(filePath)) {
-				toast.error("Unsupported format", {
-					description: "Please select a video file (mp4, webm, mov, etc.)",
+				toast.error(tSettings("background.unsupportedVideoFormat"), {
+					description: tSettings("background.selectVideoFileDescription"),
 				});
 				return;
 			}
 			setCustomImages((prev) => [filePath, ...prev]);
 			onWallpaperChange(filePath);
-			toast.success("Video background added");
+			toast.success(tSettings("background.videoAdded"));
 		} catch {
-			toast.error("Failed to import video background");
+			toast.error(tSettings("background.videoImportFailed"));
 		}
 	};
 
@@ -2227,7 +2268,11 @@ export function SettingsPanel({
 													}}
 													className={wallpaperTileClass(isSelected)}
 													style={{ background: color }}
-													aria-label={`Color ${color}`}
+													aria-label={tSettings(
+														"background.color",
+														"Color {{color}}",
+														{ color },
+													)}
 												/>
 											);
 										})}
@@ -2245,10 +2290,13 @@ export function SettingsPanel({
 											style={{
 												background: `linear-gradient(135deg, ${selectedColor} 0%, ${selectedColor} 58%, rgba(255,255,255,0.92) 58%, rgba(255,255,255,0.92) 100%)`,
 											}}
-											aria-label="Custom color picker"
+											aria-label={tSettings(
+												"background.customColorPicker",
+												"Custom color picker",
+											)}
 										>
 											<div className="absolute inset-0 flex items-center justify-center text-[9px] font-semibold uppercase tracking-[0.18em] text-foreground/90">
-												Pick
+												{tSettings("background.pick", "Pick")}
 											</div>
 										</button>
 									</div>
@@ -2473,14 +2521,16 @@ export function SettingsPanel({
 				{availableFrames.length > 0 && (
 					<div className="flex flex-col gap-1.5 mt-1">
 						<div className="flex items-center justify-between">
-							<span className="text-[10px] text-muted-foreground">Frame</span>
+							<span className="text-[10px] text-muted-foreground">
+								{tSettings("sections.frame")}
+							</span>
 							{frame && (
 								<button
 									type="button"
 									onClick={() => onFrameChange?.(null)}
 									className="text-[9px] text-[#2563EB] hover:opacity-80"
 								>
-									Remove
+									{t("common.actions.delete")}
 								</button>
 							)}
 						</div>
@@ -2629,7 +2679,7 @@ export function SettingsPanel({
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent className="border-foreground/10 bg-editor-surface-alt text-foreground">
-							{CAPTION_LANGUAGE_OPTIONS.map((option) => (
+							{captionLanguageOptions.map((option) => (
 								<SelectItem key={option.value} value={option.value}>
 									{option.label}
 								</SelectItem>
@@ -3694,12 +3744,15 @@ export function SettingsPanel({
 										<div className="flex flex-wrap gap-1.5">
 											{CLICK_EFFECT_COLOR_OPTIONS.map((color) => {
 												const isSelected =
-													cursorClickEffectColor.toLowerCase() === color.toLowerCase();
+													cursorClickEffectColor.toLowerCase() ===
+													color.toLowerCase();
 												return (
 													<button
 														key={color}
 														type="button"
-														onClick={() => onCursorClickEffectColorChange?.(color)}
+														onClick={() =>
+															onCursorClickEffectColorChange?.(color)
+														}
 														className={cn(
 															"h-6 w-6 rounded-[8px] border transition-transform hover:scale-[1.04]",
 															isSelected
@@ -3707,21 +3760,30 @@ export function SettingsPanel({
 																: "border-foreground/10",
 														)}
 														style={{ backgroundColor: color }}
-														aria-label={`Effect color ${color}`}
+														aria-label={tSettings(
+															"effects.effectColor",
+															"Effect color {{color}}",
+															{ color },
+														)}
 													/>
 												);
 											})}
 											<button
 												type="button"
-												onClick={() => cursorClickEffectColorInputRef.current?.click()}
+												onClick={() =>
+													cursorClickEffectColorInputRef.current?.click()
+												}
 												className="relative h-6 w-10 overflow-hidden rounded-[8px] border border-foreground/10 text-[8px] font-semibold uppercase tracking-[0.18em] text-foreground"
 												style={{
 													background: `linear-gradient(135deg, ${cursorClickEffectColor} 0%, ${cursorClickEffectColor} 58%, rgba(255,255,255,0.92) 58%, rgba(255,255,255,0.92) 100%)`,
 												}}
-												aria-label="Custom effect color picker"
+												aria-label={tSettings(
+													"effects.customEffectColorPicker",
+													"Custom effect color picker",
+												)}
 											>
 												<div className="absolute inset-0 flex items-center justify-center">
-													Pick
+													{tSettings("effects.pick", "Pick")}
 												</div>
 											</button>
 										</div>

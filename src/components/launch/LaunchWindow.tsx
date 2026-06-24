@@ -116,6 +116,7 @@ function LaunchWindowContent() {
 	} = useLaunchWindowSystemState(preparePermissions);
 
 	const supportsHudCaptureProtection = platform !== "linux";
+	const displayedSelectedSource = hasSelectedSource ? selectedSource : t("recording.screen");
 
 	useEffect(() => {
 		if (!selectedDeviceId) {
@@ -215,7 +216,7 @@ function LaunchWindowContent() {
 			{platform !== "linux" && (
 				<>
 					<SourcePopover
-						selectedSource={selectedSource}
+						selectedSource={displayedSelectedSource}
 						onSourceSelect={handleSourceSelect}
 						onOpen={beginInteractiveHudAction}
 						trigger={
@@ -223,11 +224,11 @@ function LaunchWindowContent() {
 								variant="outline"
 								size="lg"
 								className={`${styles.electronNoDrag} group gap-2 px-3 min-w-0 max-w-[180px] rounded-[11px] font-medium text-[12px] shrink-0 border-[var(--launch-border)] bg-[var(--launch-surface)] text-[var(--launch-text)] hover:border-[var(--launch-border-strong)] hover:bg-[var(--launch-hover)] transition-all ${openId === "sources" ? "border-[var(--launch-border-strong)] bg-[var(--launch-hover)]" : ""}`}
-								title={selectedSource}
+								title={displayedSelectedSource}
 							>
 								<MonitorIcon size={16} className="shrink-0" />
 								<div className="flex-1 min-w-0 overflow-hidden">
-									<MarqueeText text={selectedSource} />
+									<MarqueeText text={displayedSelectedSource} />
 								</div>
 								<CaretUpIcon
 									size={10}

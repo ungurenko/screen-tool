@@ -6,7 +6,8 @@
 		"modeAuto": "自動",
 		"modeManual": "手動",
 		"modeManualDescription": "為此縮放設定固定的對焦點",
-		"modeAutoDescription": "相機會自動跟隨游標"
+		"modeAutoDescription": "相機會自動跟隨游標",
+		"globalSettings": "Animation"
 	},
 	"trim": {
 		"deleteRegion": "刪除修剪區域"
@@ -105,7 +106,91 @@
 		"paddingBottom": "下",
 		"paddingLeft": "左",
 		"paddingRight": "右",
-		"removeBackground": "移除背景"
+		"removeBackground": "移除背景",
+		"cameraDebugTuning": "Camera Debug Tuning",
+		"cameraDebugTuningHint": "Development-only spring tuning controls for camera motion.",
+		"cameraSpringDampingMultiplier": "Camera damping",
+		"cameraSpringMassMultiplier": "Camera mass",
+		"cameraSpringStiffnessMultiplier": "Camera stiffness",
+		"classicZoom": "Classic Animation",
+		"cursorDebugMovedToDev": "Cursor spring tuning is available in Settings > Dev.",
+		"cursorDebugTuning": "Cursor Debug Tuning",
+		"cursorDebugTuningHint": "Development-only spring tuning controls.",
+		"cursorSpringDampingMultiplier": "Spring damping",
+		"cursorSpringMassMultiplier": "Spring mass",
+		"cursorSpringStiffnessMultiplier": "Spring stiffness",
+		"customEffectColorPicker": "Custom effect color picker",
+		"devSection": "Dev",
+		"devSectionHint": "Temporary testing controls for native capture and motion tuning.",
+		"effectColor": "Effect color {{color}}",
+		"exportBlurMovedToDev": "Export blur tuning is available in Settings > Dev.",
+		"motionBlurDebug": "Motion Blur Debug",
+		"motionBlurDebugHint": "Development-only tuning for the split move-vs-zoom blur path. Pan controls drive the streak filter, and zoom controls drive the focus-centered zoom filter.",
+		"motionBlurPanStrength": "Pan max blur",
+		"motionBlurPanThreshold": "Pan threshold",
+		"motionBlurZoomStrength": "Zoom blur strength",
+		"motionBlurZoomThreshold": "Zoom threshold",
+		"nativeCaptureWarningTester": "Native capture warning",
+		"nativeCaptureWarningTesterAvailable": "This project is not marked as unsupported, but you can still open the modal for UI testing.",
+		"nativeCaptureWarningTesterUnavailable": "This project is currently marked as native capture unavailable.",
+		"openNativeCaptureWarning": "Open warning",
+		"paddingAdvanced": "Advanced",
+		"paddingAdvancedHide": "Hide advanced padding controls",
+		"paddingAdvancedShow": "Show advanced padding controls",
+		"pick": "Pick",
+		"webcamCustomPosition": "Custom position",
+		"webcamHorizontal": "Horizontal",
+		"webcamMargin": "Margin",
+		"webcamPosition": "Position",
+		"webcamVertical": "Vertical",
+		"temporalZoomMotionBlur": "Temporal Zoom Blur",
+		"temporalZoomMotionBlurDescription": "Control the shutter window and frame samples used by the newer zoom blur pass.",
+		"zoomMotionBlurSamples": "Blur Samples",
+		"zoomMotionBlurShutter": "Shutter",
+		"auto": "Auto",
+		"motionPresetsTitle": "Motion Presets",
+		"motionPresetsZoomHint": "Zoom motion presets are available in Settings.",
+		"animationPresets": "Animation Presets",
+		"cursorMotionPresets": "Cursor Motion Presets",
+		"motionPresets": {
+			"focused": {
+				"label": "Focused",
+				"description": "Snappier motion for demos, walkthroughs, and everyday recordings."
+			},
+			"smooth": {
+				"label": "Smooth",
+				"description": "Gentler motion for presentations, keynote-style videos, and polished reveals."
+			}
+		},
+		"cursorSpringStiffness": "Cursor Spring Stiffness",
+		"cursorSpringDamping": "Cursor Spring Damping",
+		"cursorSpringMass": "Cursor Spring Mass",
+		"cursorClickEffects": {
+			"title": "Click Effects",
+			"advanced": "Advanced",
+			"advancedShow": "Show advanced click effect controls",
+			"advancedHide": "Hide advanced click effect controls",
+			"color": "Effect Color",
+			"size": "Effect Size",
+			"opacity": "Effect Opacity",
+			"duration": "Effect Duration",
+			"none": {
+				"label": "Off",
+				"description": "No click graphic. Only the cursor motion changes when you click."
+			},
+			"ripple": {
+				"label": "Ripple",
+				"description": "Expanding rings radiate from each click so taps read clearly in motion."
+			},
+			"spotlight": {
+				"label": "Spotlight",
+				"description": "A soft halo flashes around the pointer to emphasize the clicked area."
+			},
+			"echo": {
+				"label": "Echo",
+				"description": "A pair of soft rings that spread outward with a cleaner pulse."
+			}
+		}
 	},
 	"sections": {
 		"scene": "場景",
@@ -114,7 +199,9 @@
 		"cursor": "游標",
 		"webcam": "網路攝影機",
 		"frame": "外框",
-		"crop": "裁切"
+		"crop": "裁切",
+		"extensions": "Extensions",
+		"settings": "Settings"
 	},
 	"captions": {
 		"enabled": "顯示",
@@ -127,8 +214,8 @@
 		"generateFull": "產生字幕",
 		"regenerateFull": "重新產生字幕",
 		"clearFull": "清除字幕",
-		"editCurrent": "編輯目前字幕",
-		"editSaved": "字幕已更新",
+		"editCurrent": "Edit current caption",
+		"editSaved": "Caption updated",
 		"fontSettings": "字型設定",
 		"defaultFont": "預設",
 		"fontFamily": "字型",
@@ -143,7 +230,18 @@
 		"maxWidth": "最大寬度",
 		"boxRadius": "方框圓角",
 		"backgroundOpacity": "背景不透明度",
-		"textColor": "文字顏色"
+		"textColor": "文字顏色",
+		"autoDetect": "Auto Detect",
+		"generated": "Generated {{count}} captions",
+		"generateFailed": "Failed to generate captions",
+		"generatingStatus": "Generating captions. This can take a moment.",
+		"selectModel": "Select Model",
+		"selectWhisperModelFirst": "Select a Whisper model or download the small model first",
+		"whisperExecutableSelected": "Whisper executable selected",
+		"whisperModelSelected": "Whisper model selected",
+		"whisperSmallDeleted": "Whisper small model deleted",
+		"whisperSmallDeleteFailed": "Failed to delete Whisper small model",
+		"whisperSmallDownloadFailed": "Failed to download Whisper small model"
 	},
 	"crop": {
 		"title": "裁切影片",
@@ -160,10 +258,19 @@
 		"color": "顏色",
 		"gradient": "漸層",
 		"wallpaperPreview": "桌布預覽",
+		"wallpaperLabel": "桌布 {{number}}",
 		"uploadCustom": "上傳自訂圖片",
 		"uploadSuccess": "自訂圖片已成功上傳！",
 		"uploadError": "請上傳 JPG 或 JPEG 圖片檔。",
-		"uploadErrorDescription": "僅支援 JPG 與 JPEG 圖片。"
+		"uploadErrorDescription": "僅支援 JPG 與 JPEG 圖片。",
+		"customColorPicker": "Custom color picker",
+		"pick": "Pick",
+		"uploadCustomVideo": "Upload Video",
+		"video": "Video",
+		"unsupportedVideoFormat": "Unsupported format",
+		"selectVideoFileDescription": "Please select a video file (mp4, webm, mov, etc.)",
+		"videoAdded": "Video background added",
+		"videoImportFailed": "Failed to import video background"
 	},
 	"export": {
 		"title": "匯出",
@@ -185,7 +292,31 @@
 		"saveProject": "儲存專案",
 		"exportVideo": "匯出 {{format}}",
 		"reportBug": "回報錯誤",
-		"starOnGithub": "在 GitHub 按讚"
+		"starOnGithub": "在 GitHub 按讚",
+		"captionSidecar": {
+			"hint": "Save .srt and .vtt files next to your exported video.",
+			"title": "Export captions file",
+			"toggle": "Export captions sidecar files"
+		},
+		"encoding": {
+			"balanced": "Balanced",
+			"fast": "Fast",
+			"quality": "Quality"
+		},
+		"encodingTitle": "Encoding",
+		"nvidiaCuda": {
+			"badge": "Experimental",
+			"hint": "Try GPU export on this Windows device.",
+			"title": "NVIDIA CUDA",
+			"toggle": "Enable experimental NVIDIA CUDA export"
+		},
+		"pipeline": {
+			"legacy": "Legacy",
+			"legacyHint": "Legacy uses the current stable WebCodecs export path.",
+			"lightningHint": "Lightning (Beta) automatically uses the fastest compatible backend and falls back when needed.",
+			"modern": "Lightning (Beta)"
+		},
+		"pipelineTitle": "Pipeline"
 	},
 	"audio": {
 		"title": "音訊",
@@ -197,5 +328,11 @@
 		"micLabel": "麥克風源",
 		"mixedLabel": "源",
 		"deleteRegion": "刪除音訊"
+	},
+	"annotation": {
+		"delete": "Delete Annotation"
+	},
+	"video": {
+		"webgpuUnavailable": "WebGPU runtime is unavailable in this browser."
 	}
 }

@@ -6,7 +6,8 @@
 		"modeAuto": "Автоматически",
 		"modeManual": "Вручную",
 		"modeManualDescription": "Установить фиксированную точку фокусировки",
-		"modeAutoDescription": "Камера выравнивается по центру, когда курсор приближается к краю увеличенного изображения"
+		"modeAutoDescription": "Камера выравнивается по центру, когда курсор приближается к краю увеличенного изображения",
+		"globalSettings": "Анимация"
 	},
 	"trim": {
 		"deleteRegion": "Удалить"
@@ -127,7 +128,69 @@
 		"paddingBottom": "Снизу",
 		"paddingLeft": "Слева",
 		"paddingRight": "Справа",
-		"removeBackground": "Удалить фон"
+		"removeBackground": "Удалить фон",
+		"cameraDebugTuning": "Отладка камеры",
+		"cameraDebugTuningHint": "Тестовые настройки движения камеры для разработки.",
+		"cameraSpringDampingMultiplier": "Затухание камеры",
+		"cameraSpringMassMultiplier": "Инерция камеры",
+		"cameraSpringStiffnessMultiplier": "Жёсткость камеры",
+		"classicZoom": "Классическая анимация",
+		"cursorDebugMovedToDev": "Настройка пружины курсора находится в Настройки > Dev.",
+		"cursorDebugTuning": "Отладка курсора",
+		"cursorDebugTuningHint": "Тестовые настройки движения курсора.",
+		"cursorSpringDampingMultiplier": "Затухание пружины",
+		"cursorSpringMassMultiplier": "Масса пружины",
+		"cursorSpringStiffnessMultiplier": "Жёсткость пружины",
+		"customEffectColorPicker": "Выбор своего цвета эффекта",
+		"devSection": "Dev",
+		"devSectionHint": "Временные инструменты для проверки нативного захвата и движения.",
+		"effectColor": "Цвет эффекта {{color}}",
+		"exportBlurMovedToDev": "Настройка размытия экспорта находится в Настройки > Dev.",
+		"motionBlurDebug": "Отладка размытия движения",
+		"motionBlurDebugHint": "Тестовая настройка раздельного размытия для движения и зума. Панорамирование управляет шлейфом, а зум — размытием вокруг фокуса.",
+		"motionBlurPanStrength": "Максимум размытия движения",
+		"motionBlurPanThreshold": "Порог движения",
+		"motionBlurZoomStrength": "Сила размытия зума",
+		"motionBlurZoomThreshold": "Порог зума",
+		"nativeCaptureWarningTester": "Предупреждение нативного захвата",
+		"nativeCaptureWarningTesterAvailable": "Этот проект не отмечен как неподдерживаемый, но окно можно открыть для проверки интерфейса.",
+		"nativeCaptureWarningTesterUnavailable": "Этот проект сейчас отмечен как недоступный для нативного захвата.",
+		"openNativeCaptureWarning": "Открыть предупреждение",
+		"paddingAdvanced": "Дополнительно",
+		"paddingAdvancedHide": "Скрыть расширенные настройки отступов",
+		"paddingAdvancedShow": "Показать расширенные настройки отступов",
+		"pick": "Выбрать",
+		"webcamCustomPosition": "Своя позиция",
+		"webcamHorizontal": "По горизонтали",
+		"webcamMargin": "Отступ",
+		"webcamPosition": "Позиция",
+		"webcamVertical": "По вертикали",
+		"cursorClickEffects": {
+			"title": "Click Effects",
+			"advanced": "Advanced",
+			"advancedShow": "Show advanced click effect controls",
+			"advancedHide": "Hide advanced click effect controls",
+			"color": "Effect Color",
+			"size": "Effect Size",
+			"opacity": "Effect Opacity",
+			"duration": "Effect Duration",
+			"none": {
+				"label": "Off",
+				"description": "No click graphic. Only the cursor motion changes when you click."
+			},
+			"ripple": {
+				"label": "Ripple",
+				"description": "Expanding rings radiate from each click so taps read clearly in motion."
+			},
+			"spotlight": {
+				"label": "Spotlight",
+				"description": "A soft halo flashes around the pointer to emphasize the clicked area."
+			},
+			"echo": {
+				"label": "Echo",
+				"description": "A pair of soft rings that spread outward with a cleaner pulse."
+			}
+		}
 	},
 	"sections": {
 		"scene": "Сцена",
@@ -136,7 +199,9 @@
 		"cursor": "Курсор",
 		"webcam": "Веб-камера",
 		"frame": "Рамка",
-		"crop": "Обрезать видео"
+		"crop": "Обрезать видео",
+		"extensions": "Расширения",
+		"settings": "Настройки"
 	},
 	"captions": {
 		"enabled": "Показать",
@@ -163,7 +228,20 @@
 		"maxWidth": "Максимальная ширина",
 		"boxRadius": "Скругление",
 		"backgroundOpacity": "Прозрачность фона",
-		"textColor": "Цвет текста"
+		"textColor": "Цвет текста",
+		"autoDetect": "Определить автоматически",
+		"editCurrent": "Изменить текущий субтитр",
+		"editSaved": "Субтитр обновлён",
+		"generated": "Создано субтитров: {{count}}",
+		"generateFailed": "Не удалось создать субтитры",
+		"generatingStatus": "Создаём субтитры. Это может занять немного времени.",
+		"selectModel": "Выбрать модель",
+		"selectWhisperModelFirst": "Выберите модель Whisper или сначала загрузите small-модель",
+		"whisperExecutableSelected": "Файл Whisper выбран",
+		"whisperModelSelected": "Модель Whisper выбрана",
+		"whisperSmallDeleted": "Модель Whisper small удалена",
+		"whisperSmallDeleteFailed": "Не удалось удалить модель Whisper small",
+		"whisperSmallDownloadFailed": "Не удалось загрузить модель Whisper small"
 	},
 	"crop": {
 		"title": "Обрезка видео",
@@ -180,10 +258,19 @@
 		"color": "Цвет",
 		"gradient": "Градиент",
 		"wallpaperPreview": "Предпросмотр",
+		"wallpaperLabel": "Обои {{number}}",
 		"uploadCustom": "Загрузить",
 		"uploadSuccess": "Изображение загружено.",
 		"uploadError": "Загрузите JPG или JPEG.",
-		"uploadErrorDescription": "Поддерживаются только JPG и JPEG."
+		"uploadErrorDescription": "Поддерживаются только JPG и JPEG.",
+		"customColorPicker": "Выбор своего цвета",
+		"pick": "Выбрать",
+		"uploadCustomVideo": "Загрузить видео",
+		"video": "Видео",
+		"unsupportedVideoFormat": "Неподдерживаемый формат",
+		"selectVideoFileDescription": "Выберите видеофайл: mp4, webm, mov или похожий формат.",
+		"videoAdded": "Видеофон добавлен",
+		"videoImportFailed": "Не удалось импортировать видеофон"
 	},
 	"export": {
 		"title": "Экспорт",
@@ -205,7 +292,31 @@
 		"saveProject": "Сохранить проект",
 		"exportVideo": "Экспортировать {{format}}",
 		"reportBug": "Сообщить об ошибке",
-		"starOnGithub": "Оценить на GitHub"
+		"starOnGithub": "Оценить на GitHub",
+		"captionSidecar": {
+			"hint": "Сохранять .srt и .vtt рядом с экспортированным видео.",
+			"title": "Файл субтитров",
+			"toggle": "Экспортировать отдельные файлы субтитров"
+		},
+		"encoding": {
+			"balanced": "Баланс",
+			"fast": "Быстро",
+			"quality": "Качество"
+		},
+		"encodingTitle": "Кодирование",
+		"nvidiaCuda": {
+			"badge": "Экспериментально",
+			"hint": "Попробовать экспорт через видеокарту на этом Windows-устройстве.",
+			"title": "NVIDIA CUDA",
+			"toggle": "Включить экспериментальный экспорт NVIDIA CUDA"
+		},
+		"pipeline": {
+			"legacy": "Стабильный",
+			"legacyHint": "Стабильный режим использует текущий путь экспорта WebCodecs.",
+			"lightningHint": "Lightning (бета) сам выбирает самый быстрый совместимый способ и переключается на запасной при необходимости.",
+			"modern": "Lightning (бета)"
+		},
+		"pipelineTitle": "Способ экспорта"
 	},
 	"audio": {
 		"title": "Аудио",
@@ -217,5 +328,11 @@
 		"micLabel": "Микрофон",
 		"mixedLabel": "Источник",
 		"deleteRegion": "Удалить аудио"
+	},
+	"annotation": {
+		"delete": "Удалить аннотацию"
+	},
+	"video": {
+		"webgpuUnavailable": "Среда WebGPU недоступна в этом браузере."
 	}
 }

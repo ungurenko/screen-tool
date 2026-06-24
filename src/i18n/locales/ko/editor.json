@@ -14,7 +14,6 @@
 		"arrow": "화살표",
 		"blur": "흐리게",
 		"textContent": "텍스트 내용",
-
 		"textPlaceholder": "텍스트를 입력하세요...",
 		"fontStyle": "글꼴 스타일",
 		"selectStyle": "스타일 선택",
@@ -43,9 +42,16 @@
 		"imageUploadError": "JPG, PNG, GIF 또는 WebP 이미지 파일을 업로드해 주세요.",
 		"blurStrength": "블러 강도: {{strength}}",
 		"solidColor": "단색 (검열)",
-		"borderRadius": "테두리 반경"
+		"borderRadius": "테두리 반경",
+		"arrowDirectionOption": "Arrow direction: {{direction}}",
+		"black": "Black",
+		"customColor": "Custom Color",
+		"customFonts": "Custom Fonts",
+		"imageUploadErrorDescription": "Supported formats: JPG, PNG, GIF, WebP.",
+		"imageUploadFailed": "Failed to upload image",
+		"imageUploadFailedDescription": "Please try another image file.",
+		"white": "White"
 	},
-
 	"fontStyles": {
 		"classic": "클래식",
 		"editor": "에디터",
@@ -94,7 +100,8 @@
 		"emailLabel": "이메일",
 		"xLabel": "X",
 		"reportIssue": "이슈 등록 / 피드백 보내기",
-		"openFailed": "링크를 열지 못했습니다."
+		"openFailed": "링크를 열지 못했습니다.",
+		"discord": "Join Discord"
 	},
 	"keyboardShortcuts": {
 		"trigger": "단축키",
@@ -112,7 +119,34 @@
 		"showInFolder": "폴더에서 보기"
 	},
 	"project": {
-		"untitled": "제목 없음"
+		"untitled": "제목 없음",
+		"current": "Current",
+		"import": "Import",
+		"importFailed": "Failed to import file",
+		"invalidFileFormat": "Invalid project file format",
+		"loaded": "Project loaded",
+		"loadedFrom": "Project loaded from {{path}}",
+		"loadFailed": "Failed to load project",
+		"mediaImported": "Media imported",
+		"nameAlreadyUsed": "A different project already uses this name",
+		"nameRequired": "Project name is required",
+		"noMediaSelected": "No media file selected",
+		"noPreview": "No preview yet",
+		"noSavedProjects": "No saved projects yet",
+		"openCanceled": "Open project canceled",
+		"pathNoLongerTrusted": "Project path is no longer trusted. Use Save As to choose a project file.",
+		"projects": "Projects",
+		"renameInput": "Project name",
+		"renameTitle": "Rename project",
+		"saveCanceled": "Project save canceled",
+		"saved": "Project saved",
+		"saveDescription": "Name this project. It will be saved in your Recordly Projects folder.",
+		"savedTo": "Project saved to {{path}}",
+		"saveFailed": "Failed to save project",
+		"saveNameLabel": "Project name",
+		"saveTitle": "Save Project",
+		"saving": "Saving...",
+		"unableToVerifyName": "Unable to verify project identity for the chosen name"
 	},
 	"nativeCaptureUnavailable": {
 		"title": "문제가 생긴 것은 아니지만, 애니메이션 커서 오버레이를 렌더링할 수 없습니다.",
@@ -126,10 +160,33 @@
 		"completePercent": "{{percent}}% 완료",
 		"issue": "내보내기 오류",
 		"complete": "내보내기 완료",
-		"savedSuccessfully": "파일이 성공적으로 저장되었습니다."
+		"savedSuccessfully": "파일이 성공적으로 저장되었습니다.",
+		"finalizingPercent": "Finalizing {{percent}}%",
+		"muxingAndSaving": "Muxing audio and saving file...",
+		"muxingAndSavingPercent": "Muxing and saving {{percent}}%",
+		"renderingAudio": "Rendering audio {{percent}}%",
+		"renderSpeed": "Render speed {{fps}} FPS",
+		"saving": "Opening save dialog..."
 	},
 	"export": {
-		"processingAudioEdits": "속도/오버레이 편집으로 오디오 처리 중"
+		"processingAudioEdits": "속도/오버레이 편집으로 오디오 처리 중",
+		"canceled": "Export canceled",
+		"exportedTo": "Exported successfully to {{path}}",
+		"failed": "Export failed",
+		"failedToSaveGif": "Failed to save GIF",
+		"failedToSaveVideo": "Failed to save video",
+		"failedWithError": "Export failed: {{error}}",
+		"gifFailed": "GIF export failed",
+		"noOutput": "Export produced no output",
+		"noPendingSave": "No pending export to save",
+		"revealError": "Error revealing in folder: {{error}}",
+		"revealFailed": "Failed to reveal item in folder.",
+		"revealFailedWithError": "Failed to reveal item in folder: {{error}}",
+		"saveCanceled": "Export canceled",
+		"saveCanceledRetry": "Save canceled. You can save again without re-exporting.",
+		"saveCanceledTryAgain": "Save canceled. You can try again.",
+		"saveDialogCanceledRetry": "Save dialog canceled. Click Save Again to save without re-rendering.",
+		"videoExported": "Video exported successfully"
 	},
 	"toolbar": {
 		"addLayer": "레이어 추가",
@@ -137,7 +194,62 @@
 	},
 	"timeline": {
 		"expand": "타임라인 펼치기",
-		"collapse": "타임라인 접기"
+		"collapse": "타임라인 접기",
+		"speedClipOverlap": "Speed change would overlap the next clip. Move or split clips before slowing this section.",
+		"speedZoomOverlap": "Speed change would overlap another zoom. Move or delete the overlapping zoom first."
 	},
-	"openRecordingsFolder": "녹화 폴더 열기"
+	"openRecordingsFolder": "녹화 폴더 열기",
+	"account": {
+		"comingSoon": "Account coming soon",
+		"title": "Account"
+	},
+	"audioFallback": {
+		"loadFailed": "Could not load companion audio sources. Playback and export may miss microphone audio.",
+		"loadFailedWithError": "Could not load companion audio sources: {{error}}"
+	},
+	"errors": {
+		"unknown": "Unknown error"
+	},
+	"presets": {
+		"deleteAriaLabel": "Delete preset {{name}}",
+		"empty": "No presets yet.",
+		"errors": {
+			"deleteFailed": "Could not delete that preset. Check your browser storage settings and try again.",
+			"duplicateName": "A preset with that name already exists.",
+			"nameRequired": "Enter a preset name.",
+			"saveFailed": "Could not save that preset. Check your browser storage settings and try again."
+		},
+		"label": "Presets",
+		"namePlaceholder": "Preset name",
+		"open": "Open presets",
+		"saveCurrentAs": "Save current preset as",
+		"savedList": "Saved presets",
+		"toasts": {
+			"applied": "Applied preset \"{{name}}\"",
+			"deleted": "Deleted preset \"{{name}}\"",
+			"saved": "Saved preset \"{{name}}\""
+		}
+	},
+	"theme": {
+		"appearance": "Appearance",
+		"dark": "Dark",
+		"light": "Light",
+		"system": "System"
+	},
+	"unsavedChanges": {
+		"actions": {
+			"importFile": "import a file",
+			"openAnotherProject": "open another project"
+		},
+		"description": "Save your current project before you {{action}}?",
+		"discard": "Discard changes",
+		"save": "Save project",
+		"title": "Unsaved changes"
+	},
+	"video": {
+		"loading": "Loading video...",
+		"noSourceLoaded": "No source video is loaded",
+		"notReady": "Video not ready",
+		"noVideoLoaded": "No video loaded"
+	}
 }

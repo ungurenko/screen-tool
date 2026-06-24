@@ -12,6 +12,7 @@ import type { Span } from "dnd-timeline";
 import { useItem } from "dnd-timeline";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useScopedT } from "@/contexts/I18nContext";
 import { cn } from "@/lib/utils";
 import { formatClipSpeedLabel } from "../clipSpeedChange";
 import AudioWaveform from "./components/waveform/AudioWaveform";
@@ -81,6 +82,7 @@ export default function Item({
 	loadingLabel,
 	children,
 }: ItemProps) {
+	const t = useScopedT("timeline");
 	const { setNodeRef, attributes, listeners, itemStyle, itemContentStyle } = useItem({
 		id,
 		span,
@@ -190,12 +192,12 @@ export default function Item({
 					<div
 						className={cn(glassStyles.zoomEndCap, glassStyles.left)}
 						style={{ cursor: "col-resize", pointerEvents: "auto" }}
-						title="Resize left"
+						title={t("resizeLeft", "Resize left")}
 					/>
 					<div
 						className={cn(glassStyles.zoomEndCap, glassStyles.right)}
 						style={{ cursor: "col-resize", pointerEvents: "auto" }}
-						title="Resize right"
+						title={t("resizeRight", "Resize right")}
 					/>
 					{showAudioWaveform && waveformPeaks && (
 						<AudioWaveform
@@ -227,14 +229,14 @@ export default function Item({
 								<>
 									<Scissors className="w-3.5 h-3.5 shrink-0" />
 									<span className="text-[11px] font-semibold tracking-tight whitespace-nowrap">
-										Trim
+										{t("trim.shortLabel", "Trim")}
 									</span>
 								</>
 							) : isClip ? (
 								<>
 									<Film className="w-3.5 h-3.5 shrink-0" />
 									<span className="text-[11px] font-semibold tracking-tight whitespace-nowrap">
-										Clip
+										{t("clip.label", "Clip")}
 									</span>
 									{clipSpeedLabel && (
 										<span className="rounded-[4px] bg-black/10 px-1 text-[9px] font-bold tabular-nums text-black/65 dark:bg-white/15 dark:text-white/80">
@@ -246,7 +248,9 @@ export default function Item({
 								<>
 									<Gauge className="w-3.5 h-3.5 shrink-0" />
 									<span className="text-[11px] font-semibold tracking-tight whitespace-nowrap">
-										{speedValue !== undefined ? `${speedValue}×` : "Speed"}
+										{speedValue !== undefined
+											? `${speedValue}×`
+											: t("speed.label", "Speed")}
 									</span>
 								</>
 							) : isAudio ? (
@@ -274,7 +278,9 @@ export default function Item({
 									weight={zoomMode === "manual" ? "regular" : "fill"}
 								/>
 								<span className="text-[9px] font-medium tracking-tight whitespace-nowrap">
-									{zoomMode === "manual" ? "Manual" : "Auto"}
+									{zoomMode === "manual"
+										? t("zoom.manual", "Manual")
+										: t("zoom.auto", "Auto")}
 								</span>
 							</div>
 						) : (

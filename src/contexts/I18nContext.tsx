@@ -70,6 +70,14 @@ import ptBRLaunch from "@/i18n/locales/pt-BR/launch.json";
 import ptBRSettings from "@/i18n/locales/pt-BR/settings.json";
 import ptBRShortcuts from "@/i18n/locales/pt-BR/shortcuts.json";
 import ptBRTimeline from "@/i18n/locales/pt-BR/timeline.json";
+import ruCommon from "@/i18n/locales/ru/common.json";
+import ruDialogs from "@/i18n/locales/ru/dialogs.json";
+import ruEditor from "@/i18n/locales/ru/editor.json";
+import ruExtensions from "@/i18n/locales/ru/extensions.json";
+import ruLaunch from "@/i18n/locales/ru/launch.json";
+import ruSettings from "@/i18n/locales/ru/settings.json";
+import ruShortcuts from "@/i18n/locales/ru/shortcuts.json";
+import ruTimeline from "@/i18n/locales/ru/timeline.json";
 import zhCNCommon from "@/i18n/locales/zh-CN/common.json";
 import zhCNDialogs from "@/i18n/locales/zh-CN/dialogs.json";
 import zhCNEditor from "@/i18n/locales/zh-CN/editor.json";
@@ -86,6 +94,7 @@ import zhTWLaunch from "@/i18n/locales/zh-TW/launch.json";
 import zhTWSettings from "@/i18n/locales/zh-TW/settings.json";
 import zhTWShortcuts from "@/i18n/locales/zh-TW/shortcuts.json";
 import zhTWTimeline from "@/i18n/locales/zh-TW/timeline.json";
+import { loadAppSetting, saveAppSetting } from "@/lib/appSettings";
 
 const LOCALE_STORAGE_KEY = "recordly.locale";
 
@@ -161,6 +170,16 @@ const messages: Record<AppLocale, LocaleBundle> = {
 		dialogs: ptBRDialogs,
 		shortcuts: ptBRShortcuts,
 		extensions: ptBRExtensions,
+	},
+	ru: {
+		common: ruCommon,
+		launch: ruLaunch,
+		editor: ruEditor,
+		timeline: ruTimeline,
+		settings: ruSettings,
+		dialogs: ruDialogs,
+		shortcuts: ruShortcuts,
+		extensions: ruExtensions,
 	},
 	"zh-CN": {
 		common: zhCNCommon,
@@ -253,6 +272,11 @@ function getInitialLocale(): AppLocale {
 		return DEFAULT_LOCALE;
 	}
 
+	const appSettingLocale = loadAppSetting<unknown>(LOCALE_STORAGE_KEY);
+	if (typeof appSettingLocale === "string" && appSettingLocale) {
+		return normalizeLocale(appSettingLocale);
+	}
+
 	const storedLocale = window.localStorage.getItem(LOCALE_STORAGE_KEY);
 	if (storedLocale) {
 		return normalizeLocale(storedLocale);
@@ -314,6 +338,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
 	const setLocale = useCallback((nextLocale: AppLocale) => {
 		setLocaleState(nextLocale);
+		saveAppSetting(LOCALE_STORAGE_KEY, nextLocale);
 		if (typeof window !== "undefined") {
 			window.localStorage.setItem(LOCALE_STORAGE_KEY, nextLocale);
 		}

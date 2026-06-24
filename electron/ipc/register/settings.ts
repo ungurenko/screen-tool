@@ -101,6 +101,9 @@ export function registerSettingsHandlers() {
 			const store = readAppSettingsStore();
 			store[key] = value;
 			writeAppSettingsStore(store);
+			if (key === "recordly.locale") {
+				(app as unknown as NodeJS.EventEmitter).emit("recordly-locale-changed");
+			}
 			event.returnValue = { success: true };
 		} catch (error) {
 			console.error("Failed to save app setting:", error);

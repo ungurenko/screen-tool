@@ -1,10 +1,11 @@
 {
 	"app": {
 		"name": "Recordly",
-		"editorTitle": "Recordly Editor",
+		"editorTitle": "Редактор Recordly",
 		"subtitle": "Запись экрана и редактирование видео",
 		"language": "Язык",
-		"manageRecordings": "Открыть папку с записями"
+		"manageRecordings": "Открыть папку с записями",
+		"notifications": "Уведомления"
 	},
 	"actions": {
 		"cancel": "Отмена",

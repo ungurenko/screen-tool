@@ -1,15 +1,15 @@
+import { AppWindowIcon, CaretUpIcon, MonitorIcon } from "@phosphor-icons/react";
 import * as React from "react";
-import { MonitorIcon, AppWindowIcon, CaretUpIcon } from "@phosphor-icons/react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useScopedT } from "@/contexts/I18nContext";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useScopedT } from "@/contexts/I18nContext";
 import { cn } from "@/lib/utils";
 import {
-	mapRawSource,
+	type DesktopSource,
 	isScreenSource,
 	isWindowSource,
-	type DesktopSource,
+	mapRawSource,
 } from "./popovers/launchPopoverTypes";
 import "./launchTheme.css";
 import "./SourceSelector.css";
@@ -35,6 +35,8 @@ interface SourceSelectorProps {
 	/** Optional custom trigger element */
 	children?: React.ReactNode;
 }
+
+const noopSourceSelect = () => undefined;
 
 export function MarqueeText({ text }: { text: string }) {
 	const staticRef = useRef<HTMLSpanElement>(null);
@@ -78,10 +80,13 @@ export function MarqueeText({ text }: { text: string }) {
 export const SourceSelectorContent = ({
 	screenSources = [],
 	windowSources = [],
-	selectedSource = "Screen",
+	selectedSource = "",
 	loading = false,
-	onSourceSelect = () => {},
-}: Pick<SourceSelectorProps, "screenSources" | "windowSources" | "selectedSource" | "loading" | "onSourceSelect">) => {
+	onSourceSelect = noopSourceSelect,
+}: Pick<
+	SourceSelectorProps,
+	"screenSources" | "windowSources" | "selectedSource" | "loading" | "onSourceSelect"
+>) => {
 	const t = useScopedT("launch");
 	const renderSourceItem = (source: DesktopSource, index: number) => {
 		const isSelected = selectedSource === source.name;
@@ -116,12 +121,14 @@ export const SourceSelectorContent = ({
 					)}
 				</div>
 
-					<div className="flex-1 min-w-0 flex flex-col items-start text-left">
+				<div className="flex-1 min-w-0 flex flex-col items-start text-left">
 					<div className="text-sm font-medium source-selector-text w-full">
 						<MarqueeText text={source.windowTitle || source.name} />
 					</div>
 					<div className="text-xs source-selector-subtle truncate w-full text-left">
-						{source.sourceType === "screen" ? t("recording.screen") : t("recording.window")}
+						{source.sourceType === "screen"
+							? t("recording.screen")
+							: t("recording.window")}
 					</div>
 				</div>
 			</button>
@@ -152,11 +159,13 @@ export const SourceSelectorContent = ({
 										loading ? "opacity-100" : "opacity-0",
 									)}
 								>
-									{t("common.loading", "Refreshing...")}
+									{t("sourceSelector.refreshing", "Refreshing...")}
 								</span>
 							</div>
 							<div className="space-y-0.5">
-								{screenSources.map((source, index) => renderSourceItem(source, index))}
+								{screenSources.map((source, index) =>
+									renderSourceItem(source, index),
+								)}
 							</div>
 						</div>
 					) : null}
@@ -166,7 +175,9 @@ export const SourceSelectorContent = ({
 								{t("recording.windows")}
 							</div>
 							<div className="space-y-0.5">
-								{windowSources.map((source, index) => renderSourceItem(source, index))}
+								{windowSources.map((source, index) =>
+									renderSourceItem(source, index),
+								)}
 							</div>
 						</div>
 					) : null}
@@ -199,7 +210,7 @@ export const SourceSelector = React.memo(function SourceSelector({
 	const [internalOpen, setInternalOpen] = useState(false);
 	const [internalSources, setInternalSources] = useState<DesktopSource[]>([]);
 	const [internalLoading, setInternalLoading] = useState(false);
-	const [internalSelectedSource, setInternalSelectedSource] = useState("Screen");
+	const [internalSelectedSource, setInternalSelectedSource] = useState("");
 
 	// Determine if we should use internal or external state/logic
 	const isAutonomous = propsOpen === undefined;

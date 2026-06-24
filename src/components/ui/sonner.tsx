@@ -1,11 +1,15 @@
 import { Toaster as Sonner } from "sonner";
+import { useI18n } from "@/contexts/I18nContext";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 const Toaster = ({ ...props }: ToasterProps) => {
+	const { t } = useI18n();
+
 	return (
 		<Sonner
 			className="toaster group"
+			containerAriaLabel={t("app.notifications", "Notifications")}
 			duration={3000}
 			toastOptions={{
 				classNames: {

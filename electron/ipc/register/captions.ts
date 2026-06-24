@@ -1,5 +1,6 @@
 import path from "node:path";
 import { dialog, ipcMain } from "electron";
+import { tElectron } from "../../i18n";
 import { generateAutoCaptionsFromVideo } from "../captions/generate";
 import {
 	deleteWhisperSmallModel,
@@ -25,13 +26,18 @@ export function registerCaptionHandlers() {
 			const includeProjects = Boolean(options?.includeProjects);
 			const recordingsDir = await getRecordingsDir();
 			const result = await dialog.showOpenDialog({
-				title: includeProjects ? "Import Media or Recordly Project" : "Select Video File",
+				title: includeProjects
+					? tElectron("files.importMediaOrProject", "Import Media or Recordly Project")
+					: tElectron("files.selectVideo", "Select Video File"),
 				defaultPath: recordingsDir,
 				filters: [
 					...(includeProjects
 						? [
 								{
-									name: "Media or Recordly Projects",
+									name: tElectron(
+										"files.mediaOrProjects",
+										"Media or Recordly Projects",
+									),
 									extensions: [
 										...VIDEO_FILE_EXTENSIONS,
 										...PROJECT_FILE_EXTENSIONS,
@@ -39,11 +45,19 @@ export function registerCaptionHandlers() {
 								},
 							]
 						: []),
-					{ name: "Video Files", extensions: VIDEO_FILE_EXTENSIONS },
+					{
+						name: tElectron("files.videoFiles", "Video Files"),
+						extensions: VIDEO_FILE_EXTENSIONS,
+					},
 					...(includeProjects
-						? [{ name: "Recordly Projects", extensions: PROJECT_FILE_EXTENSIONS }]
+						? [
+								{
+									name: tElectron("files.recordlyProjects", "Recordly Projects"),
+									extensions: PROJECT_FILE_EXTENSIONS,
+								},
+							]
 						: []),
-					{ name: "All Files", extensions: ["*"] },
+					{ name: tElectron("files.allFiles", "All Files"), extensions: ["*"] },
 				],
 				properties: ["openFile"],
 			});
@@ -73,7 +87,7 @@ export function registerCaptionHandlers() {
 			console.error("Failed to open file picker:", error);
 			return {
 				success: false,
-				message: "Failed to open file picker",
+				message: tElectron("files.failedOpenPicker", "Failed to open file picker"),
 				error: String(error),
 			};
 		}
@@ -82,13 +96,13 @@ export function registerCaptionHandlers() {
 	ipcMain.handle("open-audio-file-picker", async () => {
 		try {
 			const result = await dialog.showOpenDialog({
-				title: "Select Audio File",
+				title: tElectron("files.selectAudio", "Select Audio File"),
 				filters: [
 					{
-						name: "Audio Files",
+						name: tElectron("files.audioFiles", "Audio Files"),
 						extensions: ["mp3", "wav", "aac", "m4a", "flac", "ogg"],
 					},
-					{ name: "All Files", extensions: ["*"] },
+					{ name: tElectron("files.allFiles", "All Files"), extensions: ["*"] },
 				],
 				properties: ["openFile"],
 			});
@@ -106,7 +120,10 @@ export function registerCaptionHandlers() {
 			console.error("Failed to open audio file picker:", error);
 			return {
 				success: false,
-				message: "Failed to open audio file picker",
+				message: tElectron(
+					"files.failedOpenAudioPicker",
+					"Failed to open audio file picker",
+				),
 				error: String(error),
 			};
 		}
@@ -115,13 +132,13 @@ export function registerCaptionHandlers() {
 	ipcMain.handle("open-whisper-executable-picker", async () => {
 		try {
 			const result = await dialog.showOpenDialog({
-				title: "Select Whisper Executable",
+				title: tElectron("files.selectWhisperExecutable", "Select Whisper Executable"),
 				filters: [
 					{
-						name: "Executables",
+						name: tElectron("files.executables", "Executables"),
 						extensions: process.platform === "win32" ? ["exe", "cmd", "bat"] : ["*"],
 					},
-					{ name: "All Files", extensions: ["*"] },
+					{ name: tElectron("files.allFiles", "All Files"), extensions: ["*"] },
 				],
 				properties: ["openFile"],
 			});
@@ -141,10 +158,13 @@ export function registerCaptionHandlers() {
 	ipcMain.handle("open-whisper-model-picker", async () => {
 		try {
 			const result = await dialog.showOpenDialog({
-				title: "Select Whisper Model",
+				title: tElectron("files.selectWhisperModel", "Select Whisper Model"),
 				filters: [
-					{ name: "Whisper Models", extensions: ["bin"] },
-					{ name: "All Files", extensions: ["*"] },
+					{
+						name: tElectron("files.whisperModels", "Whisper Models"),
+						extensions: ["bin"],
+					},
+					{ name: tElectron("files.allFiles", "All Files"), extensions: ["*"] },
 				],
 				properties: ["openFile"],
 			});
@@ -239,15 +259,24 @@ export function registerCaptionHandlers() {
 					cues: result.cues,
 					message:
 						result.audioSourceLabel === "recording"
-							? `Generated ${result.cues.length} caption cues.`
-							: `Generated ${result.cues.length} caption cues from the ${result.audioSourceLabel}.`,
+							? tElectron("captions.generated", "Generated {{count}} caption cues.", {
+									count: result.cues.length,
+								})
+							: tElectron(
+									"captions.generatedFromSource",
+									"Generated {{count}} caption cues from the {{source}}.",
+									{ count: result.cues.length, source: result.audioSourceLabel },
+								),
 				};
 			} catch (error) {
 				console.error("Failed to generate auto captions:", error);
 				return {
 					success: false,
 					error: String(error),
-					message: "Failed to generate auto captions",
+					message: tElectron(
+						"captions.generateFailed",
+						"Failed to generate auto captions",
+					),
 				};
 			}
 		},
