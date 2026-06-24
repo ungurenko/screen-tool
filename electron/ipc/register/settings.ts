@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import fs from "node:fs/promises";
 import { app, ipcMain } from "electron";
+import { normalizeRecordingQualityPresetId } from "../../../src/lib/recordingPerformance";
 import { hideCursor } from "../../cursorHider";
 import { closeCountdownWindow, createCountdownWindow, getCountdownWindow } from "../../windows";
 import {
@@ -157,6 +158,9 @@ export function registerSettingsHandlers() {
 						? parsed.microphoneDeviceId
 						: undefined,
 				systemAudioEnabled: parsed.systemAudioEnabled === true,
+				recordingQualityPreset: normalizeRecordingQualityPresetId(
+					parsed.recordingQualityPreset,
+				),
 			};
 		} catch {
 			return {
@@ -164,6 +168,7 @@ export function registerSettingsHandlers() {
 				microphoneEnabled: false,
 				microphoneDeviceId: undefined,
 				systemAudioEnabled: false,
+				recordingQualityPreset: normalizeRecordingQualityPresetId(undefined),
 			};
 		}
 	});
@@ -180,6 +185,7 @@ export function registerSettingsHandlers() {
 				microphoneEnabled?: boolean;
 				microphoneDeviceId?: string;
 				systemAudioEnabled?: boolean;
+				recordingQualityPreset?: string;
 			},
 		) => {
 			try {
@@ -190,7 +196,17 @@ export function registerSettingsHandlers() {
 				} catch {
 					// file doesn't exist yet
 				}
-				const merged = { ...existing, ...prefs };
+				const merged = {
+					...existing,
+					...prefs,
+					...(prefs.recordingQualityPreset === undefined
+						? {}
+						: {
+								recordingQualityPreset: normalizeRecordingQualityPresetId(
+									prefs.recordingQualityPreset,
+								),
+							}),
+				};
 				await fs.writeFile(
 					RECORDINGS_SETTINGS_FILE,
 					JSON.stringify(merged, null, 2),

@@ -234,6 +234,7 @@ interface Window {
 				capturesMicrophone?: boolean;
 				microphoneDeviceId?: string;
 				microphoneLabel?: string;
+				recordingQualityPreset?: "efficient" | "balanced" | "maximum";
 			},
 		) => Promise<{
 			success: boolean;
@@ -880,6 +881,7 @@ interface Window {
 			microphoneEnabled: boolean;
 			microphoneDeviceId?: string;
 			systemAudioEnabled: boolean;
+			recordingQualityPreset: "efficient" | "balanced" | "maximum";
 		}>;
 		getRecordingAudioLabConfig: () => Promise<{
 			browserMicrophoneProfile: string;
@@ -889,6 +891,7 @@ interface Window {
 			microphoneEnabled?: boolean;
 			microphoneDeviceId?: string;
 			systemAudioEnabled?: boolean;
+			recordingQualityPreset?: "efficient" | "balanced" | "maximum";
 		}) => Promise<{ success: boolean; error?: string }>;
 		/** Countdown timer before recording */
 		getCountdownDelay: () => Promise<{ success: boolean; delay: number }>;

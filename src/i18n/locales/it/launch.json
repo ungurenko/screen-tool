@@ -8,6 +8,7 @@
 		"disableWebcam": "Disabilita overlay webcam",
 		"enableWebcam": "Abilita overlay webcam",
 		"countdownDelay": "Ritardo conto alla rovescia",
+		"quality": "Qualità registrazione",
 		"noDelay": "Nessun ritardo",
 		"record": "Registra",
 		"recordingFolder": "Percorso registrazioni: {{path}}",

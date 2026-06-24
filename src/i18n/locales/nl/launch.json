@@ -8,6 +8,7 @@
 		"disableWebcam": "Webcam-overlay uitschakelen",
 		"enableWebcam": "Webcam-overlay inschakelen",
 		"countdownDelay": "Aftelvertraging",
+		"quality": "Opnamekwaliteit",
 		"noDelay": "Geen vertraging",
 		"record": "Opnemen",
 		"recordingFolder": "Opnamepad: {{path}}",

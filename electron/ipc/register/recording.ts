@@ -12,6 +12,7 @@ import {
 	shell,
 	systemPreferences,
 } from "electron";
+import { getRecordingCaptureProfile } from "../../../src/lib/recordingPerformance";
 import { showCursor } from "../../cursorHider";
 import { tElectron } from "../../i18n";
 import { ALLOW_SCREENTOOL_WINDOW_CAPTURE } from "../constants";
@@ -460,10 +461,13 @@ export function registerRecordingHandlers(
 					const displayBounds =
 						captureTarget.kind === "display" ? captureTarget.bounds : null;
 					setWindowsOrphanedMicAudioPath(null);
+					const recordingProfile = getRecordingCaptureProfile(
+						options?.recordingQualityPreset,
+					);
 
 					const config: Record<string, unknown> = {
 						outputPath: tempVideoPath,
-						fps: 60,
+						fps: recordingProfile.frameRate,
 					};
 
 					if (captureTarget.kind === "invalid-window") {
@@ -738,8 +742,15 @@ export function registerRecordingHandlers(
 				const microphoneOutputPath = capturesMicrophone
 					? path.join(recordingsDir, `recording-${timestamp}.mic.m4a`)
 					: null;
+				const recordingProfile = getRecordingCaptureProfile(
+					options?.recordingQualityPreset,
+				);
 				const config: Record<string, unknown> = {
-					fps: 60,
+					fps: recordingProfile.frameRate,
+					maxWidth: recordingProfile.maxWidth,
+					maxHeight: recordingProfile.maxHeight,
+					queueDepth: recordingProfile.queueDepth,
+					videoBitrate: recordingProfile.nativeVideoBitsPerSecond,
 					outputPath,
 					capturesSystemAudio,
 					capturesMicrophone,

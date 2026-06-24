@@ -8,6 +8,7 @@
 		"disableWebcam": "웹캠 오버레이 끄기",
 		"enableWebcam": "웹캠 오버레이 켜기",
 		"countdownDelay": "카운트다운 지연",
+		"quality": "녹화 품질",
 		"noDelay": "지연 없음",
 		"record": "녹화",
 		"recordingFolder": "녹화 폴더: {{path}}",

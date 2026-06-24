@@ -13,6 +13,7 @@ export type NativeMacRecordingOptions = {
 	capturesMicrophone?: boolean;
 	microphoneDeviceId?: string;
 	microphoneLabel?: string;
+	recordingQualityPreset?: "efficient" | "balanced" | "maximum";
 };
 
 export type WindowBounds = {

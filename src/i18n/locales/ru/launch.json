@@ -8,6 +8,7 @@
 		"disableWebcam": "Отключить наложение веб-камеры",
 		"enableWebcam": "Включить наложение веб-камеры",
 		"countdownDelay": "Обратный отсчёт",
+		"quality": "Качество записи",
 		"noDelay": "Без задержки",
 		"record": "Запись",
 		"recordingFolder": "Место сохранения: {{path}}",

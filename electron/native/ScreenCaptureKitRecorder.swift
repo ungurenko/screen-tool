@@ -5,6 +5,10 @@ import CoreGraphics
 
 struct CaptureConfig: Codable {
 	let fps: Int?
+	let maxWidth: Int?
+	let maxHeight: Int?
+	let queueDepth: Int?
+	let videoBitrate: Int?
 	let displayId: CGDirectDisplayID?
 	let windowId: UInt32?
 	let outputPath: String?
@@ -16,7 +20,13 @@ struct CaptureConfig: Codable {
 	let microphoneOutputPath: String?
 }
 
-let targetCaptureFPS = 60
+let defaultCaptureFPS = 30
+let maximumCaptureFPS = 60
+let defaultCaptureQueueDepth = 3
+let maximumCaptureQueueDepth = 6
+let defaultMaxCaptureWidth = 2560
+let defaultMaxCaptureHeight = 1440
+let defaultVideoBitrate = 16_000_000
 let maxInlineAudioTailExtension = CMTime(seconds: 2.0, preferredTimescale: 600)
 
 final class ScreenCaptureRecorder: NSObject, SCStreamOutput, SCStreamDelegate {
@@ -53,6 +63,7 @@ final class ScreenCaptureRecorder: NSObject, SCStreamOutput, SCStreamDelegate {
 	private var capturesMicrophone = false
 	private var writesSystemAudioToSeparateTrack = false
 	private var writesMicrophoneToSeparateTrack = false
+	private var recordingFPS = defaultCaptureFPS
 
 	private let microphoneOutputTypeRawValue = 2
 
@@ -77,9 +88,10 @@ final class ScreenCaptureRecorder: NSObject, SCStreamOutput, SCStreamDelegate {
 		}
 		writesSystemAudioToSeparateTrack = capturesSystemAudio
 		writesMicrophoneToSeparateTrack = capturesSystemAudio && capturesMicrophone
-		let requestedFPS = max(targetCaptureFPS, config.fps ?? targetCaptureFPS)
+		let requestedFPS = Self.clampedFrameRate(config.fps)
+		recordingFPS = requestedFPS
 		streamConfig.minimumFrameInterval = CMTime(value: 1, timescale: CMTimeScale(requestedFPS))
-		streamConfig.queueDepth = 6
+		streamConfig.queueDepth = Self.clampedQueueDepth(config.queueDepth)
 		streamConfig.pixelFormat = kCVPixelFormatType_32BGRA
 		streamConfig.showsCursor = false
 		streamConfig.capturesAudio = capturesSystemAudio || capturesMicrophone
@@ -95,8 +107,8 @@ final class ScreenCaptureRecorder: NSObject, SCStreamOutput, SCStreamDelegate {
 		}
 
 		let filter: SCContentFilter
-		let outputWidth: Int
-		let outputHeight: Int
+		let sourceWidth: Int
+		let sourceHeight: Int
 
 		if let windowId = config.windowId {
 			trackedWindowId = windowId
@@ -110,13 +122,11 @@ final class ScreenCaptureRecorder: NSObject, SCStreamOutput, SCStreamDelegate {
 				$0.frame.intersects(window.frame) || $0.frame.contains(CGPoint(x: window.frame.midX, y: window.frame.midY))
 			})
 			let scaleFactor = ScreenCaptureRecorder.scaleFactor(for: candidateDisplay?.displayID ?? CGMainDisplayID())
-			outputWidth = max(2, Int(window.frame.width) * scaleFactor)
-			outputHeight = max(2, Int(window.frame.height) * scaleFactor)
+			sourceWidth = max(2, Int(window.frame.width) * scaleFactor)
+			sourceHeight = max(2, Int(window.frame.height) * scaleFactor)
 			if #available(macOS 14.0, *) {
 				streamConfig.ignoreShadowsSingleWindow = true
 			}
-			streamConfig.width = outputWidth
-			streamConfig.height = outputHeight
 		} else {
 			trackedWindowId = nil
 			let displayId = config.displayId ?? CGMainDisplayID()
@@ -127,11 +137,19 @@ final class ScreenCaptureRecorder: NSObject, SCStreamOutput, SCStreamDelegate {
 			filter = SCContentFilter(display: display, excludingApplications: [], exceptingWindows: [])
 			let displayBounds = CGDisplayBounds(display.displayID)
 			let scaleFactor = ScreenCaptureRecorder.scaleFactor(for: display.displayID)
-			outputWidth = max(2, Int(displayBounds.width) * scaleFactor)
-			outputHeight = max(2, Int(displayBounds.height) * scaleFactor)
-			streamConfig.width = outputWidth
-			streamConfig.height = outputHeight
+			sourceWidth = max(2, Int(displayBounds.width) * scaleFactor)
+			sourceHeight = max(2, Int(displayBounds.height) * scaleFactor)
 		}
+		let outputSize = Self.constrainedCaptureSize(
+			width: sourceWidth,
+			height: sourceHeight,
+			maxWidth: config.maxWidth,
+			maxHeight: config.maxHeight
+		)
+		let outputWidth = outputSize.width
+		let outputHeight = outputSize.height
+		streamConfig.width = outputWidth
+		streamConfig.height = outputHeight
 
 		let destinationURL: URL
 		if let outputPath = config.outputPath, !outputPath.isEmpty {
@@ -164,6 +182,12 @@ final class ScreenCaptureRecorder: NSObject, SCStreamOutput, SCStreamDelegate {
 
 		outputSettings[AVVideoWidthKey] = outputWidth
 		outputSettings[AVVideoHeightKey] = outputHeight
+		var compressionProperties = (outputSettings[AVVideoCompressionPropertiesKey] as? [String: Any]) ?? [:]
+		compressionProperties[AVVideoAverageBitRateKey] = config.videoBitrate ?? Self.defaultBitrate(width: outputWidth, height: outputHeight, fps: requestedFPS)
+		compressionProperties[AVVideoExpectedSourceFrameRateKey] = requestedFPS
+		compressionProperties[AVVideoMaxKeyFrameIntervalKey] = max(1, requestedFPS * 2)
+		compressionProperties[AVVideoProfileLevelKey] = AVVideoProfileLevelH264HighAutoLevel
+		outputSettings[AVVideoCompressionPropertiesKey] = compressionProperties
 
 		let videoInput = AVAssetWriterInput(mediaType: .video, outputSettings: outputSettings)
 		videoInput.expectsMediaDataInRealTime = true
@@ -420,6 +444,7 @@ final class ScreenCaptureRecorder: NSObject, SCStreamOutput, SCStreamDelegate {
 		capturesMicrophone = false
 		writesSystemAudioToSeparateTrack = false
 		writesMicrophoneToSeparateTrack = false
+		recordingFPS = defaultCaptureFPS
 		return path
 	}
 
@@ -466,7 +491,7 @@ final class ScreenCaptureRecorder: NSObject, SCStreamOutput, SCStreamDelegate {
 			return lastVideoDuration
 		}
 
-		return CMTime(value: 1, timescale: CMTimeScale(targetCaptureFPS))
+		return CMTime(value: 1, timescale: CMTimeScale(recordingFPS))
 	}
 
 	private func latestInlineAudioEndTime() -> CMTime {
@@ -541,6 +566,58 @@ final class ScreenCaptureRecorder: NSObject, SCStreamOutput, SCStreamDelegate {
 		}
 
 		return nil
+	}
+
+	private static func clampedFrameRate(_ fps: Int?) -> Int {
+		guard let fps else {
+			return defaultCaptureFPS
+		}
+
+		return max(1, min(maximumCaptureFPS, fps))
+	}
+
+	private static func clampedQueueDepth(_ queueDepth: Int?) -> Int {
+		guard let queueDepth else {
+			return defaultCaptureQueueDepth
+		}
+
+		return max(1, min(maximumCaptureQueueDepth, queueDepth))
+	}
+
+	private static func constrainedCaptureSize(width: Int, height: Int, maxWidth: Int?, maxHeight: Int?) -> (width: Int, height: Int) {
+		let safeWidth = max(2, width)
+		let safeHeight = max(2, height)
+		let widthLimit = max(2, maxWidth ?? defaultMaxCaptureWidth)
+		let heightLimit = max(2, maxHeight ?? defaultMaxCaptureHeight)
+		let scale = min(
+			1.0,
+			Double(widthLimit) / Double(safeWidth),
+			Double(heightLimit) / Double(safeHeight)
+		)
+
+		return (
+			width: evenDimension(Double(safeWidth) * scale),
+			height: evenDimension(Double(safeHeight) * scale)
+		)
+	}
+
+	private static func evenDimension(_ value: Double) -> Int {
+		let rounded = max(2, Int(value.rounded(.down)))
+		return rounded - (rounded % 2)
+	}
+
+	private static func defaultBitrate(width: Int, height: Int, fps: Int) -> Int {
+		let pixels = width * height
+		let baseBitrate: Int
+		if pixels >= defaultMaxCaptureWidth * defaultMaxCaptureHeight {
+			baseBitrate = defaultVideoBitrate
+		} else if pixels >= 1920 * 1080 {
+			baseBitrate = 10_000_000
+		} else {
+			baseBitrate = 8_000_000
+		}
+
+		return max(2_000_000, Int((Double(baseBitrate) * Double(max(1, fps))) / Double(defaultCaptureFPS)))
 	}
 
 	private func supportsNativeMicrophoneCapture(streamConfig: SCStreamConfiguration) -> Bool {
@@ -715,4 +792,3 @@ DispatchQueue.global(qos: .utility).async {
 }
 
 service.waitUntilFinished()
-

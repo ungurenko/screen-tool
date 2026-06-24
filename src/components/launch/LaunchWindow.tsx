@@ -2,6 +2,7 @@ import {
 	ArrowClockwiseIcon,
 	CaretUpIcon,
 	DotsThreeVerticalIcon,
+	Gauge,
 	MicrophoneIcon,
 	MicrophoneSlashIcon,
 	MinusIcon,
@@ -19,6 +20,7 @@ import { useScopedT } from "../../contexts/I18nContext";
 import { useMicrophoneDevices } from "../../hooks/useMicrophoneDevices";
 import { useScreenRecorder } from "../../hooks/useScreenRecorder";
 import { useVideoDevices } from "../../hooks/useVideoDevices";
+import { getRecordingCaptureProfile } from "../../lib/recordingPerformance";
 import { Button } from "../ui/button";
 import { HudInteractionContext } from "./contexts/HudInteractionContext";
 import { canToggleFloatingWebcamPreview } from "./floatingWebcamPreview";
@@ -37,6 +39,7 @@ import {
 import { MicPopover } from "./popovers/MicPopover";
 import { MorePopover } from "./popovers/MorePopover";
 import { ProjectPopover } from "./popovers/ProjectPopover";
+import { QualityPopover } from "./popovers/QualityPopover";
 import { SourcePopover } from "./popovers/SourcePopover";
 import { WebcamPopover } from "./popovers/WebcamPopover";
 import { RecordingControls } from "./RecordingControls";
@@ -77,6 +80,8 @@ function LaunchWindowContent() {
 		setWebcamDeviceId,
 		countdownDelay,
 		setCountdownDelay,
+		recordingQualityPreset,
+		setRecordingQualityPreset,
 		preparePermissions,
 	} = useScreenRecorder();
 
@@ -117,6 +122,7 @@ function LaunchWindowContent() {
 
 	const supportsHudCaptureProtection = platform !== "linux";
 	const displayedSelectedSource = hasSelectedSource ? selectedSource : t("recording.screen");
+	const selectedQualityPreset = getRecordingCaptureProfile(recordingQualityPreset);
 
 	useEffect(() => {
 		if (!selectedDeviceId) {
@@ -331,6 +337,24 @@ function LaunchWindowContent() {
 						className={countdownDelay > 0 ? styles.ibActive : ""}
 					>
 						<TimerIcon size={18} />
+					</Button>
+				}
+			/>
+
+			<QualityPopover
+				recordingQualityPreset={recordingQualityPreset}
+				onSelectPreset={setRecordingQualityPreset}
+				trigger={
+					<Button
+						variant="ghost"
+						size="icon"
+						iconSize="lg"
+						title={`${t("recording.quality", "Качество записи")}: ${selectedQualityPreset.label}, ${selectedQualityPreset.resolutionLabel}, ${selectedQualityPreset.frameRate} FPS`}
+						className={
+							recordingQualityPreset !== "balanced" ? styles.ibActive : undefined
+						}
+					>
+						<Gauge size={18} />
 					</Button>
 				}
 			/>

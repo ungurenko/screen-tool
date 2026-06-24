@@ -173,6 +173,38 @@
 	color: var(--launch-accent);
 }
 
+.ddItemStacked {
+	align-items: flex-start;
+	gap: 9px;
+	min-height: 54px;
+}
+
+.ddItemTitle {
+	display: block;
+	color: var(--launch-text);
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 1.2;
+}
+
+.ddItemMeta {
+	display: block;
+	color: var(--launch-text-muted);
+	font-size: 10px;
+	font-weight: 600;
+	line-height: 1.35;
+}
+
+.ddItemHint {
+	max-width: 94px;
+	color: var(--launch-text-muted);
+	font-size: 10px;
+	font-weight: 600;
+	line-height: 1.25;
+	text-align: right;
+	white-space: normal;
+}
+
 .finalizingState {
 	display: inline-flex;
 	align-items: center;

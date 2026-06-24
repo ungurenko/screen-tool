@@ -8,6 +8,7 @@
 		"disableWebcam": "Désactiver l’incrustation webcam",
 		"enableWebcam": "Activer l’incrustation webcam",
 		"countdownDelay": "Délai du compte à rebours",
+		"quality": "Qualité d’enregistrement",
 		"noDelay": "Aucun délai",
 		"record": "Enregistrer",
 		"recordingFolder": "Chemin des enregistrements : {{path}}",

@@ -506,6 +506,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
 			capturesMicrophone?: boolean;
 			microphoneDeviceId?: string;
 			microphoneLabel?: string;
+			recordingQualityPreset?: "efficient" | "balanced" | "maximum";
 		},
 	) => {
 		return ipcRenderer.invoke("start-native-screen-recording", source, options);
@@ -969,6 +970,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		microphoneEnabled?: boolean;
 		microphoneDeviceId?: string;
 		systemAudioEnabled?: boolean;
+		recordingQualityPreset?: "efficient" | "balanced" | "maximum";
 	}) => ipcRenderer.invoke("set-recording-preferences", prefs),
 	getCountdownDelay: () => ipcRenderer.invoke("get-countdown-delay"),
 	setCountdownDelay: (delay: number) => ipcRenderer.invoke("set-countdown-delay", delay),

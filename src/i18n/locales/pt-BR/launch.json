@@ -8,6 +8,7 @@
 		"disableWebcam": "Desativar sobreposição da webcam",
 		"enableWebcam": "Ativar sobreposição da webcam",
 		"countdownDelay": "Atraso da contagem regressiva",
+		"quality": "Qualidade da gravação",
 		"noDelay": "Sem atraso",
 		"record": "Gravar",
 		"recordingFolder": "Caminho das gravações: {{path}}",

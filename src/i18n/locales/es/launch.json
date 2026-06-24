@@ -8,6 +8,7 @@
 		"disableWebcam": "Desactivar superposición de cámara",
 		"enableWebcam": "Activar superposición de cámara",
 		"countdownDelay": "Retraso de cuenta regresiva",
+		"quality": "Calidad de grabación",
 		"noDelay": "Sin retraso",
 		"record": "Grabar",
 		"recordingFolder": "Carpeta de grabaciones: {{path}}",
