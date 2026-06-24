@@ -38,16 +38,6 @@
       "to": "assets/wallpapers"
     }
   ],
-  "publish": [
-    {
-      "provider": "github",
-      "owner": "webadderall",
-      "repo": "Recordly",
-      "tagNamePrefix": "v",
-      "publishAutoUpdate": true
-    }
-  ],
-
   "mac": {
     "hardenedRuntime": true,
     "entitlements": "build/entitlements.mac.plist",
@@ -111,4 +101,3 @@
     "artifactName": "${productName}-windows-${arch}.${ext}"
   }
 }
-

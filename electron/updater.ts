@@ -8,7 +8,9 @@ import { USER_DATA_PATH } from "./appPaths";
 const UPDATE_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 export const UPDATE_REMINDER_DELAY_MS = 3 * 60 * 60 * 1000;
 const DISMISSED_READY_REMINDER_DELAY_MS = 5 * 60 * 1000;
-const AUTO_UPDATES_DISABLED = process.env.RECORDLY_DISABLE_AUTO_UPDATES === "1";
+const AUTO_UPDATES_DISABLED =
+	process.env.RECORDLY_DISABLE_AUTO_UPDATES === "1" ||
+	process.env.RECORDLY_ENABLE_AUTO_UPDATES !== "1";
 const UPDATE_FEED_URL_OVERRIDE = process.env.RECORDLY_UPDATE_FEED_URL?.trim() ?? "";
 const UPDATER_LOG_PATH =
 	process.env.RECORDLY_UPDATER_LOG_PATH?.trim() || path.join(USER_DATA_PATH, "updater.log");
@@ -112,7 +114,7 @@ function writeUpdaterLog(message: string, detail?: unknown) {
 
 function configureUpdateFeed() {
 	if (!UPDATE_FEED_URL_OVERRIDE) {
-		writeUpdaterLog("Using published GitHub update feed.");
+		writeUpdaterLog("No custom update feed configured.");
 		return;
 	}
 
@@ -125,7 +127,12 @@ function configureUpdateFeed() {
 }
 
 function canUseAutoUpdates() {
-	return !AUTO_UPDATES_DISABLED && app.isPackaged && !process.mas;
+	return (
+		!AUTO_UPDATES_DISABLED &&
+		Boolean(UPDATE_FEED_URL_OVERRIDE) &&
+		app.isPackaged &&
+		!process.mas
+	);
 }
 
 export function isAutoUpdateFeatureEnabled() {
@@ -602,8 +609,8 @@ export async function checkForAppUpdates(
 				title: "Updates Not Enabled",
 				message: "Auto-updates are only available in packaged releases.",
 				detail: AUTO_UPDATES_DISABLED
-					? "This build disabled auto-updates through RECORDLY_DISABLE_AUTO_UPDATES=1."
-					: "Development builds do not ship the packaged update metadata required by electron-updater.",
+					? "This local build disables auto-updates by default. Configure your own update feed, then set RECORDLY_ENABLE_AUTO_UPDATES=1."
+					: "Set RECORDLY_UPDATE_FEED_URL to your own update feed before enabling packaged auto-updates.",
 			});
 		}
 		return;
