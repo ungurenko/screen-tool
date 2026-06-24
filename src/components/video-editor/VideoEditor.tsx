@@ -73,10 +73,6 @@ import {
 	VideoExporter,
 } from "@/lib/exporter";
 import { getMp4ExportBitrate, getSourceQualityBitrate } from "@/lib/exporter/exportBitrate";
-import {
-	canUseInMemoryExportSaveFallback,
-	describeBlockedInMemoryExportSave,
-} from "@/lib/exporter/exportSavePolicy";
 import { matchesShortcut } from "@/lib/shortcuts";
 import { cn } from "@/lib/utils";
 import {
@@ -89,6 +85,11 @@ import { planClipSpeedChange } from "./clipSpeedChange";
 import { ExtensionIcon } from "./ExtensionIcon";
 import { calculateMp4ExportDimensions, calculateMp4SourceDimensions } from "./exportDimensions";
 import { resolveSavingExportProgress } from "./exportProgressState";
+import {
+	type PendingExportSave,
+	saveBlobExport as saveBlobExportFlow,
+	writeSmokeExportReport,
+} from "./exportSaveFlow";
 import { resolveExportStartSettings } from "./exportStartSettings";
 import { resolveExportStatusModel } from "./exportStatusModel";
 import { resolveMp4ExportRouting } from "./mp4ExportRouting";
@@ -154,7 +155,10 @@ import {
 } from "./projectPersistence";
 import { SettingsPanel } from "./SettingsPanel";
 import { getDevOpenRecordingConfig, getSmokeExportConfig } from "./smokeExportConfig";
-import { createSmokeExportProgressSampler } from "./smokeExportProgress";
+import {
+	createSmokeExportProgressSampler,
+	type SmokeExportProgressSample,
+} from "./smokeExportProgress";
 import {
 	APP_HEADER_ICON_BUTTON_CLASS,
 	DiscordLinkButton,
@@ -223,74 +227,24 @@ import {
 	getDisplayedTimelineWindowMs,
 } from "./videoPlayback/cursorLoopTelemetry";
 
-type PendingExportSave = {
-	fileName: string;
-	arrayBuffer?: ArrayBuffer;
-	tempFilePath?: string;
-	captionSidecar?: {
-		format: "srt" | "vtt" | "both";
-		cues: Array<{
-			startMs: number;
-			endMs: number;
-			text: string;
-		}>;
-	};
-};
-
 type CancelableExporter = {
 	cancel(): void;
 };
 
-const EXPORT_BLOB_STREAM_CHUNK_BYTES = 16 * 1024 * 1024;
+type ExportRunContext = {
+	videoUrl: string;
+	previewWidth: number;
+	previewHeight: number;
+	effectiveShadowIntensity: number;
+	smokeExportStartedAt: number | null;
+	smokeProgressSamples: SmokeExportProgressSample[];
+	recordSmokeProgress: (progress: ExportProgress) => void;
+};
 
-async function streamExportBlobToTempFile(blob: Blob, extension: string): Promise<string | null> {
-	if (
-		typeof window === "undefined" ||
-		!window.electronAPI?.openExportStream ||
-		!window.electronAPI?.writeExportStreamChunk ||
-		!window.electronAPI?.closeExportStream
-	) {
-		return null;
-	}
-
-	const openResult = await window.electronAPI.openExportStream({ extension });
-	if (!openResult.success || !openResult.streamId || !openResult.tempPath) {
-		throw new Error(openResult.error || "Failed to open export stream");
-	}
-
-	const { streamId } = openResult;
-	let position = 0;
-
-	try {
-		while (position < blob.size) {
-			const chunk = blob.slice(position, position + EXPORT_BLOB_STREAM_CHUNK_BYTES);
-			const chunkBuffer = await chunk.arrayBuffer();
-			const writeResult = await window.electronAPI.writeExportStreamChunk(
-				streamId,
-				position,
-				new Uint8Array(chunkBuffer),
-			);
-			if (!writeResult.success) {
-				throw new Error(writeResult.error || "Failed to write export stream chunk");
-			}
-			position += chunkBuffer.byteLength;
-		}
-
-		const closeResult = await window.electronAPI.closeExportStream(streamId);
-		if (!closeResult.success || !closeResult.tempPath) {
-			throw new Error(closeResult.error || "Failed to close export stream");
-		}
-
-		return closeResult.tempPath;
-	} catch (error) {
-		try {
-			await window.electronAPI.closeExportStream(streamId, { abort: true });
-		} catch {
-			// Best-effort cleanup; preserve the original error below.
-		}
-		throw error;
-	}
-}
+type ExportRunResult = {
+	keepExportDialogOpen: boolean;
+	shouldCloseWindow: boolean;
+};
 
 type SaveProjectOptions = {
 	silent?: boolean;
@@ -310,29 +264,6 @@ type PendingUnsavedChangesDialogDecision = "cancel" | "discard" | "save";
 type PendingUnsavedChangesDialog = {
 	resolve: (decision: PendingUnsavedChangesDialogDecision) => void;
 };
-
-async function writeSmokeExportReport(
-	outputPath: string | null,
-	report: Record<string, unknown>,
-): Promise<void> {
-	if (!outputPath || typeof window === "undefined") {
-		return;
-	}
-
-	try {
-		const reportBytes = new TextEncoder().encode(JSON.stringify(report, null, 2));
-		const reportBuffer = reportBytes.buffer.slice(
-			reportBytes.byteOffset,
-			reportBytes.byteOffset + reportBytes.byteLength,
-		) as ArrayBuffer;
-		await window.electronAPI.writeExportedVideoToPath(
-			reportBuffer,
-			`${outputPath}.report.json`,
-		);
-	} catch (error) {
-		console.error("[smoke-export] Failed to write report", error);
-	}
-}
 
 const SMOKE_EXPORT_READY_TIMEOUT_MS = 30_000;
 const DEFAULT_MP4_EXPORT_FRAME_RATE: ExportMp4FrameRate = 30;
@@ -1392,82 +1323,12 @@ export default function VideoEditor() {
 			outputPath: string | null = null,
 			captionSidecar?: PendingExportSave["captionSidecar"],
 		) => {
-			const extension = fileName.split(".").pop()?.toLowerCase() || "bin";
-			const hasExportStreamApi =
-				typeof window !== "undefined" &&
-				typeof window.electronAPI?.openExportStream === "function" &&
-				typeof window.electronAPI?.writeExportStreamChunk === "function" &&
-				typeof window.electronAPI?.closeExportStream === "function";
-			let streamError: unknown = null;
-
-			try {
-				const tempFilePath = await streamExportBlobToTempFile(blob, extension);
-				if (tempFilePath) {
-					return {
-						saveResult: await window.electronAPI.finalizeExportedVideo({
-							tempPath: tempFilePath,
-							fileName,
-							outputPath,
-							captionSidecar,
-						}),
-						pendingSave: {
-							fileName,
-							tempFilePath,
-							captionSidecar,
-						} satisfies PendingExportSave,
-					};
-				}
-			} catch (error) {
-				streamError = error;
-				console.warn("[export] Temp-file blob save failed", error);
-			}
-
-			if (
-				!canUseInMemoryExportSaveFallback({
-					blobSize: blob.size,
-					extension,
-					hasExportStreamApi,
-				})
-			) {
-				const message = describeBlockedInMemoryExportSave({
-					blobSize: blob.size,
-					extension,
-				});
-				console.error("[export] Refusing in-memory blob save fallback", {
-					fileName,
-					blobSize: blob.size,
-					extension,
-					hasExportStreamApi,
-					streamError,
-				});
-				throw new Error(message);
-			}
-
-			console.warn("[export] Falling back to in-memory blob save", {
+			return saveBlobExportFlow({
+				blob,
 				fileName,
-				blobSize: blob.size,
-				extension,
-				hasExportStreamApi,
+				outputPath,
+				captionSidecar,
 			});
-			const arrayBuffer = await blob.arrayBuffer();
-			return {
-				saveResult: outputPath
-					? await window.electronAPI.writeExportedVideoToPath(
-							arrayBuffer,
-							outputPath,
-							captionSidecar,
-						)
-					: await window.electronAPI.saveExportedVideo(
-							arrayBuffer,
-							fileName,
-							captionSidecar,
-						),
-				pendingSave: {
-					fileName,
-					arrayBuffer,
-					captionSidecar,
-				} satisfies PendingExportSave,
-			};
 		},
 		[],
 	);
@@ -4556,6 +4417,513 @@ export default function VideoEditor() {
 		[t, translateEditorMessage],
 	);
 
+	const createCommonExportConfig = useCallback(
+		(context: ExportRunContext) => ({
+			videoUrl: context.videoUrl,
+			wallpaper,
+			trimRegions,
+			speedRegions: effectiveSpeedRegions,
+			showShadow: context.effectiveShadowIntensity > 0,
+			shadowIntensity: context.effectiveShadowIntensity,
+			backgroundBlur,
+			zoomMotionBlur,
+			zoomMotionBlurTuning,
+			zoomTemporalMotionBlur,
+			zoomMotionBlurSampleCount,
+			zoomMotionBlurShutterFraction,
+			connectZooms,
+			zoomInDurationMs,
+			zoomInOverlapMs,
+			zoomOutDurationMs,
+			connectedZoomGapMs,
+			connectedZoomDurationMs,
+			zoomInEasing,
+			zoomOutEasing,
+			connectedZoomEasing,
+			borderRadius,
+			padding,
+			cropRegion,
+			webcam,
+			webcamUrl:
+				resolvedWebcamVideoUrl ?? (webcam.sourcePath ? toFileUrl(webcam.sourcePath) : null),
+			annotationRegions,
+			autoCaptions,
+			autoCaptionSettings,
+			zoomRegions: effectiveZoomRegions,
+			cursorTelemetry: effectiveCursorTelemetry,
+			showCursor: effectiveShowCursor,
+			cursorStyle,
+			cursorSize,
+			cursorSmoothing,
+			cursorSpringStiffnessMultiplier,
+			cursorSpringDampingMultiplier,
+			cursorSpringMassMultiplier,
+			cameraSpringStiffnessMultiplier,
+			cameraSpringDampingMultiplier,
+			cameraSpringMassMultiplier,
+			zoomSmoothness,
+			zoomClassicMode,
+			cursorMotionBlur,
+			cursorClickEffect,
+			cursorClickEffectColor,
+			cursorClickEffectScale,
+			cursorClickEffectOpacity,
+			cursorClickEffectDurationMs,
+			cursorClickBounce,
+			cursorClickBounceDuration,
+			cursorSway,
+			frame,
+			previewWidth: context.previewWidth,
+			previewHeight: context.previewHeight,
+			maxDecodeQueue: smokeExportConfig.maxDecodeQueue,
+			maxPendingFrames: smokeExportConfig.maxPendingFrames,
+			onProgress: (progress: ExportProgress) => {
+				context.recordSmokeProgress(progress);
+				setExportProgress(progress);
+			},
+		}),
+		[
+			wallpaper,
+			trimRegions,
+			effectiveSpeedRegions,
+			backgroundBlur,
+			zoomMotionBlur,
+			zoomMotionBlurTuning,
+			zoomTemporalMotionBlur,
+			zoomMotionBlurSampleCount,
+			zoomMotionBlurShutterFraction,
+			connectZooms,
+			zoomInDurationMs,
+			zoomInOverlapMs,
+			zoomOutDurationMs,
+			connectedZoomGapMs,
+			connectedZoomDurationMs,
+			zoomInEasing,
+			zoomOutEasing,
+			connectedZoomEasing,
+			borderRadius,
+			padding,
+			cropRegion,
+			webcam,
+			resolvedWebcamVideoUrl,
+			annotationRegions,
+			autoCaptions,
+			autoCaptionSettings,
+			effectiveZoomRegions,
+			effectiveCursorTelemetry,
+			effectiveShowCursor,
+			cursorStyle,
+			cursorSize,
+			cursorSmoothing,
+			cursorSpringStiffnessMultiplier,
+			cursorSpringDampingMultiplier,
+			cursorSpringMassMultiplier,
+			cameraSpringStiffnessMultiplier,
+			cameraSpringDampingMultiplier,
+			cameraSpringMassMultiplier,
+			zoomSmoothness,
+			zoomClassicMode,
+			cursorMotionBlur,
+			cursorClickEffect,
+			cursorClickEffectColor,
+			cursorClickEffectScale,
+			cursorClickEffectOpacity,
+			cursorClickEffectDurationMs,
+			cursorClickBounce,
+			cursorClickBounceDuration,
+			cursorSway,
+			frame,
+			smokeExportConfig.maxDecodeQueue,
+			smokeExportConfig.maxPendingFrames,
+		],
+	);
+
+	const rememberPendingExportSave = useCallback(
+		(pendingSave: PendingExportSave) => {
+			pendingExportSaveRef.current = pendingSave;
+			setHasPendingExportSave(true);
+			setExportError(
+				t(
+					"editor.export.saveDialogCanceledRetry",
+					"Save dialog canceled. Click Save Again to save without re-rendering.",
+				),
+			);
+			toast.info(
+				t(
+					"editor.export.saveCanceledRetry",
+					"Save canceled. You can save again without re-exporting.",
+				),
+			);
+		},
+		[t],
+	);
+
+	const completeSavedExport = useCallback(
+		(filePath: string, smokeExportStartedAt: number | null) => {
+			if (smokeExportStartedAt !== null) {
+				console.log(
+					`[smoke-export] Completed in ${Math.round(performance.now() - smokeExportStartedAt)}ms (${filePath})`,
+				);
+			}
+			showExportSuccessToast(filePath);
+			setExportedFilePath(filePath);
+		},
+		[showExportSuccessToast],
+	);
+
+	const runGifExport = useCallback(
+		async (settings: ExportSettings, context: ExportRunContext): Promise<ExportRunResult> => {
+			if (!settings.gifConfig) {
+				return { keepExportDialogOpen: false, shouldCloseWindow: false };
+			}
+
+			const gifExporter = new GifExporter({
+				...createCommonExportConfig(context),
+				width: settings.gifConfig.width,
+				height: settings.gifConfig.height,
+				frameRate: settings.gifConfig.frameRate,
+				loop: settings.gifConfig.loop,
+				sizePreset: settings.gifConfig.sizePreset,
+				videoPadding: padding,
+			});
+
+			exporterRef.current = gifExporter as unknown as VideoExporter;
+			const result = await gifExporter.export();
+
+			if (result.success && result.blob) {
+				const timestamp = Date.now();
+				const fileName = `export-${timestamp}.gif`;
+				markExportAsSaving();
+
+				const { saveResult, pendingSave } = await saveBlobExport(
+					result.blob,
+					fileName,
+					smokeExportConfig.enabled ? smokeExportConfig.outputPath : null,
+				);
+
+				if (saveResult.canceled) {
+					rememberPendingExportSave(pendingSave);
+					return { keepExportDialogOpen: true, shouldCloseWindow: false };
+				}
+
+				if (saveResult.success && saveResult.path) {
+					completeSavedExport(saveResult.path, context.smokeExportStartedAt);
+					return {
+						keepExportDialogOpen: false,
+						shouldCloseWindow: smokeExportConfig.enabled,
+					};
+				}
+
+				const errorMessage =
+					translateEditorMessage(saveResult.message) ||
+					t("editor.export.failedToSaveGif", "Failed to save GIF");
+				setExportError(errorMessage);
+				toast.error(errorMessage);
+				return {
+					keepExportDialogOpen: false,
+					shouldCloseWindow: smokeExportConfig.enabled,
+				};
+			}
+
+			const errorMessage = result.error || t("editor.export.gifFailed", "GIF export failed");
+			setExportError(errorMessage);
+			toast.error(errorMessage);
+			return {
+				keepExportDialogOpen: false,
+				shouldCloseWindow: smokeExportConfig.enabled,
+			};
+		},
+		[
+			createCommonExportConfig,
+			padding,
+			markExportAsSaving,
+			saveBlobExport,
+			smokeExportConfig.enabled,
+			smokeExportConfig.outputPath,
+			rememberPendingExportSave,
+			completeSavedExport,
+			translateEditorMessage,
+			t,
+		],
+	);
+
+	const runMp4Export = useCallback(
+		async (settings: ExportSettings, context: ExportRunContext): Promise<ExportRunResult> => {
+			const { quality, encodingMode, selectedMp4FrameRate } = resolveMp4ExportSettings({
+				smokeExportConfig: {
+					enabled: smokeExportConfig.enabled,
+					quality: smokeExportConfig.quality,
+					encodingMode: smokeExportConfig.encodingMode,
+					fps: smokeExportConfig.fps,
+				},
+				settings,
+				exportQuality,
+				exportEncodingMode,
+				mp4FrameRate,
+			});
+			const {
+				pipelineModel,
+				useExperimentalNativeExport,
+				useExperimentalNvidiaCudaExport,
+				backendPreference,
+			} = resolveMp4ExportRouting({
+				smokeExportConfig: {
+					enabled: smokeExportConfig.enabled,
+					pipelineModel: smokeExportConfig.pipelineModel,
+					useNativeExport: smokeExportConfig.useNativeExport,
+					backendPreference: smokeExportConfig.backendPreference,
+				},
+				settings,
+				exportPipelineModel,
+				exportBackendPreference,
+				experimentalNvidiaCudaExport,
+				nvidiaCudaExportAvailable,
+			});
+			const supportedSourceDimensions =
+				await ensureSupportedMp4SourceDimensions(selectedMp4FrameRate);
+			const { width: exportWidth, height: exportHeight } = calculateMp4ExportDimensions(
+				supportedSourceDimensions.width,
+				supportedSourceDimensions.height,
+				quality,
+			);
+			const bitrate = getMp4ExportBitrate({
+				width: exportWidth,
+				height: exportHeight,
+				frameRate: selectedMp4FrameRate,
+				quality,
+				encodingMode,
+				useModernNativeStaticLayout: useExperimentalNativeExport,
+			});
+			const sourceAudioTrackSettingsForExport =
+				selectedClipId !== null
+					? audio.selectedClipSourceAudioTrackSettings
+					: audio.activeSourceAudioTrackSettings;
+
+			const exporterConfig = {
+				...createCommonExportConfig(context),
+				width: exportWidth,
+				height: exportHeight,
+				frameRate: selectedMp4FrameRate,
+				bitrate,
+				codec: DEFAULT_MP4_CODEC,
+				encodingMode,
+				preferredEncoderPath: supportedSourceDimensions.encoderPath,
+				preferredRenderBackend: smokeExportConfig.renderBackend,
+				experimentalNativeExport: useExperimentalNativeExport,
+				experimentalNvidiaCudaExport: useExperimentalNvidiaCudaExport,
+				maxEncodeQueue: smokeExportConfig.maxEncodeQueue,
+				audioRegions,
+				clipRegions,
+				sourceAudioFallbackPaths: audio.sourceAudioFallbackPaths,
+				sourceAudioFallbackStartDelayMsByPath: audio.sourceAudioFallbackStartDelayMsByPath,
+				sourceAudioTrackSettings: sourceAudioTrackSettingsForExport,
+			};
+
+			const exporter =
+				pipelineModel === "modern"
+					? new ModernVideoExporter({
+							...exporterConfig,
+							backendPreference,
+						})
+					: new VideoExporter(exporterConfig);
+
+			exporterRef.current = exporter;
+			const result = await exporter.export();
+			const smokeExportElapsedMs =
+				context.smokeExportStartedAt !== null
+					? Math.round(performance.now() - context.smokeExportStartedAt)
+					: undefined;
+
+			if (result.success && (result.blob || result.tempFilePath)) {
+				const timestamp = Date.now();
+				const fileName = `export-${timestamp}.mp4`;
+				const sidecarForThisExport =
+					settings.includeCaptionSidecar && captionSidecarPayload
+						? captionSidecarPayload
+						: undefined;
+				markExportAsSaving();
+
+				let saveResult: {
+					success: boolean;
+					path?: string;
+					message?: string;
+					canceled?: boolean;
+				};
+				let pendingOnCancel: PendingExportSave;
+
+				if (result.tempFilePath) {
+					// Preferred path: main process already holds the finished MP4 on
+					// disk, so we just ask it to move the temp file into place. This
+					// avoids ever allocating a multi-GiB ArrayBuffer in the renderer.
+					saveResult = await window.electronAPI.finalizeExportedVideo({
+						tempPath: result.tempFilePath,
+						fileName,
+						outputPath:
+							smokeExportConfig.enabled && smokeExportConfig.outputPath
+								? smokeExportConfig.outputPath
+								: null,
+						captionSidecar: sidecarForThisExport,
+					});
+					pendingOnCancel = {
+						fileName,
+						tempFilePath: result.tempFilePath,
+						captionSidecar: sidecarForThisExport,
+					};
+				} else if (result.blob) {
+					// Legacy fallback: some export paths still surface a Blob, but in
+					// Electron we stream it into a temp file first so save/finalize
+					// never requires a giant renderer ArrayBuffer.
+					const blobSave = await saveBlobExport(
+						result.blob,
+						fileName,
+						smokeExportConfig.enabled ? smokeExportConfig.outputPath : null,
+						sidecarForThisExport,
+					);
+					saveResult = blobSave.saveResult;
+					pendingOnCancel = blobSave.pendingSave;
+				} else {
+					saveResult = {
+						success: false,
+						message: t("editor.export.noOutput", "Export produced no output"),
+					};
+					pendingOnCancel = { fileName };
+				}
+
+				if (saveResult.canceled) {
+					if (smokeExportConfig.enabled) {
+						await writeSmokeExportReport(smokeExportConfig.outputPath, {
+							success: false,
+							phase: "save",
+							format: "mp4",
+							pipelineModel,
+							backendPreference,
+							encodingMode,
+							shadowIntensity: context.effectiveShadowIntensity,
+							elapsedMs: smokeExportElapsedMs,
+							error: "Save canceled",
+							progressSamples: context.smokeProgressSamples,
+							metrics: result.metrics,
+						});
+					}
+					rememberPendingExportSave(pendingOnCancel);
+					return { keepExportDialogOpen: true, shouldCloseWindow: false };
+				}
+
+				if (saveResult.success && saveResult.path) {
+					if (smokeExportConfig.enabled) {
+						await writeSmokeExportReport(smokeExportConfig.outputPath, {
+							success: true,
+							phase: "saved",
+							format: "mp4",
+							pipelineModel,
+							backendPreference,
+							encodingMode,
+							shadowIntensity: context.effectiveShadowIntensity,
+							elapsedMs: smokeExportElapsedMs,
+							outputPath: saveResult.path,
+							progressSamples: context.smokeProgressSamples,
+							metrics: result.metrics,
+						});
+					}
+					completeSavedExport(saveResult.path, context.smokeExportStartedAt);
+					return {
+						keepExportDialogOpen: false,
+						shouldCloseWindow: smokeExportConfig.enabled,
+					};
+				}
+
+				if (smokeExportConfig.enabled) {
+					await writeSmokeExportReport(smokeExportConfig.outputPath, {
+						success: false,
+						phase: "save",
+						format: "mp4",
+						pipelineModel,
+						backendPreference,
+						encodingMode,
+						shadowIntensity: context.effectiveShadowIntensity,
+						elapsedMs: smokeExportElapsedMs,
+						error:
+							translateEditorMessage(saveResult.message) ||
+							t("editor.export.failedToSaveVideo", "Failed to save video"),
+						progressSamples: context.smokeProgressSamples,
+						metrics: result.metrics,
+					});
+				}
+				const errorMessage =
+					translateEditorMessage(saveResult.message) ||
+					t("editor.export.failedToSaveVideo", "Failed to save video");
+				setExportError(errorMessage);
+				showExportErrorToast(errorMessage);
+				const canRetrySave = Boolean(
+					pendingOnCancel.tempFilePath || pendingOnCancel.arrayBuffer,
+				);
+				if (canRetrySave) {
+					pendingExportSaveRef.current = pendingOnCancel;
+					setHasPendingExportSave(true);
+				}
+				return {
+					keepExportDialogOpen: canRetrySave,
+					shouldCloseWindow: smokeExportConfig.enabled,
+				};
+			}
+
+			if (smokeExportConfig.enabled) {
+				await writeSmokeExportReport(smokeExportConfig.outputPath, {
+					success: false,
+					phase: "export",
+					format: "mp4",
+					pipelineModel,
+					backendPreference,
+					encodingMode,
+					shadowIntensity: context.effectiveShadowIntensity,
+					elapsedMs: smokeExportElapsedMs,
+					error: result.error || t("editor.export.failed", "Export failed"),
+					progressSamples: context.smokeProgressSamples,
+					metrics: result.metrics,
+				});
+			}
+			const errorMessage = result.error || t("editor.export.failed", "Export failed");
+			setExportError(errorMessage);
+			showExportErrorToast(errorMessage);
+			return { keepExportDialogOpen: true, shouldCloseWindow: smokeExportConfig.enabled };
+		},
+		[
+			smokeExportConfig.enabled,
+			smokeExportConfig.quality,
+			smokeExportConfig.encodingMode,
+			smokeExportConfig.fps,
+			smokeExportConfig.pipelineModel,
+			smokeExportConfig.useNativeExport,
+			smokeExportConfig.backendPreference,
+			smokeExportConfig.renderBackend,
+			smokeExportConfig.maxEncodeQueue,
+			smokeExportConfig.outputPath,
+			exportQuality,
+			exportEncodingMode,
+			mp4FrameRate,
+			exportPipelineModel,
+			exportBackendPreference,
+			experimentalNvidiaCudaExport,
+			nvidiaCudaExportAvailable,
+			ensureSupportedMp4SourceDimensions,
+			selectedClipId,
+			audio.selectedClipSourceAudioTrackSettings,
+			audio.activeSourceAudioTrackSettings,
+			audio.sourceAudioFallbackPaths,
+			audio.sourceAudioFallbackStartDelayMsByPath,
+			createCommonExportConfig,
+			audioRegions,
+			clipRegions,
+			captionSidecarPayload,
+			markExportAsSaving,
+			saveBlobExport,
+			t,
+			rememberPendingExportSave,
+			completeSavedExport,
+			translateEditorMessage,
+		],
+	);
+
 	const handleExport = useCallback(
 		async (settings: ExportSettings) => {
 			if (!videoPath) {
@@ -4600,474 +4968,29 @@ export default function VideoEditor() {
 				});
 				const smokeProgressSamples = smokeProgressSampler.samples;
 				const recordSmokeProgress = smokeProgressSampler.record;
+				const exportContext: ExportRunContext = {
+					videoUrl: videoPath,
+					previewWidth,
+					previewHeight,
+					effectiveShadowIntensity,
+					smokeExportStartedAt,
+					smokeProgressSamples,
+					recordSmokeProgress,
+				};
 
 				if (settings.format === "gif" && settings.gifConfig) {
-					// GIF Export
-					const gifExporter = new GifExporter({
-						videoUrl: videoPath,
-						width: settings.gifConfig.width,
-						height: settings.gifConfig.height,
-						frameRate: settings.gifConfig.frameRate,
-						loop: settings.gifConfig.loop,
-						sizePreset: settings.gifConfig.sizePreset,
-						wallpaper,
-						trimRegions,
-						speedRegions: effectiveSpeedRegions,
-						showShadow: effectiveShadowIntensity > 0,
-						shadowIntensity: effectiveShadowIntensity,
-						backgroundBlur,
-						zoomMotionBlur,
-						zoomMotionBlurTuning,
-						zoomTemporalMotionBlur,
-						zoomMotionBlurSampleCount,
-						zoomMotionBlurShutterFraction,
-						connectZooms,
-						zoomInDurationMs,
-						zoomInOverlapMs,
-						zoomOutDurationMs,
-						connectedZoomGapMs,
-						connectedZoomDurationMs,
-						zoomInEasing,
-						zoomOutEasing,
-						connectedZoomEasing,
-						borderRadius,
-						padding,
-						videoPadding: padding,
-						cropRegion,
-						webcam,
-						webcamUrl:
-							resolvedWebcamVideoUrl ??
-							(webcam.sourcePath ? toFileUrl(webcam.sourcePath) : null),
-						annotationRegions,
-						autoCaptions,
-						autoCaptionSettings,
-						zoomRegions: effectiveZoomRegions,
-						cursorTelemetry: effectiveCursorTelemetry,
-						showCursor: effectiveShowCursor,
-						cursorStyle,
-						cursorSize,
-						cursorSmoothing,
-						cursorSpringStiffnessMultiplier,
-						cursorSpringDampingMultiplier,
-						cursorSpringMassMultiplier,
-						cameraSpringStiffnessMultiplier,
-						cameraSpringDampingMultiplier,
-						cameraSpringMassMultiplier,
-						zoomSmoothness,
-						zoomClassicMode,
-						cursorMotionBlur,
-						cursorClickEffect,
-						cursorClickEffectColor,
-						cursorClickEffectScale,
-						cursorClickEffectOpacity,
-						cursorClickEffectDurationMs,
-						cursorClickBounce,
-						cursorClickBounceDuration,
-						cursorSway,
-						frame,
-						previewWidth,
-						previewHeight,
-						maxDecodeQueue: smokeExportConfig.maxDecodeQueue,
-						maxPendingFrames: smokeExportConfig.maxPendingFrames,
-						onProgress: (progress: ExportProgress) => {
-							recordSmokeProgress(progress);
-							setExportProgress(progress);
-						},
-					});
-
-					exporterRef.current = gifExporter as unknown as VideoExporter;
-					const result = await gifExporter.export();
-
-					if (result.success && result.blob) {
-						const timestamp = Date.now();
-						const fileName = `export-${timestamp}.gif`;
-						markExportAsSaving();
-
-						const { saveResult, pendingSave } = await saveBlobExport(
-							result.blob,
-							fileName,
-							smokeExportConfig.enabled ? smokeExportConfig.outputPath : null,
-						);
-
-						if (saveResult.canceled) {
-							pendingExportSaveRef.current = pendingSave;
-							setHasPendingExportSave(true);
-							setExportError(
-								t(
-									"editor.export.saveDialogCanceledRetry",
-									"Save dialog canceled. Click Save Again to save without re-rendering.",
-								),
-							);
-							toast.info(
-								t(
-									"editor.export.saveCanceledRetry",
-									"Save canceled. You can save again without re-exporting.",
-								),
-							);
-							keepExportDialogOpen = true;
-						} else if (saveResult.success && saveResult.path) {
-							if (smokeExportStartedAt !== null) {
-								console.log(
-									`[smoke-export] Completed in ${Math.round(performance.now() - smokeExportStartedAt)}ms (${saveResult.path})`,
-								);
-							}
-							showExportSuccessToast(saveResult.path);
-							setExportedFilePath(saveResult.path);
-							if (smokeExportConfig.enabled) {
-								window.close();
-								return;
-							}
-						} else {
-							const errorMessage =
-								translateEditorMessage(saveResult.message) ||
-								t("editor.export.failedToSaveGif", "Failed to save GIF");
-							setExportError(errorMessage);
-							toast.error(errorMessage);
-							if (smokeExportConfig.enabled) {
-								window.close();
-								return;
-							}
-						}
-					} else {
-						const errorMessage =
-							result.error || t("editor.export.gifFailed", "GIF export failed");
-						setExportError(errorMessage);
-						toast.error(errorMessage);
-						if (smokeExportConfig.enabled) {
-							window.close();
-							return;
-						}
+					const gifResult = await runGifExport(settings, exportContext);
+					keepExportDialogOpen = gifResult.keepExportDialogOpen;
+					if (gifResult.shouldCloseWindow) {
+						window.close();
+						return;
 					}
 				} else {
-					// MP4 Export
-					const { quality, encodingMode, selectedMp4FrameRate } =
-						resolveMp4ExportSettings({
-							smokeExportConfig: {
-								enabled: smokeExportConfig.enabled,
-								quality: smokeExportConfig.quality,
-								encodingMode: smokeExportConfig.encodingMode,
-								fps: smokeExportConfig.fps,
-							},
-							settings,
-							exportQuality,
-							exportEncodingMode,
-							mp4FrameRate,
-						});
-					const {
-						pipelineModel,
-						useExperimentalNativeExport,
-						useExperimentalNvidiaCudaExport,
-						backendPreference,
-					} = resolveMp4ExportRouting({
-						smokeExportConfig: {
-							enabled: smokeExportConfig.enabled,
-							pipelineModel: smokeExportConfig.pipelineModel,
-							useNativeExport: smokeExportConfig.useNativeExport,
-							backendPreference: smokeExportConfig.backendPreference,
-						},
-						settings,
-						exportPipelineModel,
-						exportBackendPreference,
-						experimentalNvidiaCudaExport,
-						nvidiaCudaExportAvailable,
-					});
-					const supportedSourceDimensions =
-						await ensureSupportedMp4SourceDimensions(selectedMp4FrameRate);
-					const { width: exportWidth, height: exportHeight } =
-						calculateMp4ExportDimensions(
-							supportedSourceDimensions.width,
-							supportedSourceDimensions.height,
-							quality,
-						);
-					const bitrate = getMp4ExportBitrate({
-						width: exportWidth,
-						height: exportHeight,
-						frameRate: selectedMp4FrameRate,
-						quality,
-						encodingMode,
-						useModernNativeStaticLayout: useExperimentalNativeExport,
-					});
-					const sourceAudioTrackSettingsForExport =
-						selectedClipId !== null
-							? audio.selectedClipSourceAudioTrackSettings
-							: audio.activeSourceAudioTrackSettings;
-
-					const exporterConfig = {
-						videoUrl: videoPath,
-						width: exportWidth,
-						height: exportHeight,
-						frameRate: selectedMp4FrameRate,
-						bitrate,
-						codec: DEFAULT_MP4_CODEC,
-						encodingMode,
-						preferredEncoderPath: supportedSourceDimensions.encoderPath,
-						preferredRenderBackend: smokeExportConfig.renderBackend,
-						experimentalNativeExport: useExperimentalNativeExport,
-						experimentalNvidiaCudaExport: useExperimentalNvidiaCudaExport,
-						maxEncodeQueue: smokeExportConfig.maxEncodeQueue,
-						maxDecodeQueue: smokeExportConfig.maxDecodeQueue,
-						maxPendingFrames: smokeExportConfig.maxPendingFrames,
-						wallpaper,
-						trimRegions,
-						speedRegions: effectiveSpeedRegions,
-						showShadow: effectiveShadowIntensity > 0,
-						shadowIntensity: effectiveShadowIntensity,
-						backgroundBlur,
-						zoomMotionBlur,
-						zoomMotionBlurTuning,
-						zoomTemporalMotionBlur,
-						zoomMotionBlurSampleCount,
-						zoomMotionBlurShutterFraction,
-						connectZooms,
-						zoomInDurationMs,
-						zoomInOverlapMs,
-						zoomOutDurationMs,
-						connectedZoomGapMs,
-						connectedZoomDurationMs,
-						zoomInEasing,
-						zoomOutEasing,
-						connectedZoomEasing,
-						borderRadius,
-						padding,
-						cropRegion,
-						webcam,
-						webcamUrl:
-							resolvedWebcamVideoUrl ??
-							(webcam.sourcePath ? toFileUrl(webcam.sourcePath) : null),
-						annotationRegions,
-						autoCaptions,
-						autoCaptionSettings,
-						zoomRegions: effectiveZoomRegions,
-						cursorTelemetry: effectiveCursorTelemetry,
-						showCursor: effectiveShowCursor,
-						cursorStyle,
-						cursorSize,
-						cursorSmoothing,
-						cursorSpringStiffnessMultiplier,
-						cursorSpringDampingMultiplier,
-						cursorSpringMassMultiplier,
-						cameraSpringStiffnessMultiplier,
-						cameraSpringDampingMultiplier,
-						cameraSpringMassMultiplier,
-						zoomSmoothness,
-						zoomClassicMode,
-						cursorMotionBlur,
-						cursorClickEffect,
-						cursorClickEffectColor,
-						cursorClickEffectScale,
-						cursorClickEffectOpacity,
-						cursorClickEffectDurationMs,
-						cursorClickBounce,
-						cursorClickBounceDuration,
-						cursorSway,
-						frame,
-						audioRegions,
-						clipRegions,
-						sourceAudioFallbackPaths: audio.sourceAudioFallbackPaths,
-						sourceAudioFallbackStartDelayMsByPath:
-							audio.sourceAudioFallbackStartDelayMsByPath,
-						sourceAudioTrackSettings: sourceAudioTrackSettingsForExport,
-						previewWidth,
-						previewHeight,
-						onProgress: (progress: ExportProgress) => {
-							recordSmokeProgress(progress);
-							setExportProgress(progress);
-						},
-					};
-
-					const exporter =
-						pipelineModel === "modern"
-							? new ModernVideoExporter({
-									...exporterConfig,
-									backendPreference,
-								})
-							: new VideoExporter(exporterConfig);
-
-					exporterRef.current = exporter;
-					const result = await exporter.export();
-					const smokeExportElapsedMs =
-						smokeExportStartedAt !== null
-							? Math.round(performance.now() - smokeExportStartedAt)
-							: undefined;
-
-					if (result.success && (result.blob || result.tempFilePath)) {
-						const timestamp = Date.now();
-						const fileName = `export-${timestamp}.mp4`;
-						const sidecarForThisExport =
-							settings.includeCaptionSidecar && captionSidecarPayload
-								? captionSidecarPayload
-								: undefined;
-						markExportAsSaving();
-
-						let saveResult: {
-							success: boolean;
-							path?: string;
-							message?: string;
-							canceled?: boolean;
-						};
-						let pendingOnCancel: PendingExportSave;
-
-						if (result.tempFilePath) {
-							// Preferred path: main process already holds the finished MP4 on
-							// disk, so we just ask it to move the temp file into place. This
-							// avoids ever allocating a multi-GiB ArrayBuffer in the renderer.
-							saveResult = await window.electronAPI.finalizeExportedVideo({
-								tempPath: result.tempFilePath,
-								fileName,
-								outputPath:
-									smokeExportConfig.enabled && smokeExportConfig.outputPath
-										? smokeExportConfig.outputPath
-										: null,
-								captionSidecar: sidecarForThisExport,
-							});
-							pendingOnCancel = {
-								fileName,
-								tempFilePath: result.tempFilePath,
-								captionSidecar: sidecarForThisExport,
-							};
-						} else if (result.blob) {
-							// Legacy fallback: some export paths still surface a Blob, but in
-							// Electron we stream it into a temp file first so save/finalize
-							// never requires a giant renderer ArrayBuffer.
-							const blobSave = await saveBlobExport(
-								result.blob,
-								fileName,
-								smokeExportConfig.enabled ? smokeExportConfig.outputPath : null,
-								sidecarForThisExport,
-							);
-							saveResult = blobSave.saveResult;
-							pendingOnCancel = blobSave.pendingSave;
-						} else {
-							saveResult = {
-								success: false,
-								message: t("editor.export.noOutput", "Export produced no output"),
-							};
-							pendingOnCancel = { fileName };
-						}
-
-						if (saveResult.canceled) {
-							if (smokeExportConfig.enabled) {
-								await writeSmokeExportReport(smokeExportConfig.outputPath, {
-									success: false,
-									phase: "save",
-									format: "mp4",
-									pipelineModel,
-									backendPreference,
-									encodingMode,
-									shadowIntensity: effectiveShadowIntensity,
-									elapsedMs: smokeExportElapsedMs,
-									error: "Save canceled",
-									progressSamples: smokeProgressSamples,
-									metrics: result.metrics,
-								});
-							}
-							pendingExportSaveRef.current = pendingOnCancel;
-							setHasPendingExportSave(true);
-							setExportError(
-								t(
-									"editor.export.saveDialogCanceledRetry",
-									"Save dialog canceled. Click Save Again to save without re-rendering.",
-								),
-							);
-							toast.info(
-								t(
-									"editor.export.saveCanceledRetry",
-									"Save canceled. You can save again without re-exporting.",
-								),
-							);
-							keepExportDialogOpen = true;
-						} else if (saveResult.success && saveResult.path) {
-							if (smokeExportConfig.enabled) {
-								await writeSmokeExportReport(smokeExportConfig.outputPath, {
-									success: true,
-									phase: "saved",
-									format: "mp4",
-									pipelineModel,
-									backendPreference,
-									encodingMode,
-									shadowIntensity: effectiveShadowIntensity,
-									elapsedMs: smokeExportElapsedMs,
-									outputPath: saveResult.path,
-									progressSamples: smokeProgressSamples,
-									metrics: result.metrics,
-								});
-							}
-							if (smokeExportStartedAt !== null) {
-								console.log(
-									`[smoke-export] Completed in ${Math.round(performance.now() - smokeExportStartedAt)}ms (${saveResult.path})`,
-								);
-							}
-							showExportSuccessToast(saveResult.path);
-							setExportedFilePath(saveResult.path);
-							if (smokeExportConfig.enabled) {
-								window.close();
-								return;
-							}
-						} else {
-							if (smokeExportConfig.enabled) {
-								await writeSmokeExportReport(smokeExportConfig.outputPath, {
-									success: false,
-									phase: "save",
-									format: "mp4",
-									pipelineModel,
-									backendPreference,
-									encodingMode,
-									shadowIntensity: effectiveShadowIntensity,
-									elapsedMs: smokeExportElapsedMs,
-									error:
-										translateEditorMessage(saveResult.message) ||
-										t(
-											"editor.export.failedToSaveVideo",
-											"Failed to save video",
-										),
-									progressSamples: smokeProgressSamples,
-									metrics: result.metrics,
-								});
-							}
-							const errorMessage =
-								translateEditorMessage(saveResult.message) ||
-								t("editor.export.failedToSaveVideo", "Failed to save video");
-							setExportError(errorMessage);
-							showExportErrorToast(errorMessage);
-							// Keep the pending-save entry so the user can retry without
-							// re-rendering. The temp file is still on disk (the main
-							// process only moves/deletes it on success) and the
-							// ArrayBuffer fallback still references its in-memory blob.
-							if (pendingOnCancel.tempFilePath || pendingOnCancel.arrayBuffer) {
-								pendingExportSaveRef.current = pendingOnCancel;
-								setHasPendingExportSave(true);
-								keepExportDialogOpen = true;
-							}
-							if (smokeExportConfig.enabled) {
-								window.close();
-								return;
-							}
-						}
-					} else {
-						if (smokeExportConfig.enabled) {
-							await writeSmokeExportReport(smokeExportConfig.outputPath, {
-								success: false,
-								phase: "export",
-								format: "mp4",
-								pipelineModel,
-								backendPreference,
-								encodingMode,
-								shadowIntensity: effectiveShadowIntensity,
-								elapsedMs: smokeExportElapsedMs,
-								error: result.error || t("editor.export.failed", "Export failed"),
-								progressSamples: smokeProgressSamples,
-								metrics: result.metrics,
-							});
-						}
-						const errorMessage =
-							result.error || t("editor.export.failed", "Export failed");
-						setExportError(errorMessage);
-						showExportErrorToast(errorMessage);
-						keepExportDialogOpen = true;
-						if (smokeExportConfig.enabled) {
-							window.close();
-							return;
-						}
+					const mp4Result = await runMp4Export(settings, exportContext);
+					keepExportDialogOpen = mp4Result.keepExportDialogOpen;
+					if (mp4Result.shouldCloseWindow) {
+						window.close();
+						return;
 					}
 				}
 
@@ -5115,93 +5038,15 @@ export default function VideoEditor() {
 		[
 			clearPendingExportSave,
 			videoPath,
-			wallpaper,
-			trimRegions,
 			shadowIntensity,
-			backgroundBlur,
-			zoomMotionBlur,
-			zoomMotionBlurTuning,
-			zoomTemporalMotionBlur,
-			zoomMotionBlurSampleCount,
-			zoomMotionBlurShutterFraction,
-			connectZooms,
-			zoomInDurationMs,
-			zoomInOverlapMs,
-			zoomOutDurationMs,
-			connectedZoomGapMs,
-			connectedZoomDurationMs,
-			zoomInEasing,
-			zoomOutEasing,
-			connectedZoomEasing,
-			effectiveShowCursor,
-			cursorStyle,
-			effectiveCursorTelemetry,
-			cursorSize,
-			cursorSmoothing,
-			cursorSpringStiffnessMultiplier,
-			cursorSpringDampingMultiplier,
-			cursorSpringMassMultiplier,
-			cameraSpringStiffnessMultiplier,
-			cameraSpringDampingMultiplier,
-			cameraSpringMassMultiplier,
-			zoomSmoothness,
-			zoomClassicMode,
-			cursorMotionBlur,
-			cursorClickEffect,
-			cursorClickEffectColor,
-			cursorClickEffectScale,
-			cursorClickEffectOpacity,
-			cursorClickEffectDurationMs,
-			cursorClickBounce,
-			cursorClickBounceDuration,
-			cursorSway,
-			audioRegions,
-			clipRegions,
-			audio.sourceAudioFallbackPaths,
-			audio.sourceAudioFallbackStartDelayMsByPath,
-			audio.activeSourceAudioTrackSettings,
-			audio.selectedClipSourceAudioTrackSettings,
-			exportEncodingMode,
-			exportBackendPreference,
-			exportPipelineModel,
-			experimentalNvidiaCudaExport,
-			nvidiaCudaExportAvailable,
-			borderRadius,
-			padding,
-			cropRegion,
-			webcam,
-			resolvedWebcamVideoUrl,
-			annotationRegions,
-			autoCaptions,
-			autoCaptionSettings,
-			captionSidecarPayload,
 			isPlaying,
-			exportQuality,
-			effectiveZoomRegions,
-			ensureSupportedMp4SourceDimensions,
-			markExportAsSaving,
-			mp4FrameRate,
 			remountPreview,
-			showExportSuccessToast,
-			smokeExportConfig.backendPreference,
-			smokeExportConfig.renderBackend,
+			runGifExport,
+			runMp4Export,
 			smokeExportConfig.enabled,
-			smokeExportConfig.useNativeExport,
-			smokeExportConfig.maxDecodeQueue,
-			smokeExportConfig.maxEncodeQueue,
-			smokeExportConfig.maxPendingFrames,
 			smokeExportConfig.outputPath,
-			smokeExportConfig.pipelineModel,
 			smokeExportConfig.shadowIntensity,
-			effectiveSpeedRegions,
-			frame,
-			selectedClipId,
-			smokeExportConfig.encodingMode,
-			smokeExportConfig.fps,
-			smokeExportConfig.quality,
-			saveBlobExport,
 			t,
-			translateEditorMessage,
 		],
 	);
 
