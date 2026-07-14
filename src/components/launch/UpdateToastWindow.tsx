@@ -161,91 +161,6 @@ export function UpdateToastWindow() {
 		}
 	}
 
-	const isMacOS = /mac/i.test(navigator.platform);
-	const wrapperStyle = {
-		display: "flex",
-		alignItems: "center",
-		justifyContent: "center",
-		width: "100%",
-		height: "100%",
-		padding: 10,
-		boxSizing: "border-box",
-		background: isMacOS ? "transparent" : "#0b1220",
-	} as const;
-	const cardStyle = {
-		width: "100%",
-		maxWidth: 440,
-		display: "flex",
-		gap: 14,
-		alignItems: "flex-start",
-		padding: "18px 18px 16px",
-		borderRadius: 24,
-		background:
-			"linear-gradient(180deg, rgba(12, 19, 34, 0.98) 0%, rgba(10, 17, 30, 0.98) 100%)",
-		border: "1px solid rgba(37, 99, 235, 0.24)",
-		boxShadow: "0 20px 48px rgba(2, 6, 23, 0.5), inset 0 1px 0 rgba(148, 163, 184, 0.08)",
-		color: "#ffffff",
-		fontFamily: "var(--app-font-sans)",
-	} as const;
-	const iconBoxStyle = {
-		width: 42,
-		height: 42,
-		minWidth: 42,
-		borderRadius: 16,
-		display: "flex",
-		alignItems: "center",
-		justifyContent: "center",
-		background: "rgba(37, 99, 235, 0.16)",
-		color: "#60a5fa",
-		boxShadow: "inset 0 0 0 1px rgba(37, 99, 235, 0.18)",
-	} as const;
-	const titleStyle = {
-		fontSize: 15,
-		fontWeight: 700,
-		lineHeight: 1.25,
-		margin: 0,
-		color: "#f8fafc",
-	} as const;
-	const secondaryTextStyle = {
-		color: "rgba(226, 232, 240, 0.78)",
-		fontSize: 13,
-		lineHeight: 1.5,
-		margin: "6px 0 0 0",
-	} as const;
-	const subtleButtonStyle = {
-		height: 38,
-		borderRadius: 12,
-		padding: "0 14px",
-		border: "1px solid rgba(148, 163, 184, 0.16)",
-		background: "rgba(15, 23, 42, 0.72)",
-		color: "#e2e8f0",
-		fontSize: 13,
-		fontWeight: 600,
-		cursor: "pointer",
-		transition: "all 0.15s ease",
-	} as const;
-	const primaryButtonStyle = {
-		...subtleButtonStyle,
-		border: "none",
-		background: "linear-gradient(180deg, #3b82f6 0%, #2563eb 100%)",
-		color: "#ffffff",
-		boxShadow: "0 12px 24px rgba(37, 99, 235, 0.26)",
-	} as const;
-	const selectStyle = {
-		height: 38,
-		borderRadius: 12,
-		padding: "0 34px 0 12px",
-		border: "1px solid rgba(37, 99, 235, 0.22)",
-		background:
-			"linear-gradient(180deg, rgba(18, 29, 51, 0.96) 0%, rgba(12, 22, 42, 0.96) 100%)",
-		color: "#dbeafe",
-		fontSize: 13,
-		fontWeight: 600,
-		outline: "none",
-		boxShadow: "inset 0 0 0 1px rgba(37, 99, 235, 0.06)",
-		cursor: "pointer",
-	} as const;
-
 	const handlePrimaryAction = async () => {
 		if (!payload || payload.phase === "downloading") {
 			return;
@@ -283,72 +198,49 @@ export function UpdateToastWindow() {
 	};
 
 	if (!payload) {
-		return <div style={wrapperStyle} />;
+		return <div className="h-full w-full bg-transparent" />;
 	}
 
 	return (
-		<div style={wrapperStyle}>
-			<div style={cardStyle}>
-				<div style={iconBoxStyle}>{getPhaseIcon(payload)}</div>
-				<div style={{ minWidth: 0, flex: 1 }}>
-					<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-						<p style={titleStyle}>{getToastTitle(payload, t)}</p>
+		<div className="launch-theme flex h-full w-full items-center justify-center bg-transparent p-2.5 font-sans text-foreground">
+			<section
+				aria-live="polite"
+				className="liquid-glass flex w-full max-w-[440px] items-start gap-3.5 rounded-[24px] px-[18px] pb-4 pt-[18px]"
+			>
+				<div className="flex size-[42px] shrink-0 items-center justify-center rounded-2xl border border-brand/15 bg-brand/10 text-brand">
+					{getPhaseIcon(payload)}
+				</div>
+				<div className="min-w-0 flex-1">
+					<div className="flex items-center gap-2">
+						<p className="m-0 text-[15px] font-semibold leading-tight tracking-[-0.015em] text-foreground">
+							{getToastTitle(payload, t)}
+						</p>
 						{payload.isPreview ? (
-							<span
-								style={{
-									borderRadius: 999,
-									padding: "2px 8px",
-									fontSize: 10,
-									fontWeight: 700,
-									letterSpacing: "0.18em",
-									textTransform: "uppercase",
-									color: "#93c5fd",
-									background: "rgba(37, 99, 235, 0.14)",
-									border: "1px solid rgba(37, 99, 235, 0.18)",
-								}}
-							>
+							<span className="rounded-full border border-brand/20 bg-brand/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-brand">
 								{t("updateToast.devBadge", "Dev")}
 							</span>
 						) : null}
 					</div>
-					<p style={secondaryTextStyle}>{payload.detail}</p>
+					<p className="mb-0 mt-1.5 text-[13px] leading-[1.5] text-muted-foreground">
+						{payload.detail}
+					</p>
 
 					{payload.phase === "downloading" ? (
-						<div style={{ marginTop: 14 }}>
+						<div className="mt-3.5">
 							<div
-								style={{
-									height: 10,
-									overflow: "hidden",
-									borderRadius: 999,
-									background: "rgba(148, 163, 184, 0.14)",
-								}}
+								role="progressbar"
+								aria-valuemin={0}
+								aria-valuemax={100}
+								aria-valuenow={normalizedProgress}
+								className="h-2 overflow-hidden rounded-full bg-surface-control"
 							>
 								<div
-									style={{
-										height: "100%",
-										width: `${normalizedProgress}%`,
-										borderRadius: 999,
-										background:
-											"linear-gradient(90deg, #60a5fa 0%, #2563eb 45%, #1d4ed8 100%)",
-										boxShadow: "0 0 22px rgba(37, 99, 235, 0.38)",
-									}}
+									className="h-full rounded-full bg-brand shadow-[0_0_18px_hsl(var(--accent)/0.3)] transition-[width] duration-300"
+									style={{ width: `${normalizedProgress}%` }}
 								/>
 							</div>
-							<div
-								style={{
-									display: "flex",
-									flexWrap: "wrap",
-									gap: 8,
-									marginTop: 10,
-								}}
-							>
-								<span
-									style={{
-										fontSize: 12,
-										fontWeight: 700,
-										color: "#dbeafe",
-									}}
-								>
+							<div className="mt-2.5 flex flex-wrap gap-2">
+								<span className="text-xs font-semibold text-foreground">
 									{t("updateToast.completePercent", "{{percent}}% complete", {
 										percent: normalizedProgress,
 									})}
@@ -356,15 +248,7 @@ export function UpdateToastWindow() {
 								{phaseStats.map((stat) => (
 									<span
 										key={stat.label}
-										style={{
-											fontSize: 11,
-											fontWeight: 600,
-											color: "rgba(191, 219, 254, 0.9)",
-											background: "rgba(37, 99, 235, 0.12)",
-											borderRadius: 999,
-											padding: "4px 8px",
-											border: "1px solid rgba(37, 99, 235, 0.16)",
-										}}
+										className="rounded-full border border-brand/15 bg-brand/[0.08] px-2 py-1 text-[11px] font-medium text-brand"
 									>
 										{stat.label}: {stat.value}
 									</span>
@@ -373,30 +257,23 @@ export function UpdateToastWindow() {
 						</div>
 					) : null}
 
-					<div
-						style={{
-							display: "flex",
-							flexWrap: "wrap",
-							gap: 10,
-							marginTop: 14,
-							alignItems: "center",
-						}}
-					>
+					<div className="mt-3.5 flex flex-wrap items-center gap-2.5">
 						{payload.phase !== "downloading" ? (
 							<>
 								<button
 									type="button"
 									onClick={handlePrimaryAction}
-									style={primaryButtonStyle}
+									className="h-[38px] rounded-[var(--radius-control)] bg-brand px-3.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_hsl(var(--accent)/0.2)] transition hover:bg-brand-hover focus-visible:ring-2 focus-visible:ring-brand/45"
 								>
 									{getPrimaryButtonLabel(payload, t)}
 								</button>
 								<select
+									aria-label={t("updateToast.later", "Later")}
 									value={String(reminderDelayMs)}
 									onChange={(event) => {
 										setReminderDelayMs(Number.parseInt(event.target.value, 10));
 									}}
-									style={selectStyle}
+									className="h-[38px] cursor-pointer rounded-[var(--radius-control)] border border-border bg-surface-control px-3 text-[13px] font-medium text-foreground outline-none transition hover:bg-surface-control-hover focus-visible:ring-2 focus-visible:ring-brand/45"
 								>
 									{reminderOptions.map((option) => (
 										<option key={option.value} value={option.value}>
@@ -407,7 +284,7 @@ export function UpdateToastWindow() {
 								<button
 									type="button"
 									onClick={handleLater}
-									style={subtleButtonStyle}
+									className="h-[38px] rounded-[var(--radius-control)] border border-border bg-surface-control px-3.5 text-[13px] font-semibold text-foreground transition hover:bg-surface-control-hover focus-visible:ring-2 focus-visible:ring-brand/45"
 								>
 									{t("updateToast.later", "Later")}
 								</button>
@@ -415,7 +292,7 @@ export function UpdateToastWindow() {
 						) : null}
 					</div>
 				</div>
-			</div>
+			</section>
 		</div>
 	);
 }

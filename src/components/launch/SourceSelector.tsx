@@ -147,8 +147,12 @@ export const SourceSelectorContent = ({
 
 	if (loading && !hasAnySources) {
 		return (
-			<div className="flex items-center justify-center py-8">
-				<div className="animate-spin rounded-full h-5 w-5 border-b-2 source-selector-accent-border" />
+			<div
+				role="status"
+				className="flex items-center justify-center gap-2.5 py-8 text-xs source-selector-muted"
+			>
+				<div className="size-5 animate-spin rounded-full border-2 border-current border-t-transparent source-selector-accent-border" />
+				<span>{t("sourceSelector.loadingSources", "Loading sources...")}</span>
 			</div>
 		);
 	}
@@ -342,8 +346,8 @@ export const SourceSelector = React.memo(function SourceSelector({
 			onFocusCapture={prefetchSources}
 			className={cn(
 				"group gap-2 px-3 min-w-0 max-w-[180px] rounded-[11px] font-medium text-[12px] [ -webkit-app-region:no-drag ] shrink-0",
-				"border-[#2a2a34] bg-[#1a1a22] text-[#eeeef2] hover:border-[#3e3e4c] hover:bg-[#20202a] transition-all",
-				"data-[state=open]:border-[#3e3e4c] data-[state=open]:bg-[#20202a]",
+				"border-border bg-surface-control text-foreground hover:border-brand/25 hover:bg-surface-control-hover transition-all",
+				"data-[state=open]:border-brand/30 data-[state=open]:bg-surface-control-hover",
 			)}
 			title={selectedSource}
 		>
@@ -354,7 +358,7 @@ export const SourceSelector = React.memo(function SourceSelector({
 			<CaretUpIcon
 				size={10}
 				className={cn(
-					"text-[#6b6b78] ml-0.5 shrink-0 transition-transform duration-200",
+					"text-muted-foreground ml-0.5 shrink-0 transition-transform duration-200",
 					open ? "" : "rotate-180",
 				)}
 			/>

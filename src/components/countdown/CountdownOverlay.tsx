@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
+import { useScopedT } from "@/contexts/I18nContext";
 
 export function CountdownOverlay() {
+	const t = useScopedT("launch");
 	const [countdown, setCountdown] = useState<number | null>(null);
 
 	useEffect(() => {
@@ -40,31 +42,20 @@ export function CountdownOverlay() {
 	}
 
 	return (
-		<div
-			className="fixed inset-0 flex items-center justify-center select-none cursor-pointer"
+		<button
+			type="button"
+			aria-label={t("recording.cancel", "Cancel")}
+			className="group fixed inset-0 flex cursor-pointer select-none items-center justify-center border-0 bg-transparent p-0 text-foreground focus-visible:!outline-none"
 			onClick={handleCancel}
-			onKeyDown={(e) => e.key === "Escape" && handleCancel()}
 		>
-			<div
-				className="flex items-center justify-center rounded-3xl"
-				style={{
-					width: 180,
-					height: 180,
-					background: "rgba(0, 0, 0, 0.85)",
-					backdropFilter: "blur(20px)",
-				}}
-			>
-				<span
-					className="text-white font-bold tabular-nums"
-					style={{
-						fontSize: "100px",
-						lineHeight: 1,
-						textShadow: "0 0 30px rgba(255,255,255,0.2)",
-					}}
-				>
+			<div className="liquid-glass relative flex size-[180px] items-center justify-center overflow-hidden rounded-[40px] transition-shadow group-focus-visible:ring-2 group-focus-visible:ring-brand/70 group-focus-visible:ring-offset-4">
+				<div className="absolute inset-x-8 top-0 h-px bg-white/65" />
+				<div className="absolute inset-3 rounded-[30px] border border-brand/10 bg-brand/[0.04]" />
+				<span className="relative text-[96px] font-semibold leading-none tabular-nums tracking-[-0.06em] text-foreground drop-shadow-[0_10px_26px_hsl(var(--shadow-color)/0.18)]">
 					{countdown}
 				</span>
+				<span className="sr-only">{t("recording.countdownDelay", "Countdown")}</span>
 			</div>
-		</div>
+		</button>
 	);
 }

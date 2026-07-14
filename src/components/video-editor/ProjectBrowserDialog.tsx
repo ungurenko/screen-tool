@@ -1,3 +1,4 @@
+import { FolderOpen } from "@phosphor-icons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useScopedT } from "@/contexts/I18nContext";
 import { toFileUrl } from "@/lib/localFileUrl";
@@ -176,7 +177,7 @@ export default function ProjectBrowserDialog({
 				ref={panelRef}
 				role="dialog"
 				aria-label={t("project.projects", "Projects")}
-				className="pointer-events-auto mb-1.5 w-[300px] max-h-[400px] overflow-hidden rounded-[14px] border border-foreground/[0.07] bg-editor-panel/[0.96] text-foreground shadow-[0_12px_32px_rgba(0,0,0,0.22),0_2px_10px_rgba(0,0,0,0.1)] animate-in fade-in-0 duration-150"
+				className="work-surface pointer-events-auto mb-1.5 max-h-[400px] w-[300px] overflow-hidden rounded-[var(--radius-panel)] text-foreground animate-in fade-in-0 duration-150"
 			>
 				<div className="flex items-center justify-between gap-2 border-b border-foreground/10 px-3 py-2.5">
 					<div className="text-sm font-medium tracking-tight text-foreground">
@@ -186,7 +187,7 @@ export default function ProjectBrowserDialog({
 						<button
 							type="button"
 							onClick={onImportFile}
-							className="rounded-md px-2 py-1 text-xs font-medium text-foreground/70 transition hover:bg-foreground/10 hover:text-foreground"
+							className="rounded-[var(--radius-control)] px-2 py-1 text-xs font-medium text-muted-foreground transition hover:bg-surface-control-hover hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand/35"
 						>
 							{t("project.import", "Import")}
 						</button>
@@ -204,9 +205,9 @@ export default function ProjectBrowserDialog({
 										key={entry.path}
 										type="button"
 										onClick={() => onOpenProject(entry.path)}
-										className="group flex flex-col gap-1 rounded-lg bg-transparent p-0.5 text-left outline-none transition focus:outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+										className="group flex flex-col gap-1 rounded-[var(--radius-control)] bg-transparent p-1 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-brand/45"
 									>
-										<div className="relative aspect-[16/10] w-full overflow-hidden rounded-[5px] bg-editor-dialog-alt shadow-[0_10px_18px_rgba(0,0,0,0.28)] transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-[0_16px_30px_rgba(0,0,0,0.38)]">
+										<div className="relative aspect-[16/10] w-full overflow-hidden rounded-lg border border-foreground/10 bg-editor-dialog-alt shadow-[0_4px_14px_hsl(var(--shadow-color)/0.1)] transition duration-200 group-hover:-translate-y-0.5 group-hover:border-brand/25 group-hover:shadow-[0_8px_20px_hsl(var(--shadow-color)/0.15)]">
 											{thumbnailSrc ? (
 												<img
 													src={thumbnailSrc}
@@ -215,13 +216,13 @@ export default function ProjectBrowserDialog({
 													draggable={false}
 												/>
 											) : (
-												<div className="flex h-full w-full items-center justify-center bg-[linear-gradient(180deg,_rgba(37,99,235,0.22),_rgba(13,17,23,0.92))] text-[10px] font-medium text-white/60">
+												<div className="flex h-full w-full items-center justify-center bg-surface-control text-[10px] font-medium text-muted-foreground">
 													{t("project.noPreview", "No preview yet")}
 												</div>
 											)}
 											{entry.isCurrent ? (
 												<div className="absolute right-1.5 top-1.5">
-													<span className="rounded-[5px] bg-[#2563EB] px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.14em] text-white shadow-[0_8px_20px_rgba(37,99,235,0.28)]">
+													<span className="rounded-md bg-brand px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.14em] text-white shadow-[0_6px_16px_hsl(var(--accent)/0.24)]">
 														{t("project.current", "Current")}
 													</span>
 												</div>
@@ -237,7 +238,10 @@ export default function ProjectBrowserDialog({
 							})}
 						</div>
 					) : (
-						<div className="flex min-h-[140px] flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-foreground/10 bg-editor-bg px-4 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+						<div className="flex min-h-[140px] flex-col items-center justify-center gap-2.5 rounded-xl border border-dashed border-foreground/10 bg-editor-bg px-4 text-center">
+							<div className="flex size-9 items-center justify-center rounded-xl bg-surface-control text-muted-foreground">
+								<FolderOpen className="size-4" aria-hidden="true" />
+							</div>
 							<div className="text-sm font-semibold text-foreground">
 								{t("project.noSavedProjects", "No saved projects yet")}
 							</div>
@@ -255,7 +259,7 @@ export default function ProjectBrowserDialog({
 				role="dialog"
 				aria-label={t("project.projects", "Projects")}
 				style={{ top: `${position.top}px`, left: `${position.left}px` }}
-				className="pointer-events-auto fixed w-[min(280px,calc(100vw-24px))] overflow-hidden rounded-2xl border border-foreground/10 bg-editor-surface text-foreground shadow-2xl animate-in fade-in-0 duration-150"
+				className="liquid-glass pointer-events-auto fixed w-[min(280px,calc(100vw-24px))] overflow-hidden rounded-[var(--radius-floating)] text-foreground animate-in fade-in-0 duration-150"
 			>
 				<div className="flex items-center justify-between gap-2 border-b border-foreground/10 px-3 py-2.5">
 					<div className="text-sm font-medium tracking-tight text-foreground">
@@ -265,7 +269,7 @@ export default function ProjectBrowserDialog({
 						<button
 							type="button"
 							onClick={onImportFile}
-							className="rounded-md px-2 py-1 text-xs font-medium text-foreground/70 transition hover:bg-foreground/10 hover:text-foreground"
+							className="rounded-[var(--radius-control)] px-2 py-1 text-xs font-medium text-muted-foreground transition hover:bg-surface-control-hover hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand/35"
 						>
 							{t("project.import", "Import")}
 						</button>
@@ -286,9 +290,9 @@ export default function ProjectBrowserDialog({
 										key={entry.path}
 										type="button"
 										onClick={() => onOpenProject(entry.path)}
-										className="group flex flex-col gap-1 rounded-lg bg-transparent p-0.5 text-left outline-none transition focus:outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+										className="group flex flex-col gap-1 rounded-[var(--radius-control)] bg-transparent p-1 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-brand/45"
 									>
-										<div className="relative aspect-[16/10] w-full overflow-hidden rounded-[5px] bg-editor-dialog-alt shadow-[0_10px_18px_rgba(0,0,0,0.28)] transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-[0_16px_30px_rgba(0,0,0,0.38)]">
+										<div className="relative aspect-[16/10] w-full overflow-hidden rounded-lg border border-foreground/10 bg-editor-dialog-alt shadow-[0_4px_14px_hsl(var(--shadow-color)/0.1)] transition duration-200 group-hover:-translate-y-0.5 group-hover:border-brand/25 group-hover:shadow-[0_8px_20px_hsl(var(--shadow-color)/0.15)]">
 											{thumbnailSrc ? (
 												<img
 													src={thumbnailSrc}
@@ -297,13 +301,13 @@ export default function ProjectBrowserDialog({
 													draggable={false}
 												/>
 											) : (
-												<div className="flex h-full w-full items-center justify-center bg-[linear-gradient(180deg,_rgba(37,99,235,0.22),_rgba(13,17,23,0.92))] text-[10px] font-medium text-white/60">
+												<div className="flex h-full w-full items-center justify-center bg-surface-control text-[10px] font-medium text-muted-foreground">
 													{t("project.noPreview", "No preview yet")}
 												</div>
 											)}
 											{entry.isCurrent ? (
 												<div className="absolute right-1.5 top-1.5">
-													<span className="rounded-[5px] bg-[#2563EB] px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.14em] text-white shadow-[0_8px_20px_rgba(37,99,235,0.28)]">
+													<span className="rounded-md bg-brand px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.14em] text-white shadow-[0_6px_16px_hsl(var(--accent)/0.24)]">
 														{t("project.current", "Current")}
 													</span>
 												</div>
@@ -319,7 +323,10 @@ export default function ProjectBrowserDialog({
 							})}
 						</div>
 					) : (
-						<div className="flex min-h-[140px] flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-foreground/10 bg-editor-bg px-4 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+						<div className="flex min-h-[140px] flex-col items-center justify-center gap-2.5 rounded-xl border border-dashed border-foreground/10 bg-editor-bg px-4 text-center">
+							<div className="flex size-9 items-center justify-center rounded-xl bg-surface-control text-muted-foreground">
+								<FolderOpen className="size-4" aria-hidden="true" />
+							</div>
 							<div className="text-sm font-semibold text-foreground">
 								{t("project.noSavedProjects", "No saved projects yet")}
 							</div>

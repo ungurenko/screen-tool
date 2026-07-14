@@ -1,3 +1,4 @@
+import { SpinnerGap } from "@phosphor-icons/react";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Toaster } from "./components/ui/sonner";
 import { useI18n } from "./contexts/I18nContext";
@@ -43,16 +44,16 @@ export default function App() {
 	const { t } = useI18n();
 	const isMacOS = /mac/i.test(navigator.platform);
 	const appIconSrc = "/app-icons/screentool-128.png";
+	const isTransparentWindow =
+		windowType === "hud-overlay" ||
+		windowType === "source-selector" ||
+		windowType === "countdown" ||
+		(windowType === "update-toast" && isMacOS);
 
 	useEffect(() => {
 		document.documentElement.dataset.windowType = windowType;
 
-		if (
-			windowType === "hud-overlay" ||
-			windowType === "source-selector" ||
-			windowType === "countdown" ||
-			(windowType === "update-toast" && isMacOS)
-		) {
+		if (isTransparentWindow) {
 			document.body.style.background = "transparent";
 			document.documentElement.style.background = "transparent";
 			document.getElementById("root")?.style.setProperty("background", "transparent");
@@ -68,7 +69,7 @@ export default function App() {
 			document.body.style.overflow = "visible";
 			document.getElementById("root")?.style.setProperty("overflow", "visible");
 		}
-	}, [isMacOS, windowType]);
+	}, [isTransparentWindow, windowType]);
 
 	useEffect(() => {
 		if (windowType !== "editor") {
@@ -113,8 +114,8 @@ export default function App() {
 				);
 			default:
 				return (
-					<div className="flex h-full w-full items-center justify-center bg-editor-bg text-foreground">
-						<div className="flex items-center gap-4 rounded-2xl border border-foreground/10 bg-foreground/5 px-6 py-5 shadow-2xl shadow-black/30 backdrop-blur-xl">
+					<div className="flex h-full w-full items-center justify-center bg-editor-bg p-6 text-foreground">
+						<div className="work-surface flex items-center gap-4 rounded-[var(--radius-floating)] px-6 py-5">
 							<img
 								src={appIconSrc}
 								alt={t("app.name", "ScreenTool")}
@@ -134,5 +135,14 @@ export default function App() {
 		}
 	})();
 
-	return <Suspense fallback={null}>{content}</Suspense>;
+	const loadingFallback = isTransparentWindow ? null : (
+		<div className="flex h-full w-full items-center justify-center bg-editor-bg text-foreground">
+			<div className="work-surface flex items-center gap-3 rounded-[var(--radius-panel)] px-5 py-4 text-sm font-medium text-muted-foreground">
+				<SpinnerGap className="size-5 animate-spin text-brand" aria-hidden="true" />
+				<span>{t("app.name", "ScreenTool")}</span>
+			</div>
+		</div>
+	);
+
+	return <Suspense fallback={loadingFallback}>{content}</Suspense>;
 }

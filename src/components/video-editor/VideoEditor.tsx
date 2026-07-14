@@ -16,11 +16,13 @@ import {
 	SkipBack,
 	SkipForward,
 	Sparkle,
+	SpinnerGap,
 	ArrowCounterClockwise as Undo2,
 	SpeakerLow as Volume1,
 	SpeakerHigh as Volume2,
 	SpeakerX as VolumeX,
 	MagicWand as WandSparkles,
+	WarningCircle,
 	X,
 	MagnifyingGlassPlus as ZoomIn,
 } from "@phosphor-icons/react";
@@ -5585,7 +5587,7 @@ export default function VideoEditor() {
 				}
 			}}
 		>
-			<DialogContent className="max-w-sm border-foreground/10 bg-editor-dialog text-foreground">
+			<DialogContent className="max-w-sm">
 				<form onSubmit={(event) => void handleProjectSaveDialogSubmit(event)}>
 					<DialogHeader>
 						<DialogTitle>{t("editor.project.saveTitle", "Save Project")}</DialogTitle>
@@ -5600,7 +5602,7 @@ export default function VideoEditor() {
 						<label className="mb-2 block text-xs font-medium text-muted-foreground">
 							{t("editor.project.saveNameLabel", "Project name")}
 						</label>
-						<div className="flex items-center overflow-hidden rounded-md border border-foreground/10 bg-editor-panel">
+						<div className="flex items-center overflow-hidden rounded-[var(--radius-control)] border border-border bg-surface-control transition focus-within:border-brand/35 focus-within:ring-2 focus-within:ring-brand/20">
 							<Input
 								ref={projectSaveDialogInputRef}
 								value={projectSaveDialogDraft}
@@ -5646,7 +5648,7 @@ export default function VideoEditor() {
 				resolveUnsavedChangesDialog("cancel");
 			}}
 		>
-			<DialogContent className="max-w-sm border-foreground/10 bg-editor-dialog text-foreground">
+			<DialogContent className="max-w-sm">
 				<DialogHeader>
 					<DialogTitle>{t("editor.unsavedChanges.title", "Unsaved changes")}</DialogTitle>
 					<DialogDescription className="text-muted-foreground">
@@ -5699,7 +5701,7 @@ export default function VideoEditor() {
 			open={nativeCaptureUnavailableModalOpen}
 			onOpenChange={setNativeCaptureUnavailableModalOpen}
 		>
-			<DialogContent className="max-w-md bg-editor-dialog border-foreground/10 text-foreground">
+			<DialogContent className="max-w-md">
 				<DialogHeader>
 					<DialogTitle>
 						{t(
@@ -5725,9 +5727,17 @@ export default function VideoEditor() {
 
 	if (loading) {
 		return (
-			<div className="flex h-screen items-center justify-center bg-background">
-				<div className="text-foreground">
-					{t("editor.video.loading", "Loading video...")}
+			<div className="flex h-screen items-center justify-center bg-editor-bg p-6 text-foreground">
+				<div
+					role="status"
+					className="work-surface flex min-w-[260px] items-center gap-3 rounded-[var(--radius-panel)] px-5 py-4"
+				>
+					<div className="flex size-10 items-center justify-center rounded-xl bg-brand/10 text-brand">
+						<SpinnerGap className="size-5 animate-spin" aria-hidden="true" />
+					</div>
+					<div className="text-sm font-medium text-foreground">
+						{t("editor.video.loading", "Loading video...")}
+					</div>
 				</div>
 				{projectBrowser}
 				{projectSaveDialog}
@@ -5739,17 +5749,25 @@ export default function VideoEditor() {
 	}
 	if (error) {
 		return (
-			<div className="flex h-screen items-center justify-center bg-background">
-				<div className="flex flex-col items-center gap-3">
-					<div className="text-destructive">{error}</div>
-					<button
+			<div className="flex h-screen items-center justify-center bg-editor-bg p-6 text-foreground">
+				<div
+					role="alert"
+					className="work-surface flex w-full max-w-md flex-col items-center gap-4 rounded-[var(--radius-floating)] px-7 py-8 text-center"
+				>
+					<div className="flex size-12 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+						<WarningCircle className="size-6" aria-hidden="true" />
+					</div>
+					<div className="max-w-sm break-words text-sm leading-relaxed text-muted-foreground">
+						{error}
+					</div>
+					<Button
 						ref={projectBrowserFallbackTriggerRef}
 						type="button"
 						onClick={handleOpenProjectBrowser}
-						className="rounded-[5px] bg-neutral-800 px-3 py-1.5 text-sm font-semibold text-white shadow-[0_14px_32px_rgba(0,0,0,0.18)] transition-colors hover:bg-neutral-700 dark:bg-white dark:text-black dark:hover:bg-white/90"
+						className="bg-brand text-white hover:bg-brand-hover"
 					>
 						{t("editor.project.projects", "Open Projects")}
-					</button>
+					</Button>
 				</div>
 				{projectBrowser}
 				{projectSaveDialog}
@@ -6007,7 +6025,7 @@ export default function VideoEditor() {
 							<Button
 								type="button"
 								onClick={handleOpenExportDropdown}
-								className="inline-flex h-8 min-w-[112px] items-center justify-center gap-2 rounded-[5px] bg-[#2563EB] px-4.5 text-white transition-colors hover:bg-[#2563EB]/92"
+								className="inline-flex h-8 min-w-[112px] items-center justify-center gap-2 bg-brand px-4.5 text-white hover:bg-brand-hover"
 							>
 								<Download className="h-4 w-4" />
 								<span className="text-sm font-semibold tracking-tight">
@@ -6021,7 +6039,7 @@ export default function VideoEditor() {
 							className="w-[360px] border-none bg-transparent p-0 shadow-none"
 						>
 							{isExporting ? (
-								<div className="rounded-2xl border border-foreground/10 bg-editor-surface p-4 text-foreground shadow-2xl">
+								<div className="liquid-glass rounded-[var(--radius-floating)] p-4 text-foreground">
 									<div className="mb-3 flex items-center justify-between gap-3">
 										<div>
 											<p className="text-sm font-semibold text-foreground">
@@ -6070,7 +6088,7 @@ export default function VideoEditor() {
 											<div className="indeterminate-progress h-full rounded-full bg-transparent" />
 										) : (
 											<div
-												className="h-full bg-[#2563EB] transition-all duration-300 ease-out"
+												className="h-full bg-brand transition-all duration-300 ease-out"
 												style={{
 													width: `${Math.min(isRenderingAudio ? (exportProgress?.audioProgress ?? 0) * 100 : (exportFinalizingProgress ?? exportProgress?.percentage ?? 8), 100)}%`,
 												}}
@@ -6104,7 +6122,7 @@ export default function VideoEditor() {
 									) : null}
 								</div>
 							) : exportError ? (
-								<div className="rounded-2xl border border-foreground/10 bg-editor-surface p-4 text-foreground shadow-2xl">
+								<div className="liquid-glass rounded-[var(--radius-floating)] p-4 text-foreground">
 									<p className="text-sm font-semibold text-foreground">
 										{t("editor.exportStatus.issue", "Export issue")}
 									</p>
@@ -6121,7 +6139,7 @@ export default function VideoEditor() {
 											<Button
 												type="button"
 												onClick={handleRetrySaveExport}
-												className="h-8 flex-1 rounded-[5px] bg-[#2563EB] text-xs font-semibold text-white hover:bg-[#2563EB]/92"
+												className="h-8 flex-1 bg-brand text-xs font-semibold text-white hover:bg-brand-hover"
 											>
 												{t("editor.actions.saveAgain", "Save Again")}
 											</Button>
@@ -6137,7 +6155,7 @@ export default function VideoEditor() {
 									</div>
 								</div>
 							) : exportedFilePath ? (
-								<div className="rounded-2xl border border-foreground/10 bg-editor-surface p-4 text-foreground shadow-2xl">
+								<div className="liquid-glass rounded-[var(--radius-floating)] p-4 text-foreground">
 									<p className="text-sm font-semibold text-foreground">
 										{t("editor.exportStatus.complete", "Export complete")}
 									</p>
@@ -6159,7 +6177,7 @@ export default function VideoEditor() {
 										<Button
 											type="button"
 											onClick={revealExportedFile}
-											className="h-8 flex-1 rounded-[5px] bg-[#2563EB] text-xs font-semibold text-white hover:bg-[#2563EB]/92"
+											className="h-8 flex-1 bg-brand text-xs font-semibold text-white hover:bg-brand-hover"
 										>
 											{t("editor.actions.showInFolder", "Show In Folder")}
 										</Button>
@@ -6169,7 +6187,7 @@ export default function VideoEditor() {
 											onClick={handleExportDropdownClose}
 											className="h-8 flex-1 border-foreground/10 bg-foreground/5 text-xs text-muted-foreground hover:bg-foreground/10"
 										>
-											Done
+											{t("common.actions.done", "Done")}
 										</Button>
 									</div>
 								</div>
@@ -6783,7 +6801,11 @@ export default function VideoEditor() {
 						className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
 						onClick={handleCancelCropEditor}
 					/>
-					<div className="fixed left-1/2 top-1/2 z-[60] max-h-[90vh] w-[90vw] max-w-5xl -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-2xl border border-foreground/10 bg-editor-dialog p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+					<div
+						role="dialog"
+						aria-modal="true"
+						className="liquid-glass fixed left-1/2 top-1/2 z-[60] max-h-[90vh] w-[90vw] max-w-5xl -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-[var(--radius-floating)] p-8 animate-in zoom-in-95 duration-200"
+					>
 						<div className="mb-6 flex items-center justify-between">
 							<div>
 								<span className="text-xl font-bold text-foreground">
@@ -6812,7 +6834,7 @@ export default function VideoEditor() {
 							<Button
 								onClick={handleCloseCropEditor}
 								size="lg"
-								className="bg-[#2563EB] text-white hover:bg-[#2563EB]/90"
+								className="bg-brand text-white hover:bg-brand-hover"
 							>
 								{t("common.actions.done")}
 							</Button>
