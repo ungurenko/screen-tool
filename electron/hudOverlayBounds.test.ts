@@ -26,9 +26,9 @@ describe("getHudOverlayWindowBounds", () => {
 	it("expands the non-passthrough fallback for HUD menus and hover interaction", () => {
 		expect(getHudOverlayWindowBounds(workArea, false, true)).toEqual({
 			x: 650,
-			y: 540,
+			y: 320,
 			width: 860,
-			height: 540,
+			height: 760,
 		});
 	});
 
@@ -94,9 +94,9 @@ describe("resizeHudOverlayFallbackBounds", () => {
 			),
 		).toEqual({
 			x: 420,
-			y: 320,
+			y: 100,
 			width: 860,
-			height: 540,
+			height: 760,
 		});
 	});
 
@@ -106,9 +106,9 @@ describe("resizeHudOverlayFallbackBounds", () => {
 				workArea,
 				{
 					x: 420,
-					y: 320,
+					y: 100,
 					width: 860,
-					height: 540,
+					height: 760,
 				},
 				false,
 			),
@@ -134,9 +134,9 @@ describe("resizeHudOverlayFallbackBounds", () => {
 			),
 		).toEqual({
 			x: 1060,
-			y: 520,
+			y: 300,
 			width: 860,
-			height: 540,
+			height: 760,
 		});
 	});
 });

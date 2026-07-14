@@ -2,6 +2,8 @@
 	"recording": {
 		"disableSystemAudio": "Отключить системные звуки",
 		"enableSystemAudio": "Включить системные звуки",
+		"systemAudio": "Системные звуки",
+		"off": "Выкл.",
 		"disableMicrophone": "Отключить микрофон",
 		"enableMicrophone": "Включить микрофон",
 		"micToggleDisabledTip": "Нельзя переключать микрофон во время записи",

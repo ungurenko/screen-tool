@@ -4,12 +4,14 @@ import type { DesktopSource } from "../popovers/launchPopoverTypes";
 
 export function useLaunchWindowActions() {
 	const [selectedSource, setSelectedSource] = useState("Screen");
+	const [selectedSourcePreview, setSelectedSourcePreview] = useState<DesktopSource | null>(null);
 	const [hasSelectedSource, setHasSelectedSource] = useState(false);
 	const [projectLibraryEntries, setProjectLibraryEntries] = useState<ProjectLibraryEntry[]>([]);
 
 	const handleSourceSelect = useCallback(async (source: DesktopSource) => {
 		await window.electronAPI.selectSource(source);
 		setSelectedSource(source.name);
+		setSelectedSourcePreview(source);
 		setHasSelectedSource(true);
 		window.electronAPI.showSourceHighlight?.({
 			...source,
@@ -52,18 +54,21 @@ export function useLaunchWindowActions() {
 		}
 	}, []);
 
-	const syncSelectedSource = useCallback((source: { name?: string } | null | undefined) => {
+	const syncSelectedSource = useCallback((source: DesktopSource | null | undefined) => {
 		if (source?.name) {
 			setSelectedSource(source.name);
+			setSelectedSourcePreview(source);
 			setHasSelectedSource(true);
 			return;
 		}
 		setSelectedSource("Screen");
+		setSelectedSourcePreview(null);
 		setHasSelectedSource(false);
 	}, []);
 
 	return {
 		selectedSource,
+		selectedSourcePreview,
 		hasSelectedSource,
 		projectLibraryEntries,
 		handleSourceSelect,

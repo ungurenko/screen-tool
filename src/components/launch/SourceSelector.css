@@ -1,4 +1,5 @@
 .source-selector-popover {
+	width: min(560px, calc(100vw - 24px));
 	background: var(--launch-surface);
 	border: 1px solid var(--launch-border);
 	border-radius: 16px;
@@ -19,8 +20,10 @@
 }
 
 .source-selector-item-selected {
+	border-color: hsl(var(--accent) / 0.38);
 	background: var(--launch-selected);
 	color: var(--launch-accent);
+	box-shadow: 0 0 0 1px hsl(var(--accent) / 0.08);
 }
 
 .source-selector-thumb-fallback {

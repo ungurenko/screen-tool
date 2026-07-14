@@ -2,11 +2,13 @@ import { type MouseEvent, type RefObject, useCallback, useEffect, useRef } from 
 
 export function useLaunchHudInteractionState({
 	openId,
+	keepInteractive = false,
 	isHudDraggingRef,
 	isWebcamPreviewDraggingRef,
 	webcamPreviewDragStartRef,
 }: {
 	openId: string | null;
+	keepInteractive?: boolean;
 	isHudDraggingRef: RefObject<boolean>;
 	isWebcamPreviewDraggingRef: RefObject<boolean>;
 	webcamPreviewDragStartRef: RefObject<unknown>;
@@ -15,7 +17,7 @@ export function useLaunchHudInteractionState({
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 	useEffect(() => {
-		if (openId !== null) {
+		if (openId !== null || keepInteractive) {
 			if (timeoutRef.current) clearTimeout(timeoutRef.current);
 			window.electronAPI?.hudOverlaySetIgnoreMouse?.(false);
 		} else {
@@ -26,7 +28,7 @@ export function useLaunchHudInteractionState({
 				}
 			}, 150);
 		}
-	}, [openId]);
+	}, [keepInteractive, openId]);
 
 	useEffect(() => {
 		const handleMouseOver = (e: globalThis.MouseEvent) => {
@@ -40,7 +42,7 @@ export function useLaunchHudInteractionState({
 				isMouseOverHudRef.current = true;
 				if (timeoutRef.current) clearTimeout(timeoutRef.current);
 				window.electronAPI?.hudOverlaySetIgnoreMouse?.(false);
-			} else if (openId === null) {
+			} else if (openId === null && !keepInteractive) {
 				isMouseOverHudRef.current = false;
 				if (timeoutRef.current) clearTimeout(timeoutRef.current);
 				timeoutRef.current = setTimeout(() => {
@@ -59,7 +61,13 @@ export function useLaunchHudInteractionState({
 
 		window.addEventListener("mouseover", handleMouseOver);
 		return () => window.removeEventListener("mouseover", handleMouseOver);
-	}, [openId, isHudDraggingRef, isWebcamPreviewDraggingRef, webcamPreviewDragStartRef]);
+	}, [
+		isHudDraggingRef,
+		isWebcamPreviewDraggingRef,
+		keepInteractive,
+		openId,
+		webcamPreviewDragStartRef,
+	]);
 
 	const beginInteractiveHudAction = useCallback(() => {
 		isMouseOverHudRef.current = true;
@@ -86,6 +94,7 @@ export function useLaunchHudInteractionState({
 			timeoutRef.current = setTimeout(() => {
 				if (
 					openId === null &&
+					!keepInteractive &&
 					!isHudDraggingRef.current &&
 					!isWebcamPreviewDraggingRef.current &&
 					!webcamPreviewDragStartRef.current &&
@@ -95,7 +104,13 @@ export function useLaunchHudInteractionState({
 				}
 			}, 300);
 		},
-		[openId, isHudDraggingRef, isWebcamPreviewDraggingRef, webcamPreviewDragStartRef],
+		[
+			isHudDraggingRef,
+			isWebcamPreviewDraggingRef,
+			keepInteractive,
+			openId,
+			webcamPreviewDragStartRef,
+		],
 	);
 
 	return {

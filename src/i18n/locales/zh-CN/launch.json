@@ -2,6 +2,8 @@
 	"recording": {
 		"disableSystemAudio": "禁用系统音频",
 		"enableSystemAudio": "启用系统音频",
+		"systemAudio": "系统音频",
+		"off": "关闭",
 		"disableMicrophone": "禁用麦克风",
 		"enableMicrophone": "启用麦克风",
 		"micToggleDisabledTip": "录制过程中无法切换麦克风",

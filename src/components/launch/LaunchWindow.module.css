@@ -6,93 +6,358 @@
 	-webkit-app-region: no-drag;
 }
 
-.bar {
+.preflightCard {
 	display: flex;
-	align-items: center;
-	gap: 10px;
-	width: max-content;
-	max-width: 1200px;
-	background: var(--launch-bar-bg);
+	width: min(560px, calc(100vw - 24px));
+	flex-direction: column;
+	gap: 12px;
+	padding: 14px;
 	border: 1px solid var(--launch-bar-border);
-	border-radius: 20px;
-	padding: 11px 20px 11px 18px;
+	border-radius: var(--radius-floating);
+	background: var(--launch-bar-bg);
 	box-shadow: var(--launch-bar-shadow);
-	overflow: visible;
-	position: relative;
+	backdrop-filter: saturate(var(--launch-popover-saturate)) blur(var(--glass-blur));
+	-webkit-backdrop-filter: saturate(var(--launch-popover-saturate)) blur(var(--glass-blur));
 	transform-origin: center bottom;
 }
 
-.barStateViewport {
-	position: relative;
+.preflightHeader {
 	display: flex;
+	min-height: 40px;
 	align-items: center;
-	flex: 0 1 auto;
-	min-height: 46px;
-	min-width: fit-content;
-	padding-right: 2px;
+	justify-content: space-between;
+	gap: 16px;
+	padding-left: 2px;
 }
 
-.barState {
+.preflightTitleGroup {
 	display: flex;
+	min-width: 0;
 	align-items: center;
-	gap: 8px;
-	flex: 0 1 auto;
-	white-space: nowrap;
-	min-width: fit-content;
-	pointer-events: auto;
+	gap: 10px;
 }
 
-.sep {
-	width: 1px;
-	height: 26px;
-	background: var(--launch-border-strong);
-	margin: 0 6px;
-	flex-shrink: 0;
+.preflightAppMark {
+	display: grid;
+	width: 30px;
+	height: 30px;
+	flex: 0 0 auto;
+	place-items: center;
+	border: 1px solid hsl(var(--accent) / 0.18);
+	border-radius: 9px;
+	background: hsl(var(--accent) / 0.1);
+	color: hsl(var(--accent));
 }
 
-.ib {
-	position: relative;
-	width: 40px;
-	height: 40px;
-	border-radius: 11px;
-	border: none;
-	background: transparent;
+.preflightAppMark svg {
+	width: 11px;
+	height: 11px;
+}
+
+.preflightTitleGroup h1,
+.preflightTitleGroup p {
+	margin: 0;
+}
+
+.preflightTitleGroup h1 {
+	color: var(--launch-text);
+	font-size: 14px;
+	font-weight: 650;
+	letter-spacing: -0.018em;
+}
+
+.preflightTitleGroup p {
+	max-width: 310px;
+	overflow: hidden;
 	color: var(--launch-text-muted);
-	cursor: pointer;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	transition: all 0.15s ease;
-	flex-shrink: 0;
+	font-size: 11px;
+	font-weight: 500;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
-.ib:hover {
+.preflightWindowActions {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+}
+
+.preflightWindowActions button {
+	width: 32px;
+	height: 32px;
+}
+
+.preflightPreviewWrap {
+	position: relative;
+	height: 224px;
+	overflow: hidden;
+	border: 1px solid var(--launch-border);
+	border-radius: var(--radius-panel);
+	background: hsl(var(--surface-canvas));
+	box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.24);
+}
+
+.preflightSourceTrigger {
+	position: absolute;
+	inset: 0;
+	z-index: 4;
+	width: 100%;
+	height: 100%;
+	cursor: pointer;
+	border: 0;
+	border-radius: inherit;
+	background: transparent;
+}
+
+.preflightSourceTrigger:focus-visible {
+	outline: 2px solid hsl(var(--accent));
+	outline-offset: -3px;
+}
+
+.preflightPreviewImage {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform var(--motion-standard) var(--ease-standard);
+}
+
+.preflightPreviewWrap:hover .preflightPreviewImage {
+	transform: scale(1.012);
+}
+
+.preflightPreviewEmpty {
+	display: grid;
+	width: 100%;
+	height: 100%;
+	place-items: center;
+	background:
+		radial-gradient(circle at 50% 20%, hsl(var(--accent) / 0.12), transparent 48%),
+		hsl(var(--surface-panel));
+	color: hsl(var(--text-tertiary));
+}
+
+.preflightPreviewLabel {
+	position: absolute;
+	right: 10px;
+	bottom: 10px;
+	left: 10px;
+	z-index: 3;
+	display: flex;
+	min-width: 0;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 8px 10px;
+	border: 1px solid hsl(0 0% 100% / 0.2);
+	border-radius: 10px;
+	background: hsl(225 20% 8% / 0.62);
+	color: white;
+	box-shadow: 0 8px 24px hsl(225 35% 3% / 0.18);
+	backdrop-filter: blur(12px) saturate(150%);
+	-webkit-backdrop-filter: blur(12px) saturate(150%);
+}
+
+.preflightPreviewLabel span {
+	min-width: 0;
+	overflow: hidden;
+	font-size: 12px;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.preflightPreviewLabel small {
+	flex: 0 0 auto;
+	color: hsl(0 0% 100% / 0.68);
+	font-size: 10px;
+	font-weight: 500;
+}
+
+.preflightSettings {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 8px;
+}
+
+.preflightSetting {
+	display: flex;
+	min-width: 0;
+	height: 56px;
+	align-items: center;
+	gap: 9px;
+	padding: 8px 9px;
+	cursor: pointer;
+	border: 1px solid var(--launch-border);
+	border-radius: var(--radius-control);
+	background: hsl(var(--surface-panel-raised) / 0.58);
+	color: var(--launch-text-muted);
+	text-align: left;
+	transition:
+		background var(--motion-fast) var(--ease-standard),
+		border-color var(--motion-fast) var(--ease-standard),
+		transform var(--motion-fast) var(--ease-standard);
+}
+
+.preflightSetting:hover {
+	border-color: var(--launch-border-strong);
 	background: var(--launch-hover);
+}
+
+.preflightSetting:active {
+	transform: scale(0.985);
+}
+
+.preflightSettingActive {
+	border-color: hsl(var(--accent) / 0.32);
+	background: hsl(var(--accent) / 0.09);
+}
+
+.preflightSettingIcon {
+	display: grid;
+	width: 28px;
+	height: 28px;
+	flex: 0 0 auto;
+	place-items: center;
+	border-radius: 8px;
+	background: hsl(var(--surface-control));
 	color: var(--launch-text);
 }
 
-.ibActive {
-	color: #3d8bff;
+.preflightSettingActive .preflightSettingIcon {
+	background: hsl(var(--accent) / 0.14);
+	color: hsl(var(--accent));
 }
 
-.ibActive:hover {
-	color: #62a4ff;
+.preflightSettingIcon svg {
+	width: 16px;
+	height: 16px;
 }
 
-.ibRed {
-	color: #f43f5e;
+.preflightSettingCopy {
+	display: flex;
+	min-width: 0;
+	flex-direction: column;
+	gap: 2px;
 }
 
-.ibRed:hover {
-	color: #ff5a75;
+.preflightSettingCopy > span {
+	color: var(--launch-label);
+	font-size: 9px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
 }
 
-.ibGreen {
-	color: #34d399;
+.preflightSettingCopy strong {
+	overflow: hidden;
+	color: var(--launch-text);
+	font-size: 11px;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
-.ibGreen:hover {
-	color: #4eeeb0;
+.preflightRecordButton {
+	width: 100%;
+	height: 42px;
+	border-radius: var(--radius-control);
+}
+
+.preflightRecordDot {
+	width: 9px;
+	height: 9px;
+	border: 2px solid hsl(0 0% 100% / 0.95);
+	border-radius: 50%;
+}
+
+.miniHudShell,
+.finalizingShell {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 10px;
+	border: 1px solid var(--launch-bar-border);
+	border-radius: var(--radius-floating);
+	background: var(--launch-bar-bg);
+	box-shadow: var(--launch-bar-shadow);
+	backdrop-filter: saturate(var(--launch-popover-saturate)) blur(var(--glass-blur));
+	-webkit-backdrop-filter: saturate(var(--launch-popover-saturate)) blur(var(--glass-blur));
+}
+
+.miniHudControls {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	white-space: nowrap;
+}
+
+.miniHudStop {
+	width: 36px;
+	height: 36px;
+	border-radius: 12px;
+}
+
+.miniHudTimer {
+	display: grid;
+	min-width: 94px;
+	grid-template-columns: 8px 1fr;
+	grid-template-rows: auto auto;
+	align-items: center;
+	column-gap: 7px;
+	padding: 0 7px;
+}
+
+.miniHudTimer > span {
+	grid-row: 1 / span 2;
+}
+
+.miniHudTimer time {
+	color: var(--launch-text);
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+	font-weight: 650;
+	letter-spacing: 0.03em;
+}
+
+.miniHudTimer small {
+	color: var(--launch-label);
+	font-size: 8px;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+}
+
+.miniHudRecordingDot,
+.miniHudPausedDot {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+}
+
+.miniHudRecordingDot {
+	background: hsl(var(--recording));
+	box-shadow: 0 0 0 4px hsl(var(--recording) / 0.12);
+	animation: blink 1.4s ease-in-out infinite;
+}
+
+.miniHudPausedDot {
+	background: #e5a62f;
+	box-shadow: 0 0 0 4px rgb(229 166 47 / 0.12);
+}
+
+.miniHudDivider {
+	width: 1px;
+	height: 24px;
+	margin: 0 3px;
+	background: var(--launch-border);
+}
+
+.miniHudCancelAction {
+	color: hsl(var(--recording));
+}
+
+.miniHudCancelAction:hover {
+	background: hsl(var(--recording) / 0.1);
+	color: hsl(var(--recording-hover));
 }
 
 .menuCard {
@@ -210,11 +475,12 @@
 	align-items: center;
 	gap: 11px;
 	min-width: 238px;
-	color: #eeeef2;
+	padding: 2px 4px;
+	color: var(--launch-text);
 }
 
 .finalizingSpin {
-	color: #3d8bff;
+	color: hsl(var(--accent));
 	animation: finalizingSpin 0.9s linear infinite;
 }
 
@@ -228,7 +494,7 @@
 }
 
 .finalizingCopy small {
-	color: #8a8a96;
+	color: var(--launch-text-muted);
 	font-size: 10px;
 	font-weight: 600;
 }
@@ -240,50 +506,6 @@
 	to {
 		transform: rotate(360deg);
 	}
-}
-
-.recBtn {
-	position: relative;
-	width: 46px;
-	height: 46px;
-	border-radius: 50%;
-	border: none;
-	background: #f43f5e;
-	color: #fff;
-	cursor: pointer;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	transition: all 0.2s ease;
-	flex-shrink: 0;
-	box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.3);
-}
-
-.recBtn:hover {
-	background: #ff5a75;
-	box-shadow: 0 0 0 6px rgba(244, 63, 94, 0.15);
-}
-
-.recBtn:disabled {
-	opacity: 0.4;
-	cursor: not-allowed;
-}
-
-.recBtn:disabled:hover {
-	background: #f43f5e;
-	box-shadow: none;
-}
-
-.recDot {
-	width: 14px;
-	height: 14px;
-	border-radius: 50%;
-	background: #fff;
-	transition: all 0.2s ease;
-}
-
-.recDotBlink {
-	animation: blink 1.2s ease-in-out infinite;
 }
 
 .recordingWebcamPreview {
@@ -326,13 +548,4 @@
 	50% {
 		opacity: 0.2;
 	}
-}
-
-.micSelect {
-	color-scheme: dark;
-}
-
-.micSelect option {
-	background-color: #1a1a22;
-	color: #eeeef2;
 }

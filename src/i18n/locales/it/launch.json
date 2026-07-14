@@ -2,6 +2,8 @@
 	"recording": {
 		"disableSystemAudio": "Disabilita audio di sistema",
 		"enableSystemAudio": "Abilita audio di sistema",
+		"systemAudio": "Audio di sistema",
+		"off": "Disattivato",
 		"disableMicrophone": "Disabilita microfono",
 		"enableMicrophone": "Abilita microfono",
 		"micToggleDisabledTip": "Il microfono non può essere attivato/disattivato durante la registrazione",

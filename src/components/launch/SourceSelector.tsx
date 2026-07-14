@@ -46,6 +46,7 @@ export function MarqueeText({ text }: { text: string }) {
 		const node = staticRef.current;
 		if (!node) return;
 		const checkOverflow = () => {
+			if (node.textContent !== text) return;
 			setOverflowing(node.scrollWidth > node.clientWidth + 1);
 		};
 		checkOverflow();
@@ -95,37 +96,44 @@ export const SourceSelectorContent = ({
 				key={`${source.id}-${index}`}
 				type="button"
 				className={cn(
-					"source-selector-item group min-h-[46px] w-full rounded-[11px] px-3 py-2.5 text-left font-medium flex items-center justify-start gap-3",
+					"source-selector-item group relative min-w-0 overflow-hidden rounded-[12px] border border-transparent p-1.5 text-left font-medium",
 					isSelected && "source-selector-item-selected",
 				)}
 				onClick={() => onSourceSelect(source)}
 			>
-				<div className="relative flex-shrink-0">
+				<div className="relative aspect-video w-full overflow-hidden rounded-[9px] bg-black/70">
 					{source.thumbnail ? (
 						<img
 							src={source.thumbnail}
 							alt=""
-							className="w-12 h-8 rounded-[8px] object-cover bg-black/50"
+							className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.025]"
 							onError={(e) => {
 								(e.target as HTMLImageElement).style.display = "none";
 							}}
 						/>
 					) : (
-						<div className="source-selector-thumb-fallback w-12 h-8 rounded-[8px] flex items-center justify-center">
+						<div className="source-selector-thumb-fallback flex h-full w-full items-center justify-center">
 							{source.sourceType === "window" ? (
-								<AppWindowIcon className="w-5 h-5 source-selector-muted" />
+								<AppWindowIcon className="h-7 w-7 source-selector-muted" />
 							) : (
-								<MonitorIcon className="w-5 h-5 source-selector-muted" />
+								<MonitorIcon className="h-7 w-7 source-selector-muted" />
 							)}
 						</div>
 					)}
+					{source.appIcon ? (
+						<img
+							src={source.appIcon}
+							alt=""
+							className="absolute bottom-2 left-2 size-7 rounded-[7px] border border-white/20 bg-white/90 shadow-md"
+						/>
+					) : null}
 				</div>
 
-				<div className="flex-1 min-w-0 flex flex-col items-start text-left">
-					<div className="text-sm font-medium source-selector-text w-full">
+				<div className="flex min-w-0 flex-col items-start px-1 pb-1 pt-2 text-left">
+					<div className="w-full text-xs font-semibold source-selector-text">
 						<MarqueeText text={source.windowTitle || source.name} />
 					</div>
-					<div className="text-xs source-selector-subtle truncate w-full text-left">
+					<div className="w-full truncate text-left text-[10px] source-selector-subtle">
 						{source.sourceType === "screen"
 							? t("recording.screen")
 							: t("recording.window")}
@@ -146,7 +154,7 @@ export const SourceSelectorContent = ({
 	}
 
 	return (
-		<div className="max-h-[320px] overflow-y-auto overflow-x-hidden p-2 source-selector-scroll">
+		<div className="max-h-[390px] overflow-y-auto overflow-x-hidden p-2 source-selector-scroll">
 			{hasAnySources ? (
 				<>
 					{screenSources.length > 0 ? (
@@ -162,7 +170,7 @@ export const SourceSelectorContent = ({
 									{t("sourceSelector.refreshing", "Refreshing...")}
 								</span>
 							</div>
-							<div className="space-y-0.5">
+							<div className="grid grid-cols-2 gap-2">
 								{screenSources.map((source, index) =>
 									renderSourceItem(source, index),
 								)}
@@ -174,7 +182,7 @@ export const SourceSelectorContent = ({
 							<div className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.08em] source-selector-label">
 								{t("recording.windows")}
 							</div>
-							<div className="space-y-0.5">
+							<div className="grid grid-cols-2 gap-2">
 								{windowSources.map((source, index) =>
 									renderSourceItem(source, index),
 								)}
@@ -359,7 +367,7 @@ export const SourceSelector = React.memo(function SourceSelector({
 		<Popover open={open} onOpenChange={onOpenChange} modal={false}>
 			<PopoverTrigger asChild>{trigger}</PopoverTrigger>
 			<PopoverContent
-				className="launch-theme w-80 p-0 source-selector-popover"
+				className="launch-theme p-0 source-selector-popover"
 				unstyled
 				align="start"
 				sideOffset={8}

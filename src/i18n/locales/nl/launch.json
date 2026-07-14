@@ -2,6 +2,8 @@
 	"recording": {
 		"disableSystemAudio": "Systeemaudio uitschakelen",
 		"enableSystemAudio": "Systeemaudio inschakelen",
+		"systemAudio": "Systeemaudio",
+		"off": "Uit",
 		"disableMicrophone": "Microfoon uitschakelen",
 		"enableMicrophone": "Microfoon inschakelen",
 		"micToggleDisabledTip": "Microfoon kan niet worden gewijzigd tijdens de opname",

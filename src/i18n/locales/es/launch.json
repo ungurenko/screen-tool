@@ -2,6 +2,8 @@
 	"recording": {
 		"disableSystemAudio": "Desactivar audio del sistema",
 		"enableSystemAudio": "Activar audio del sistema",
+		"systemAudio": "Audio del sistema",
+		"off": "Desactivado",
 		"disableMicrophone": "Desactivar micrófono",
 		"enableMicrophone": "Activar micrófono",
 		"micToggleDisabledTip": "El micrófono no se puede alternar durante la grabación",

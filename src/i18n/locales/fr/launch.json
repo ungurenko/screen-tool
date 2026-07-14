@@ -2,6 +2,8 @@
 	"recording": {
 		"disableSystemAudio": "Désactiver l’audio système",
 		"enableSystemAudio": "Activer l’audio système",
+		"systemAudio": "Audio système",
+		"off": "Désactivé",
 		"disableMicrophone": "Désactiver le microphone",
 		"enableMicrophone": "Activer le microphone",
 		"micToggleDisabledTip": "Le microphone ne peut pas être basculé pendant l'enregistrement",

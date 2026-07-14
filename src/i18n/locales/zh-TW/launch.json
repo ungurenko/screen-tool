@@ -2,6 +2,8 @@
 	"recording": {
 		"disableSystemAudio": "停用系統音訊",
 		"enableSystemAudio": "啟用系統音訊",
+		"systemAudio": "系統音訊",
+		"off": "關閉",
 		"disableMicrophone": "停用麥克風",
 		"enableMicrophone": "啟用麥克風",
 		"micToggleDisabledTip": "錄製過程中無法切換麥克風",

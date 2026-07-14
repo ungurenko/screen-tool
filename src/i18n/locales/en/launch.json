@@ -2,6 +2,8 @@
 	"recording": {
 		"disableSystemAudio": "Disable system audio",
 		"enableSystemAudio": "Enable system audio",
+		"systemAudio": "System audio",
+		"off": "Off",
 		"disableMicrophone": "Disable microphone",
 		"enableMicrophone": "Enable microphone",
 		"micToggleDisabledTip": "Microphone cannot be toggled during recording",
