@@ -1,65 +1,7 @@
 import * as fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { CURSOR_MOTION_PRESETS } from "./cursorMotionPresets";
-import {
-	fromFileUrl,
-	normalizeProjectEditor,
-	stripPersistedDevMotionBlurSettings,
-	toFileUrl,
-} from "./projectPersistence";
-
-describe("Audio path handling", () => {
-	describe("toFileUrl produces valid file:// URLs for audio paths", () => {
-		it("should handle Unix absolute paths", () => {
-			expect(toFileUrl("/Users/music/song.mp3")).toBe("file:///Users/music/song.mp3");
-		});
-
-		it("should handle Windows drive paths", () => {
-			expect(toFileUrl("C:/Users/music/song.mp3")).toBe("file:///C:/Users/music/song.mp3");
-		});
-
-		it("should handle backslash Windows paths", () => {
-			const result = toFileUrl("C:\\Users\\music\\song.mp3");
-			expect(result).toMatch(/^file:\/\//);
-			expect(result).toContain("C:");
-			expect(result).toContain("song.mp3");
-		});
-
-		it("should encode spaces in path segments", () => {
-			const result = toFileUrl("/Users/my music/my song.mp3");
-			expect(result).toContain("my%20music");
-			expect(result).toContain("my%20song.mp3");
-		});
-
-		it("should encode special characters like spaces", () => {
-			const result = toFileUrl("/Users/music/song file.mp3");
-			expect(result).toContain("song%20file.mp3");
-			// Result should be a valid file:// URL
-			expect(result).toMatch(/^file:\/\//);
-		});
-
-		it("should roundtrip through fromFileUrl for simple paths", () => {
-			const paths = [
-				"/Users/music/song.mp3",
-				"/tmp/audio.wav",
-				"/home/user/my-file.aac",
-				"/data/recordings/track_01.flac",
-			];
-			for (const originalPath of paths) {
-				const fileUrl = toFileUrl(originalPath);
-				const recovered = fromFileUrl(fileUrl);
-				expect(recovered).toBe(originalPath);
-			}
-		});
-
-		it("should roundtrip paths with spaces through fromFileUrl", () => {
-			const originalPath = "/Users/my user/my music/song file.mp3";
-			const fileUrl = toFileUrl(originalPath);
-			const recovered = fromFileUrl(fileUrl);
-			expect(recovered).toBe(originalPath);
-		});
-	});
-});
+import { normalizeProjectEditor, stripPersistedDevMotionBlurSettings } from "./projectPersistence";
 
 describe("Audio region normalization", () => {
 	describe("volume is clamped to [0, 1]", () => {

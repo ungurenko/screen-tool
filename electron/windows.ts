@@ -430,6 +430,8 @@ ipcMain.handle("set-hud-overlay-capture-protection", (_event, enabled: boolean) 
 });
 
 export function createHudOverlayWindow(): BrowserWindow {
+	const perfStart = Date.now();
+	console.log("[PERF:MAIN] createHudOverlayWindow: STARTED");
 	loadHudOverlayCaptureProtectionSetting();
 	hudOverlayFallbackExpanded = false;
 	const initialBounds = getHudOverlayBounds();
@@ -457,6 +459,7 @@ export function createHudOverlayWindow(): BrowserWindow {
 			backgroundThrottling: false,
 		},
 	});
+	console.log(`[PERF:MAIN] HUD Overlay: created in ${Date.now() - perfStart}ms`);
 
 	const showHudWindow = () => {
 		if (hasShownHudWindow || win.isDestroyed()) {
@@ -465,6 +468,7 @@ export function createHudOverlayWindow(): BrowserWindow {
 		hasShownHudWindow = true;
 		win.show();
 		win.moveTop();
+		console.log(`[PERF:MAIN] HUD Overlay: shown in ${Date.now() - perfStart}ms`);
 		if (process.platform === "win32" && isHudOverlayMousePassthroughSupported()) {
 			win.setIgnoreMouseEvents(false);
 			setTimeout(() => {
@@ -509,6 +513,7 @@ export function createHudOverlayWindow(): BrowserWindow {
 	}
 
 	win.webContents.on("did-finish-load", () => {
+		console.log(`[PERF:MAIN] HUD Overlay: did-finish-load in ${Date.now() - perfStart}ms`);
 		win?.webContents.send("main-process-message", new Date().toLocaleString());
 		// Safety fallback if renderer-ready signal never arrives.
 		setTimeout(() => {
@@ -520,6 +525,7 @@ export function createHudOverlayWindow(): BrowserWindow {
 	// (for example due to GPU/VAAPI startup issues). Show the window after
 	// ready-to-show as a fallback so the HUD still appears.
 	win.once("ready-to-show", () => {
+		console.log(`[PERF:MAIN] HUD Overlay: ready-to-show in ${Date.now() - perfStart}ms`);
 		setTimeout(() => {
 			if (!win.isDestroyed() && !win.isVisible()) {
 				showHudWindow();
@@ -528,6 +534,7 @@ export function createHudOverlayWindow(): BrowserWindow {
 	});
 
 	const handleHudRendererReady = () => {
+		console.log(`[PERF:MAIN] HUD Overlay: renderer-ready in ${Date.now() - perfStart}ms`);
 		if (!win.isDestroyed()) {
 			showHudWindow();
 		}

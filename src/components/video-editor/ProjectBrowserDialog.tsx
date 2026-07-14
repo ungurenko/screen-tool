@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useScopedT } from "@/contexts/I18nContext";
-import { toFileUrl } from "./projectPersistence";
+import { toFileUrl } from "@/lib/localFileUrl";
 
 export type ProjectLibraryEntry = {
 	path: string;

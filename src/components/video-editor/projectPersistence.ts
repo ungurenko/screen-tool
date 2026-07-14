@@ -1,4 +1,12 @@
 import type { SourceAudioTrackSettings } from "@/components/video-editor/audio/audioTypes";
+import {
+	TEMPORAL_MOTION_BLUR_DEFAULT_SAMPLE_COUNT,
+	TEMPORAL_MOTION_BLUR_DEFAULT_SHUTTER_FRACTION,
+	TEMPORAL_MOTION_BLUR_MAX_SAMPLE_COUNT,
+	TEMPORAL_MOTION_BLUR_MAX_SHUTTER_FRACTION,
+	TEMPORAL_MOTION_BLUR_MIN_SAMPLE_COUNT,
+	TEMPORAL_MOTION_BLUR_MIN_SHUTTER_FRACTION,
+} from "@/lib/exporter/temporalMotionBlur";
 import type {
 	ExportBackendPreference,
 	ExportEncodingMode,
@@ -8,16 +16,9 @@ import type {
 	ExportQuality,
 	GifFrameRate,
 	GifSizePreset,
-} from "@/lib/exporter";
-import { isValidMp4FrameRate } from "@/lib/exporter";
-import {
-	TEMPORAL_MOTION_BLUR_DEFAULT_SAMPLE_COUNT,
-	TEMPORAL_MOTION_BLUR_DEFAULT_SHUTTER_FRACTION,
-	TEMPORAL_MOTION_BLUR_MAX_SAMPLE_COUNT,
-	TEMPORAL_MOTION_BLUR_MAX_SHUTTER_FRACTION,
-	TEMPORAL_MOTION_BLUR_MIN_SAMPLE_COUNT,
-	TEMPORAL_MOTION_BLUR_MIN_SHUTTER_FRACTION,
-} from "@/lib/exporter/temporalMotionBlur";
+} from "@/lib/exporter/types";
+import { isValidMp4FrameRate } from "@/lib/exporter/types";
+import { fromFileUrl, toFileUrl } from "@/lib/localFileUrl";
 import { DEFAULT_WALLPAPER_PATH } from "@/lib/wallpapers";
 import { ASPECT_RATIOS, type AspectRatio, isCustomAspectRatio } from "@/utils/aspectRatioUtils";
 import { CURSOR_MOTION_PRESETS, resolveCursorMotionPresetId } from "./cursorMotionPresets";
@@ -82,6 +83,8 @@ import {
 import { normalizeWebcamCropRegion } from "./webcamOverlay";
 
 export const PROJECT_VERSION = 1;
+
+export { fromFileUrl, toFileUrl };
 
 const DEFAULT_MOTION_PRESET = CURSOR_MOTION_PRESETS.focused;
 
@@ -230,74 +233,6 @@ function normalizeAutoCaptionAnimation(
 	return value === "none" || value === "fade" || value === "rise" || value === "pop"
 		? value
 		: fallback;
-}
-
-function isFileUrl(value: string): boolean {
-	return /^file:\/\//i.test(value);
-}
-
-function encodePathSegments(pathname: string, keepWindowsDrive = false): string {
-	return pathname
-		.split("/")
-		.map((segment, index) => {
-			if (!segment) return "";
-			if (keepWindowsDrive && index === 1 && /^[a-zA-Z]:$/.test(segment)) {
-				return segment;
-			}
-			return encodeURIComponent(segment);
-		})
-		.join("/");
-}
-
-export function toFileUrl(filePath: string): string {
-	const normalized = filePath.replace(/\\/g, "/");
-
-	// Windows drive path: C:/Users/...
-	if (/^[a-zA-Z]:\//.test(normalized)) {
-		return `file://${encodePathSegments(`/${normalized}`, true)}`;
-	}
-
-	// UNC path: //server/share/...
-	if (normalized.startsWith("//")) {
-		const [host, ...pathParts] = normalized.replace(/^\/+/, "").split("/");
-		const encodedPath = pathParts.map((part) => encodeURIComponent(part)).join("/");
-		return encodedPath ? `file://${host}/${encodedPath}` : `file://${host}/`;
-	}
-
-	const absolutePath = normalized.startsWith("/") ? normalized : `/${normalized}`;
-	return `file://${encodePathSegments(absolutePath)}`;
-}
-
-export function fromFileUrl(fileUrl: string): string {
-	const value = fileUrl.trim();
-	if (!isFileUrl(value)) {
-		return fileUrl;
-	}
-
-	try {
-		const url = new URL(value);
-		const pathname = decodeURIComponent(url.pathname);
-
-		if (url.host && url.host !== "localhost") {
-			const uncPath = `//${url.host}${pathname.startsWith("/") ? pathname : `/${pathname}`}`;
-			return uncPath.replace(/\//g, "\\");
-		}
-
-		if (/^\/[A-Za-z]:/.test(pathname)) {
-			return pathname.slice(1);
-		}
-
-		return pathname;
-	} catch {
-		const rawFallbackPath = value.replace(/^file:\/\//i, "");
-		let fallbackPath = rawFallbackPath;
-		try {
-			fallbackPath = decodeURIComponent(rawFallbackPath);
-		} catch {
-			// Keep raw best-effort path if percent decoding fails.
-		}
-		return fallbackPath.replace(/^\/([a-zA-Z]:)/, "$1");
-	}
 }
 
 export function deriveNextId(prefix: string, ids: string[]): number {
