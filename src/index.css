@@ -9,7 +9,7 @@
 	}
 
 	*:focus-visible {
-		outline: 2px solid rgb(var(--brand-accent-rgb));
+		outline: 2px solid hsl(var(--accent));
 		outline-offset: 2px;
 		-webkit-tap-highlight-color: transparent;
 	}
@@ -30,27 +30,56 @@
 
 	:root {
 		--app-font-sans: "SF Pro Display", "SF Pro Text", Helvetica, sans-serif;
-		--brand-accent: #2563eb;
-		--brand-accent-rgb: 37, 99, 235;
-		--background: 0 0% 100%;
-		--foreground: 20 14.3% 4.1%;
-		--card: 0 0% 100%;
-		--card-foreground: 20 14.3% 4.1%;
-		--popover: 0 0% 100%;
-		--popover-foreground: 20 14.3% 4.1%;
-		--primary: 221 83% 53%;
-		--primary-foreground: 210 40% 98%;
-		--secondary: 60 4.8% 95.9%;
-		--secondary-foreground: 24 9.8% 10%;
-		--muted: 60 4.8% 95.9%;
-		--muted-foreground: 25 5.3% 44.7%;
-		--accent: 214 100% 97%;
-		--accent-foreground: 221 83% 40%;
-		--destructive: 0 84.2% 60.2%;
-		--destructive-foreground: 60 9.1% 97.8%;
-		--border: 20 5.9% 90%;
-		--input: 20 5.9% 90%;
-		--ring: 221 83% 53%;
+		--brand-accent: #5b5ce2;
+		--brand-accent-rgb: 91, 92, 226;
+
+		/* Liquid Glass semantic palette — light */
+		--surface-canvas: 220 24% 96%;
+		--surface-panel: 220 20% 98%;
+		--surface-panel-raised: 0 0% 100%;
+		--surface-glass: 0 0% 100%;
+		--surface-control: 220 18% 94%;
+		--surface-control-hover: 220 18% 91%;
+		--text-primary: 225 22% 14%;
+		--text-secondary: 222 10% 39%;
+		--text-tertiary: 220 8% 54%;
+		--border-subtle: 220 16% 87%;
+		--border-strong: 220 12% 76%;
+		--accent: 239 76% 62%;
+		--accent-hover: 239 70% 55%;
+		--recording: 356 76% 55%;
+		--recording-hover: 356 72% 48%;
+		--shadow-color: 225 32% 18%;
+
+		/* Shared geometry and motion */
+		--radius-control: 10px;
+		--radius-panel: 14px;
+		--radius-floating: 18px;
+		--motion-fast: 120ms;
+		--motion-standard: 180ms;
+		--ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+		--glass-blur: 24px;
+		--radius: var(--radius-control);
+
+		/* Compatibility aliases */
+		--background: var(--surface-canvas);
+		--foreground: var(--text-primary);
+		--card: var(--surface-panel-raised);
+		--card-foreground: var(--text-primary);
+		--popover: var(--surface-panel-raised);
+		--popover-foreground: var(--text-primary);
+		--primary: var(--accent);
+		--primary-foreground: 0 0% 100%;
+		--secondary: var(--surface-control);
+		--secondary-foreground: var(--text-primary);
+		--muted: var(--surface-control);
+		--muted-foreground: var(--text-secondary);
+		--accent-foreground: var(--text-primary);
+		--destructive: var(--recording);
+		--destructive-foreground: 0 0% 100%;
+		--border: var(--border-subtle);
+		--input: var(--border-subtle);
+		--ring: var(--accent);
 		--chart-1: 12 76% 61%;
 		--chart-2: 173 58% 39%;
 		--chart-3: 197 37% 24%;
@@ -59,16 +88,16 @@
 		--radius: 0.5rem;
 
 		/* Editor surface colors — light mode */
-		--editor-bg: 0 0% 100%;
-		--editor-header: 0 0% 97%;
-		--editor-panel: 0 0% 98%;
-		--editor-surface: 0 0% 97%;
-		--editor-surface-alt: 0 0% 95%;
-		--editor-dialog: 0 0% 100%;
-		--editor-dialog-alt: 0 0% 98%;
-		--editor-timeline: 220 13% 91%;
-		--editor-row: 220 13% 88%;
-		--editor-subrow: 220 13% 85%;
+		--editor-bg: var(--surface-canvas);
+		--editor-header: var(--surface-glass);
+		--editor-panel: var(--surface-panel);
+		--editor-surface: var(--surface-panel-raised);
+		--editor-surface-alt: var(--surface-control);
+		--editor-dialog: var(--surface-panel-raised);
+		--editor-dialog-alt: var(--surface-panel);
+		--editor-timeline: 220 17% 92%;
+		--editor-row: 220 16% 89%;
+		--editor-subrow: 220 14% 86%;
 
 		/* Slider track colors — light mode */
 		--slider-track: 0 0% 0% / 0.12;
@@ -77,25 +106,42 @@
 		--slider-glow: 0 0% 0% / 0.35;
 	}
 	.dark {
-		--background: 20 14.3% 4.1%;
-		--foreground: 60 9.1% 97.8%;
-		--card: 20 14.3% 4.1%;
-		--card-foreground: 60 9.1% 97.8%;
-		--popover: 20 14.3% 4.1%;
-		--popover-foreground: 60 9.1% 97.8%;
-		--primary: 221 83% 53%;
-		--primary-foreground: 210 40% 98%;
-		--secondary: 12 6.5% 15.1%;
-		--secondary-foreground: 60 9.1% 97.8%;
-		--muted: 12 6.5% 15.1%;
-		--muted-foreground: 24 5.4% 63.9%;
-		--accent: 217 33% 17%;
-		--accent-foreground: 210 40% 98%;
-		--destructive: 0 62.8% 30.6%;
-		--destructive-foreground: 60 9.1% 97.8%;
-		--border: 12 6.5% 15.1%;
-		--input: 12 6.5% 15.1%;
-		--ring: 221 83% 53%;
+		color-scheme: dark;
+		--surface-canvas: 225 15% 8%;
+		--surface-panel: 225 13% 11%;
+		--surface-panel-raised: 225 12% 14%;
+		--surface-glass: 225 12% 13%;
+		--surface-control: 225 10% 17%;
+		--surface-control-hover: 225 10% 21%;
+		--text-primary: 220 20% 95%;
+		--text-secondary: 220 10% 70%;
+		--text-tertiary: 220 8% 54%;
+		--border-subtle: 225 10% 22%;
+		--border-strong: 225 10% 32%;
+		--accent: 238 84% 69%;
+		--accent-hover: 238 84% 74%;
+		--recording: 356 82% 62%;
+		--recording-hover: 356 82% 68%;
+		--shadow-color: 225 42% 2%;
+
+		--background: var(--surface-canvas);
+		--foreground: var(--text-primary);
+		--card: var(--surface-panel-raised);
+		--card-foreground: var(--text-primary);
+		--popover: var(--surface-panel-raised);
+		--popover-foreground: var(--text-primary);
+		--primary: var(--accent);
+		--primary-foreground: 225 20% 8%;
+		--secondary: var(--surface-control);
+		--secondary-foreground: var(--text-primary);
+		--muted: var(--surface-control);
+		--muted-foreground: var(--text-secondary);
+		--accent-foreground: var(--text-primary);
+		--destructive: var(--recording);
+		--destructive-foreground: 0 0% 100%;
+		--border: var(--border-subtle);
+		--input: var(--border-subtle);
+		--ring: var(--accent);
 		--chart-1: 220 70% 50%;
 		--chart-2: 160 60% 45%;
 		--chart-3: 30 80% 55%;
@@ -103,16 +149,16 @@
 		--chart-5: 340 75% 55%;
 
 		/* Editor surface colors — dark mode */
-		--editor-bg: 240 6% 7%;
-		--editor-header: 240 5% 8.5%;
-		--editor-panel: 240 5% 9%;
-		--editor-surface: 240 4% 10%;
-		--editor-surface-alt: 240 5% 11%;
-		--editor-dialog: 240 10% 3%;
-		--editor-dialog-alt: 237 9% 5%;
-		--editor-timeline: 240 6% 7%;
-		--editor-row: 240 4% 10%;
-		--editor-subrow: 240 7% 15%;
+		--editor-bg: var(--surface-canvas);
+		--editor-header: var(--surface-glass);
+		--editor-panel: var(--surface-panel);
+		--editor-surface: var(--surface-panel-raised);
+		--editor-surface-alt: var(--surface-control);
+		--editor-dialog: var(--surface-panel-raised);
+		--editor-dialog-alt: var(--surface-panel);
+		--editor-timeline: 225 15% 8%;
+		--editor-row: 225 11% 13%;
+		--editor-subrow: 225 10% 17%;
 
 		/* Slider track colors — dark mode */
 		--slider-track: 0 0% 100% / 0.12;
@@ -132,6 +178,8 @@
 		-webkit-user-select: none;
 		user-select: none;
 		font-family: var(--app-font-sans);
+		-webkit-font-smoothing: antialiased;
+		text-rendering: optimizeLegibility;
 	}
 
 	button,
@@ -144,6 +192,24 @@
 	body .font-mono,
 	body kbd {
 		font-family: var(--app-font-sans);
+	}
+}
+
+@layer components {
+	.liquid-glass {
+		border: 1px solid hsl(var(--border-subtle) / 0.82);
+		background: hsl(var(--surface-glass) / 0.82);
+		box-shadow:
+			0 18px 48px hsl(var(--shadow-color) / 0.14),
+			inset 0 1px 0 hsl(0 0% 100% / 0.42);
+		backdrop-filter: saturate(160%) blur(var(--glass-blur));
+		-webkit-backdrop-filter: saturate(160%) blur(var(--glass-blur));
+	}
+
+	.work-surface {
+		border: 1px solid hsl(var(--border-subtle));
+		background: hsl(var(--surface-panel));
+		box-shadow: 0 1px 2px hsl(var(--shadow-color) / 0.04);
 	}
 }
 
@@ -266,5 +332,16 @@
 
 	100% {
 		transform: translateX(270%);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		scroll-behavior: auto !important;
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
 	}
 }

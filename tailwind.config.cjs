@@ -41,6 +41,22 @@ module.exports = {
 				sm: "calc(var(--radius) - 4px)",
 			},
 			colors: {
+				brand: {
+					DEFAULT: "hsl(var(--accent))",
+					hover: "hsl(var(--accent-hover))",
+				},
+				recording: {
+					DEFAULT: "hsl(var(--recording))",
+					hover: "hsl(var(--recording-hover))",
+				},
+				surface: {
+					canvas: "hsl(var(--surface-canvas))",
+					panel: "hsl(var(--surface-panel))",
+					raised: "hsl(var(--surface-panel-raised))",
+					glass: "hsl(var(--surface-glass))",
+					control: "hsl(var(--surface-control))",
+					"control-hover": "hsl(var(--surface-control-hover))",
+				},
 				background: "hsl(var(--background))",
 				foreground: "hsl(var(--foreground))",
 				card: {
@@ -64,7 +80,7 @@ module.exports = {
 					foreground: "hsl(var(--muted-foreground))",
 				},
 				accent: {
-					DEFAULT: "hsl(var(--accent))",
+					DEFAULT: "hsl(var(--surface-control-hover))",
 					foreground: "hsl(var(--accent-foreground))",
 				},
 				destructive: {
