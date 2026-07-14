@@ -7,6 +7,7 @@ vi.mock("@/lib/extensions", () => ({
 }));
 
 import { extensionHost } from "@/lib/extensions";
+import { createPlaybackClock } from "./playbackClock";
 import { createVideoEventHandlers } from "./videoEventHandlers";
 
 type PresentedFrameCallback = (now: DOMHighResTimeStamp, metadata: { mediaTime?: number }) => void;
@@ -60,7 +61,9 @@ describe("createVideoEventHandlers", () => {
 			cancelVideoFrameCallback: vi.fn(),
 		});
 		const onPlayStateChange = vi.fn();
-		const onTimeUpdate = vi.fn();
+		const onTimeCommit = vi.fn();
+		const playbackClock = createPlaybackClock();
+		const publishFrame = vi.spyOn(playbackClock, "publishFrame");
 		const currentTimeRef = createMutableRef(0);
 		const timeUpdateAnimationRef = createMutableRef<number | null>(null);
 
@@ -72,7 +75,8 @@ describe("createVideoEventHandlers", () => {
 			currentTimeRef,
 			timeUpdateAnimationRef,
 			onPlayStateChange,
-			onTimeUpdate,
+			onTimeCommit,
+			playbackClock,
 			trimRegionsRef: createMutableRef([]),
 			speedRegionsRef: createMutableRef([]),
 		});
@@ -84,7 +88,8 @@ describe("createVideoEventHandlers", () => {
 
 		presentedFrameCallback?.(0, { mediaTime: 1.25 });
 
-		expect(onTimeUpdate).toHaveBeenCalledWith(1.25);
+		expect(publishFrame).toHaveBeenCalledWith(1.25);
+		expect(onTimeCommit).not.toHaveBeenCalled();
 		expect(currentTimeRef.current).toBe(1250);
 		expect(emitEventMock).toHaveBeenLastCalledWith({
 			type: "playback:timeupdate",
@@ -99,7 +104,8 @@ describe("createVideoEventHandlers", () => {
 			return 19;
 		});
 		const video = createMockVideo({ currentTime: 0.75 });
-		const onTimeUpdate = vi.fn();
+		const playbackClock = createPlaybackClock();
+		const publishFrame = vi.spyOn(playbackClock, "publishFrame");
 
 		const handlers = createVideoEventHandlers({
 			video,
@@ -109,7 +115,8 @@ describe("createVideoEventHandlers", () => {
 			currentTimeRef: createMutableRef(0),
 			timeUpdateAnimationRef: createMutableRef<number | null>(null),
 			onPlayStateChange: vi.fn(),
-			onTimeUpdate,
+			onTimeCommit: vi.fn(),
+			playbackClock,
 			trimRegionsRef: createMutableRef([]),
 			speedRegionsRef: createMutableRef([]),
 		});
@@ -120,7 +127,7 @@ describe("createVideoEventHandlers", () => {
 		video.paused = true;
 		animationFrameCallback?.(0);
 
-		expect(onTimeUpdate).toHaveBeenCalledWith(0.75);
+		expect(publishFrame).toHaveBeenCalledWith(0.75);
 	});
 
 	it("skips removed footage when playback reaches a cut region", () => {
@@ -130,7 +137,8 @@ describe("createVideoEventHandlers", () => {
 			return 29;
 		});
 		const video = createMockVideo({ currentTime: 1.25, duration: 10 });
-		const onTimeUpdate = vi.fn();
+		const playbackClock = createPlaybackClock();
+		const publishFrame = vi.spyOn(playbackClock, "publishFrame");
 		const handlers = createVideoEventHandlers({
 			video,
 			isSeekingRef: createMutableRef(false),
@@ -139,7 +147,8 @@ describe("createVideoEventHandlers", () => {
 			currentTimeRef: createMutableRef(0),
 			timeUpdateAnimationRef: createMutableRef<number | null>(null),
 			onPlayStateChange: vi.fn(),
-			onTimeUpdate,
+			onTimeCommit: vi.fn(),
+			playbackClock,
 			trimRegionsRef: createMutableRef([{ id: "trim-1", startMs: 1000, endMs: 2000 }]),
 			speedRegionsRef: createMutableRef([]),
 		});
@@ -149,7 +158,7 @@ describe("createVideoEventHandlers", () => {
 
 		expect(video.currentTime).toBe(2);
 		expect(video.pause).not.toHaveBeenCalled();
-		expect(onTimeUpdate).toHaveBeenLastCalledWith(2);
+		expect(publishFrame).toHaveBeenLastCalledWith(2);
 	});
 
 	it("cancels a pending requestVideoFrameCallback on pause and dispose", () => {
@@ -166,7 +175,8 @@ describe("createVideoEventHandlers", () => {
 			currentTimeRef: createMutableRef(0),
 			timeUpdateAnimationRef: createMutableRef<number | null>(null),
 			onPlayStateChange: vi.fn(),
-			onTimeUpdate: vi.fn(),
+			onTimeCommit: vi.fn(),
+			playbackClock: createPlaybackClock(),
 			trimRegionsRef: createMutableRef([]),
 			speedRegionsRef: createMutableRef([]),
 		});
@@ -186,7 +196,8 @@ describe("createVideoEventHandlers", () => {
 			currentTime: 1.25,
 			paused: true,
 		});
-		const onTimeUpdate = vi.fn();
+		const playbackClock = createPlaybackClock();
+		const publishFrame = vi.spyOn(playbackClock, "publishFrame");
 		const handlers = createVideoEventHandlers({
 			video,
 			isSeekingRef: createMutableRef(true),
@@ -195,7 +206,8 @@ describe("createVideoEventHandlers", () => {
 			currentTimeRef: createMutableRef(0),
 			timeUpdateAnimationRef: createMutableRef<number | null>(null),
 			onPlayStateChange: vi.fn(),
-			onTimeUpdate,
+			onTimeCommit: vi.fn(),
+			playbackClock,
 			trimRegionsRef: createMutableRef([{ id: "trim-1", startMs: 1000, endMs: 2000 }]),
 			speedRegionsRef: createMutableRef([]),
 		});
@@ -203,6 +215,35 @@ describe("createVideoEventHandlers", () => {
 		handlers.handleSeeked();
 
 		expect(video.currentTime).toBe(2);
-		expect(onTimeUpdate).toHaveBeenLastCalledWith(2);
+		expect(publishFrame).toHaveBeenLastCalledWith(2);
+	});
+
+	it("commits time only when playback pauses", () => {
+		const video = createMockVideo({ currentTime: 3.25, paused: true });
+		const onTimeCommit = vi.fn();
+		const playbackClock = createPlaybackClock();
+		const handlers = createVideoEventHandlers({
+			video,
+			isSeekingRef: createMutableRef(false),
+			isPlayingRef: createMutableRef(true),
+			allowPlaybackRef: createMutableRef(true),
+			currentTimeRef: createMutableRef(0),
+			timeUpdateAnimationRef: createMutableRef<number | null>(null),
+			onPlayStateChange: vi.fn(),
+			onTimeCommit,
+			playbackClock,
+			trimRegionsRef: createMutableRef([]),
+			speedRegionsRef: createMutableRef([]),
+		});
+
+		handlers.handlePause();
+
+		expect(onTimeCommit).toHaveBeenCalledOnce();
+		expect(onTimeCommit).toHaveBeenCalledWith(3.25);
+		expect(playbackClock.getSnapshot()).toEqual({
+			currentTimeSec: 3.25,
+			isPlaying: false,
+			isSeeking: false,
+		});
 	});
 });

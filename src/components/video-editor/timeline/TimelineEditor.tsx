@@ -18,6 +18,7 @@ import type {
 	ZoomFocus,
 	ZoomRegion,
 } from "../types";
+import type { PlaybackClock } from "../videoPlayback/playbackClock";
 import KeyframeMarkers from "./components/markers/KeyframeMarkers";
 import TimelineCanvas from "./components/viewport/TimelineCanvas";
 import TimelineWrapper from "./components/wrapper/TimelineWrapper";
@@ -32,9 +33,10 @@ import {
 
 export interface TimelineEditorProps {
 	videoDuration: number;
-	currentTime: number;
-	playheadTime?: number;
-	onSeek?: (time: number) => void;
+	playbackClock: PlaybackClock;
+	mapSourceTimeToTimelineTime: (timeSec: number) => number;
+	onSeekPreview: (time: number) => void;
+	onSeekCommit: (time: number) => void;
 	cursorTelemetry?: CursorTelemetryPoint[];
 	autoSuggestZoomsTrigger?: number;
 	onAutoSuggestZoomsConsumed?: () => void;
@@ -106,9 +108,10 @@ const TimelineEditor = forwardRef<TimelineEditorHandle, TimelineEditorProps>(
 	function TimelineEditor(
 		{
 			videoDuration,
-			currentTime,
-			playheadTime,
-			onSeek,
+			playbackClock,
+			mapSourceTimeToTimelineTime,
+			onSeekPreview,
+			onSeekCommit,
 			cursorTelemetry = [],
 			autoSuggestZoomsTrigger = 0,
 			onAutoSuggestZoomsConsumed,
@@ -159,9 +162,8 @@ const TimelineEditor = forwardRef<TimelineEditorHandle, TimelineEditorProps>(
 			() => Math.max(0, Math.round(videoDuration * 1000)),
 			[videoDuration],
 		);
-		const currentTimeMs = useMemo(
-			() => Math.round((playheadTime ?? currentTime) * 1000),
-			[currentTime, playheadTime],
+		const currentTimeMs = Math.round(
+			mapSourceTimeToTimelineTime(playbackClock.getSnapshot().currentTimeSec) * 1000,
 		);
 		const timelineScale = useMemo(() => calculateTimelineScale(videoDuration), [videoDuration]);
 		const safeMinDurationMs = useMemo(
@@ -452,7 +454,10 @@ const TimelineEditor = forwardRef<TimelineEditorHandle, TimelineEditorProps>(
 							items={timelineItems}
 							videoDurationMs={totalMs}
 							currentTimeMs={currentTimeMs}
-							onSeek={onSeek}
+							playbackClock={playbackClock}
+							mapSourceTimeToTimelineTime={mapSourceTimeToTimelineTime}
+							onSeekPreview={onSeekPreview}
+							onSeekCommit={onSeekCommit}
 							onAddZoomAtMs={addZoomAtMs}
 							canPlaceZoomAtMs={canPlaceZoomAtMs}
 							onSelectZoom={handleSelectZoom}

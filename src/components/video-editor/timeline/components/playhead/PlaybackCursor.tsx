@@ -1,21 +1,27 @@
 import { useTimelineContext } from "dnd-timeline";
-import { type RefObject, useEffect, useState } from "react";
+import { type RefObject, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { createLatestSeekScheduler } from "../../../videoPlayback/latestSeekScheduler";
+import { type PlaybackClock, usePlaybackSnapshot } from "../../../videoPlayback/playbackClock";
 import { formatPlayheadTime } from "../../core/time";
 
 interface PlaybackCursorProps {
-	currentTimeMs: number;
+	playbackClock: PlaybackClock;
+	mapSourceTimeToTimelineTime: (timeSec: number) => number;
 	videoDurationMs: number;
-	onSeek?: (time: number) => void;
+	onSeekPreview?: (time: number) => void;
+	onSeekCommit?: (time: number) => void;
 	timelineRef: RefObject<HTMLDivElement>;
 	keyframes?: { id: string; time: number }[];
 	isLoading?: boolean;
 }
 
 export default function PlaybackCursor({
-	currentTimeMs,
+	playbackClock,
+	mapSourceTimeToTimelineTime,
 	videoDurationMs,
-	onSeek,
+	onSeekPreview,
+	onSeekCommit,
 	timelineRef,
 	keyframes = [],
 	isLoading = false,
@@ -23,12 +29,21 @@ export default function PlaybackCursor({
 	const { sidebarWidth, direction, range, valueToPixels, pixelsToValue } = useTimelineContext();
 	const sideProperty = direction === "rtl" ? "right" : "left";
 	const [isDragging, setIsDragging] = useState(false);
+	const snapshot = usePlaybackSnapshot(playbackClock);
+	const currentTimeMs = Math.round(mapSourceTimeToTimelineTime(snapshot.currentTimeSec) * 1000);
+	const pendingSeekTimeRef = useRef<number | null>(null);
+	const seekScheduler = useMemo(
+		() => createLatestSeekScheduler((timeSec) => onSeekPreview?.(timeSec)),
+		[onSeekPreview],
+	);
+
+	useEffect(() => () => seekScheduler.cancel(), [seekScheduler]);
 
 	useEffect(() => {
 		if (!isDragging) return;
 
 		const handleMouseMove = (e: MouseEvent) => {
-			if (!timelineRef.current || !onSeek) return;
+			if (!timelineRef.current || !onSeekPreview) return;
 			const rect = timelineRef.current.getBoundingClientRect();
 			const clickX = e.clientX - rect.left - sidebarWidth;
 			const relativeMs = pixelsToValue(clickX);
@@ -43,10 +58,17 @@ export default function PlaybackCursor({
 			);
 			if (nearbyKeyframe) absoluteMs = nearbyKeyframe.time;
 
-			onSeek(absoluteMs / 1000);
+			const timeSec = absoluteMs / 1000;
+			pendingSeekTimeRef.current = timeSec;
+			seekScheduler.schedule(timeSec);
 		};
 
 		const handleMouseUp = () => {
+			seekScheduler.flush();
+			if (pendingSeekTimeRef.current !== null) {
+				onSeekCommit?.(pendingSeekTimeRef.current);
+				pendingSeekTimeRef.current = null;
+			}
 			setIsDragging(false);
 			document.body.style.cursor = "";
 		};
@@ -62,7 +84,9 @@ export default function PlaybackCursor({
 		};
 	}, [
 		isDragging,
-		onSeek,
+		onSeekPreview,
+		onSeekCommit,
+		seekScheduler,
 		timelineRef,
 		sidebarWidth,
 		range.start,
@@ -91,6 +115,7 @@ export default function PlaybackCursor({
 				style={{ [sideProperty]: `${offset}px` }}
 				onMouseDown={(e) => {
 					e.stopPropagation();
+					pendingSeekTimeRef.current = currentTimeMs / 1000;
 					setIsDragging(true);
 				}}
 			>

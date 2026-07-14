@@ -8,6 +8,7 @@ import {
 	getMediaSyncPlaybackRate,
 } from "@/lib/mediaTiming";
 import type { AudioRegion, SpeedRegion } from "../types";
+import type { PlaybackClock } from "../videoPlayback/playbackClock";
 
 const SOURCE_AUDIO_PREVIEW_PLAYING_SEEK_DRIFT_SECONDS = 0.18;
 const SOURCE_AUDIO_PREVIEW_PAUSED_SEEK_DRIFT_SECONDS = 0.01;
@@ -16,14 +17,16 @@ interface UseAudioPreviewSyncParams {
 	audioRegions: AudioRegion[];
 	previewVolume: number;
 	isPlaying: boolean;
-	currentTime: number;
-	timelineTime: number;
+	playbackClock: PlaybackClock;
+	mapSourceTimeToTimelineTime: (timeSec: number) => number;
 	duration: number;
 	effectiveSpeedRegions: SpeedRegion[];
 	previewSourceAudioFallbackPaths: string[];
 	sourceAudioFallbackStartDelayMsByPath: Record<string, number>;
 	isCurrentClipMuted: boolean;
+	getIsClipMutedAtSourceTime: (timeSec: number) => boolean;
 	getSourceTrackPreviewGain: (audioPath: string) => number;
+	getSourceTrackPreviewGainAtSourceTime: (audioPath: string, timeSec: number) => number;
 	onSourceFallbackLoadError: (error: unknown) => void;
 }
 
@@ -31,14 +34,16 @@ export function useAudioPreviewSync({
 	audioRegions,
 	previewVolume,
 	isPlaying,
-	currentTime,
-	timelineTime,
+	playbackClock,
+	mapSourceTimeToTimelineTime,
 	duration,
 	effectiveSpeedRegions,
 	previewSourceAudioFallbackPaths,
 	sourceAudioFallbackStartDelayMsByPath,
 	isCurrentClipMuted,
+	getIsClipMutedAtSourceTime,
 	getSourceTrackPreviewGain,
+	getSourceTrackPreviewGainAtSourceTime,
 	onSourceFallbackLoadError,
 }: UseAudioPreviewSyncParams) {
 	const resolvedPlan = useMemo(
@@ -323,136 +328,151 @@ export function useAudioPreviewSync({
 	}, []);
 
 	useEffect(() => {
-		const currentTimeMs = timelineTime * 1000;
-		const activeSpeedRegion = effectiveSpeedRegions.find(
-			(region) => currentTimeMs >= region.startMs && currentTimeMs < region.endMs,
-		);
-		const targetPlaybackRate = activeSpeedRegion ? activeSpeedRegion.speed : 1;
+		const syncUserTracks = () => {
+			const snapshot = playbackClock.getSnapshot();
+			const currentTimeMs = mapSourceTimeToTimelineTime(snapshot.currentTimeSec) * 1000;
+			const activeSpeedRegion = effectiveSpeedRegions.find(
+				(region) => currentTimeMs >= region.startMs && currentTimeMs < region.endMs,
+			);
+			const targetPlaybackRate = activeSpeedRegion ? activeSpeedRegion.speed : 1;
 
-		for (const track of resolvedUserTracks) {
-			const audio = audioElementsRef.current.get(track.id);
-			if (!audio) continue;
+			for (const track of resolvedUserTracks) {
+				const audio = audioElementsRef.current.get(track.id);
+				if (!audio) continue;
 
-			const startMs = track.timelineBinding.startMs;
-			const endMs = track.timelineBinding.endMs;
-			const isInRegion = currentTimeMs >= startMs && currentTimeMs < endMs;
+				const startMs = track.timelineBinding.startMs;
+				const endMs = track.timelineBinding.endMs;
+				const isInRegion = currentTimeMs >= startMs && currentTimeMs < endMs;
 
-			if (isPlaying && isInRegion) {
-				enablePitchPreservingPlayback(audio);
-				const audioOffset = (currentTimeMs - startMs) / 1000;
-				if (Math.abs(audio.currentTime - audioOffset) > 0.2) {
-					audio.currentTime = audioOffset;
+				if (snapshot.isPlaying && isInRegion) {
+					enablePitchPreservingPlayback(audio);
+					const audioOffset = (currentTimeMs - startMs) / 1000;
+					if (Math.abs(audio.currentTime - audioOffset) > 0.2) {
+						audio.currentTime = audioOffset;
+					}
+					const syncedPlaybackRate = getMediaSyncPlaybackRate({
+						basePlaybackRate: targetPlaybackRate,
+						currentTime: audio.currentTime,
+						targetTime: audioOffset,
+					});
+					if (Math.abs(audio.playbackRate - syncedPlaybackRate) > 0.001) {
+						audio.playbackRate = syncedPlaybackRate;
+					}
+					if (audio.paused) audio.play().catch(() => undefined);
+				} else if (!audio.paused) {
+					audio.pause();
 				}
-				const syncedPlaybackRate = getMediaSyncPlaybackRate({
-					basePlaybackRate: targetPlaybackRate,
-					currentTime: audio.currentTime,
-					targetTime: audioOffset,
-				});
+			}
+		};
+
+		syncUserTracks();
+		return playbackClock.subscribe(syncUserTracks);
+	}, [effectiveSpeedRegions, mapSourceTimeToTimelineTime, playbackClock, resolvedUserTracks]);
+
+	useEffect(() => {
+		const syncSourceTracks = () => {
+			const snapshot = playbackClock.getSnapshot();
+			const currentTime = snapshot.currentTimeSec;
+			const currentlyPlaying = snapshot.isPlaying;
+			const currentClipMuted = getIsClipMutedAtSourceTime(currentTime);
+			if (resolvedSourceTracks.length === 0) {
+				lastSourceAudioSyncTimeRef.current = null;
+				return;
+			}
+
+			const activeSpeedRegion = effectiveSpeedRegions.find(
+				(region) =>
+					currentTime * 1000 >= region.startMs && currentTime * 1000 < region.endMs,
+			);
+			const targetPlaybackRate = activeSpeedRegion ? activeSpeedRegion.speed : 1;
+			const previousTimelineTime = lastSourceAudioSyncTimeRef.current;
+			const timelineJumped =
+				previousTimelineTime === null ||
+				Math.abs(currentTime - previousTimelineTime) > 0.25;
+			const driftThreshold = currentlyPlaying
+				? SOURCE_AUDIO_PREVIEW_PLAYING_SEEK_DRIFT_SECONDS
+				: SOURCE_AUDIO_PREVIEW_PAUSED_SEEK_DRIFT_SECONDS;
+			if (sourceAudioMasterGainRef.current) {
+				sourceAudioMasterGainRef.current.gain.value = currentClipMuted
+					? 0
+					: Math.max(0, Math.min(1, previewVolume));
+			}
+
+			for (const audio of sourceAudioElementsRef.current.values()) {
+				const sourceAudioPath = audio.dataset.sourceAudioPath ?? "";
+				audio.volume = Math.max(
+					0,
+					Math.min(
+						1,
+						getSourceTrackPreviewGainAtSourceTime(sourceAudioPath, currentTime) *
+							(currentClipMuted ? 0 : previewVolume),
+					),
+				);
+
+				enablePitchPreservingPlayback(audio);
+				const audioDuration = Number.isFinite(audio.duration) ? audio.duration : null;
+				const isMicCompanionTrack = /\.mic\./i.test(sourceAudioPath);
+				const rawStartDelaySeconds = estimateCompanionAudioStartDelaySeconds(
+					duration,
+					audioDuration,
+					sourceAudioFallbackStartDelayMsByPath[sourceAudioPath],
+				);
+				const maxPreviewStartDelaySeconds = isMicCompanionTrack ? 2 : 5;
+				const startDelaySeconds = isMicCompanionTrack
+					? 0
+					: Number.isFinite(duration) &&
+							(rawStartDelaySeconds >= Math.max(0, duration - 0.01) ||
+								rawStartDelaySeconds >
+									Math.max(maxPreviewStartDelaySeconds, duration * 0.9))
+						? 0
+						: rawStartDelaySeconds;
+				const beforeAudioStart = currentTime + 0.001 < startDelaySeconds;
+				const targetTime = clampMediaTimeToDuration(
+					currentTime - startDelaySeconds,
+					audioDuration,
+				);
+
+				const shouldSeek =
+					timelineJumped ||
+					(!currentlyPlaying &&
+						Math.abs(audio.currentTime - targetTime) > driftThreshold) ||
+					(currentlyPlaying && Math.abs(audio.currentTime - targetTime) > 0.9);
+				if (shouldSeek) {
+					try {
+						audio.currentTime = targetTime;
+					} catch {
+						// no-op
+					}
+				}
+
+				// KISS for companion source tracks: fixed playback rate avoids audible flutter/stutter
+				// from continuous micro-corrections on system audio.
+				const syncedPlaybackRate = targetPlaybackRate;
 				if (Math.abs(audio.playbackRate - syncedPlaybackRate) > 0.001) {
 					audio.playbackRate = syncedPlaybackRate;
 				}
-				if (audio.paused) {
-					audio.play().catch(() => undefined);
-				}
-			} else if (!audio.paused) {
-				audio.pause();
-			}
-		}
-	}, [effectiveSpeedRegions, isPlaying, resolvedUserTracks, timelineTime]);
 
-	useEffect(() => {
-		if (resolvedSourceTracks.length === 0) {
-			lastSourceAudioSyncTimeRef.current = null;
-			return;
-		}
-
-		const activeSpeedRegion = effectiveSpeedRegions.find(
-			(region) => currentTime * 1000 >= region.startMs && currentTime * 1000 < region.endMs,
-		);
-		const targetPlaybackRate = activeSpeedRegion ? activeSpeedRegion.speed : 1;
-		const previousTimelineTime = lastSourceAudioSyncTimeRef.current;
-		const timelineJumped =
-			previousTimelineTime === null || Math.abs(currentTime - previousTimelineTime) > 0.25;
-		const driftThreshold = isPlaying
-			? SOURCE_AUDIO_PREVIEW_PLAYING_SEEK_DRIFT_SECONDS
-			: SOURCE_AUDIO_PREVIEW_PAUSED_SEEK_DRIFT_SECONDS;
-		if (sourceAudioMasterGainRef.current) {
-			sourceAudioMasterGainRef.current.gain.value = isCurrentClipMuted
-				? 0
-				: Math.max(0, Math.min(1, previewVolume));
-		}
-
-		for (const audio of sourceAudioElementsRef.current.values()) {
-			const sourceAudioPath = audio.dataset.sourceAudioPath ?? "";
-			audio.volume = Math.max(
-				0,
-				Math.min(
-					1,
-					getSourceTrackPreviewGain(sourceAudioPath) *
-						(isCurrentClipMuted ? 0 : previewVolume),
-				),
-			);
-
-			enablePitchPreservingPlayback(audio);
-			const audioDuration = Number.isFinite(audio.duration) ? audio.duration : null;
-			const isMicCompanionTrack = /\.mic\./i.test(sourceAudioPath);
-			const rawStartDelaySeconds = estimateCompanionAudioStartDelaySeconds(
-				duration,
-				audioDuration,
-				sourceAudioFallbackStartDelayMsByPath[sourceAudioPath],
-			);
-			const maxPreviewStartDelaySeconds = isMicCompanionTrack ? 2 : 5;
-			const startDelaySeconds = isMicCompanionTrack
-				? 0
-				: Number.isFinite(duration) &&
-						(rawStartDelaySeconds >= Math.max(0, duration - 0.01) ||
-							rawStartDelaySeconds >
-								Math.max(maxPreviewStartDelaySeconds, duration * 0.9))
-					? 0
-					: rawStartDelaySeconds;
-			const beforeAudioStart = currentTime + 0.001 < startDelaySeconds;
-			const targetTime = clampMediaTimeToDuration(
-				currentTime - startDelaySeconds,
-				audioDuration,
-			);
-
-			const shouldSeek =
-				timelineJumped ||
-				(!isPlaying && Math.abs(audio.currentTime - targetTime) > driftThreshold) ||
-				(isPlaying && Math.abs(audio.currentTime - targetTime) > 0.9);
-			if (shouldSeek) {
-				try {
-					audio.currentTime = targetTime;
-				} catch {
-					// no-op
+				const atEnd = audioDuration !== null && targetTime >= audioDuration;
+				if (currentlyPlaying && !beforeAudioStart && !atEnd) {
+					void ensureSourceAudioRunning().then(() => {
+						audio.play().catch(() => undefined);
+					});
+				} else if (!audio.paused) {
+					audio.pause();
 				}
 			}
 
-			// KISS for companion source tracks: fixed playback rate avoids audible flutter/stutter
-			// from continuous micro-corrections on system audio.
-			const syncedPlaybackRate = targetPlaybackRate;
-			if (Math.abs(audio.playbackRate - syncedPlaybackRate) > 0.001) {
-				audio.playbackRate = syncedPlaybackRate;
-			}
+			lastSourceAudioSyncTimeRef.current = currentTime;
+		};
 
-			const atEnd = audioDuration !== null && targetTime >= audioDuration;
-			if (isPlaying && !beforeAudioStart && !atEnd) {
-				void ensureSourceAudioRunning().then(() => {
-					audio.play().catch(() => undefined);
-				});
-			} else if (!audio.paused) {
-				audio.pause();
-			}
-		}
-
-		lastSourceAudioSyncTimeRef.current = currentTime;
+		syncSourceTracks();
+		return playbackClock.subscribe(syncSourceTracks);
 	}, [
-		currentTime,
 		duration,
 		effectiveSpeedRegions,
-		getSourceTrackPreviewGain,
-		isCurrentClipMuted,
-		isPlaying,
+		getIsClipMutedAtSourceTime,
+		getSourceTrackPreviewGainAtSourceTime,
+		playbackClock,
 		previewVolume,
 		resolvedSourceTracks,
 		sourceAudioFallbackStartDelayMsByPath,

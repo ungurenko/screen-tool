@@ -1,7 +1,12 @@
-import React, { useMemo } from "react";
-import type { SourceAudioTrackSettings } from "@/components/video-editor/audio/audioTypes";
+import React, { useCallback, useMemo } from "react";
+import {
+	SOURCE_AUDIO_NORMALIZE_GAIN,
+	type SourceAudioTrackSettings,
+} from "@/components/video-editor/audio/audioTypes";
+import { getSourceTrackIdFromPath } from "@/lib/exporter/audioRoutingEngine";
 import { resolveSourceTrackRoutingPolicy } from "@/lib/exporter/sourceTrackRoutingPolicy";
 import type { AudioRegion, ClipRegion, SpeedRegion } from "../types";
+import type { PlaybackClock } from "../videoPlayback/playbackClock";
 import { getActiveClipIdAtSourceTime, isClipMutedById } from "./clipAudio";
 import { useAudioPreviewSync } from "./useAudioPreviewSync";
 import { useClipAudioSettingsController } from "./useClipAudioSettingsController";
@@ -37,7 +42,8 @@ interface UseVideoEditorAudioParams {
 		React.SetStateAction<SourceAudioTrackSettings>
 	>;
 	currentTime: number;
-	timelineTime: number;
+	playbackClock: PlaybackClock;
+	mapSourceTimeToTimelineTime: (timeSec: number) => number;
 	duration: number;
 	isPlaying: boolean;
 	previewVolume: number;
@@ -57,7 +63,8 @@ export function useVideoEditorAudio({
 	defaultSourceAudioTrackSettings,
 	setDefaultSourceAudioTrackSettings,
 	currentTime,
-	timelineTime,
+	playbackClock,
+	mapSourceTimeToTimelineTime,
 	duration,
 	isPlaying,
 	previewVolume,
@@ -112,18 +119,37 @@ export function useVideoEditorAudio({
 		setDefaultSourceAudioTrackSettings,
 	});
 
+	const getIsClipMutedAtSourceTime = useCallback(
+		(timeSec: number) =>
+			isClipMutedById(getActiveClipIdAtSourceTime(timeSec, clipRegions), clipRegions),
+		[clipRegions],
+	);
+	const getSourceTrackPreviewGainAtSourceTime = useCallback(
+		(audioPath: string, timeSec: number) => {
+			const clipId = getActiveClipIdAtSourceTime(timeSec, clipRegions);
+			const settings = getSourceAudioTrackSettingsForClip(clipId);
+			const trackId = getSourceTrackIdFromPath(audioPath);
+			const trackSettings = settings[trackId] ?? { volume: 1, normalize: false };
+			const normalizeGain = trackSettings.normalize ? SOURCE_AUDIO_NORMALIZE_GAIN : 1;
+			return Math.max(0, Math.min(1, trackSettings.volume * normalizeGain));
+		},
+		[clipRegions, getSourceAudioTrackSettingsForClip],
+	);
+
 	const { playSourceAudioPreview } = useAudioPreviewSync({
 		audioRegions,
 		previewVolume,
 		isPlaying,
-		currentTime,
-		timelineTime,
+		playbackClock,
+		mapSourceTimeToTimelineTime,
 		duration,
 		effectiveSpeedRegions,
 		previewSourceAudioFallbackPaths,
 		sourceAudioFallbackStartDelayMsByPath,
 		isCurrentClipMuted,
+		getIsClipMutedAtSourceTime,
 		getSourceTrackPreviewGain,
+		getSourceTrackPreviewGainAtSourceTime,
 		onSourceFallbackLoadError,
 	});
 

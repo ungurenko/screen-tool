@@ -16,6 +16,7 @@ import type {
 } from "@/components/video-editor/audio/audioTypes";
 import { useScopedT } from "@/contexts/I18nContext";
 import { cn } from "@/lib/utils";
+import type { PlaybackClock } from "../../../videoPlayback/playbackClock";
 import { CLIP_ROW_ID, SOURCE_AUDIO_ROW_ID, ZOOM_ROW_ID } from "../../core/constants";
 import {
 	getAnnotationTrackIndex,
@@ -44,7 +45,10 @@ interface TimelineCanvasProps {
 	items: TimelineRenderItem[];
 	videoDurationMs: number;
 	currentTimeMs: number;
-	onSeek?: (time: number) => void;
+	playbackClock: PlaybackClock;
+	mapSourceTimeToTimelineTime: (timeSec: number) => number;
+	onSeekPreview?: (time: number) => void;
+	onSeekCommit?: (time: number) => void;
 	canPlaceZoomAtMs?: (startMs: number) => boolean;
 	onSelectZoom?: (id: string | null) => void;
 	onSelectClip?: (id: string | null) => void;
@@ -531,7 +535,10 @@ export default function TimelineCanvas({
 	items,
 	videoDurationMs,
 	currentTimeMs,
-	onSeek,
+	playbackClock,
+	mapSourceTimeToTimelineTime,
+	onSeekPreview,
+	onSeekCommit,
 	onAddZoomAtMs,
 	canPlaceZoomAtMs,
 	onSelectZoom,
@@ -570,7 +577,7 @@ export default function TimelineCanvas({
 	const handleTimelineClick = useCallback(
 		(e: MouseEvent<HTMLDivElement>) => {
 			if (isSeeking) return;
-			if (!onSeek || videoDurationMs <= 0) return;
+			if (!onSeekCommit || videoDurationMs <= 0) return;
 
 			if (onClearBlockSelection) {
 				onClearBlockSelection();
@@ -589,11 +596,11 @@ export default function TimelineCanvas({
 			if (clickX < 0) return;
 			const relativeMs = pixelsToValue(clickX);
 			const absoluteMs = Math.max(0, Math.min(range.start + relativeMs, videoDurationMs));
-			onSeek(absoluteMs / 1000);
+			onSeekCommit(absoluteMs / 1000);
 		},
 		[
 			isSeeking,
-			onSeek,
+			onSeekCommit,
 			onSelectZoom,
 			onSelectClip,
 			onSelectAnnotation,
@@ -621,7 +628,12 @@ export default function TimelineCanvas({
 
 	const handleTimelineMouseDown = useCallback(
 		(e: MouseEvent<HTMLDivElement>) => {
-			if (e.button !== 0 || !onSeek || videoDurationMs <= 0 || !localTimelineRef.current)
+			if (
+				e.button !== 0 ||
+				!onSeekPreview ||
+				videoDurationMs <= 0 ||
+				!localTimelineRef.current
+			)
 				return;
 			if ((e.target as HTMLElement).closest("[data-timeline-item]")) {
 				return;
@@ -637,14 +649,16 @@ export default function TimelineCanvas({
 			}
 
 			const rect = localTimelineRef.current.getBoundingClientRect();
-			onSeek(getAbsoluteMsFromClientX(e.clientX, rect) / 1000);
+			const initialTimeSec = getAbsoluteMsFromClientX(e.clientX, rect) / 1000;
+			pendingSeekClientXRef.current = e.clientX;
+			onSeekPreview(initialTimeSec);
 			setIsSeeking(true);
 			e.preventDefault();
 		},
 		[
 			getAbsoluteMsFromClientX,
 			onClearBlockSelection,
-			onSeek,
+			onSeekPreview,
 			onSelectAnnotation,
 			onSelectAudio,
 			onSelectClip,
@@ -658,10 +672,14 @@ export default function TimelineCanvas({
 
 		const flushSeek = () => {
 			seekRafRef.current = null;
-			if (!onSeek || !localTimelineRef.current || pendingSeekClientXRef.current === null)
+			if (
+				!onSeekPreview ||
+				!localTimelineRef.current ||
+				pendingSeekClientXRef.current === null
+			)
 				return;
 			const rect = localTimelineRef.current.getBoundingClientRect();
-			onSeek(getAbsoluteMsFromClientX(pendingSeekClientXRef.current, rect) / 1000);
+			onSeekPreview(getAbsoluteMsFromClientX(pendingSeekClientXRef.current, rect) / 1000);
 		};
 
 		const handleMouseMove = (event: globalThis.MouseEvent) => {
@@ -678,6 +696,12 @@ export default function TimelineCanvas({
 			}
 			if (pendingSeekClientXRef.current !== null) {
 				flushSeek();
+				if (localTimelineRef.current) {
+					const rect = localTimelineRef.current.getBoundingClientRect();
+					onSeekCommit?.(
+						getAbsoluteMsFromClientX(pendingSeekClientXRef.current, rect) / 1000,
+					);
+				}
 			}
 			pendingSeekClientXRef.current = null;
 			setIsSeeking(false);
@@ -695,7 +719,7 @@ export default function TimelineCanvas({
 			window.removeEventListener("mousemove", handleMouseMove);
 			window.removeEventListener("mouseup", handleMouseUp);
 		};
-	}, [getAbsoluteMsFromClientX, isSeeking, onSeek]);
+	}, [getAbsoluteMsFromClientX, isSeeking, onSeekCommit, onSeekPreview]);
 
 	const timelineRowCount = useMemo(() => {
 		const annotationRowIds = new Set<string>();
@@ -753,9 +777,11 @@ export default function TimelineCanvas({
 		>
 			<TimelineAxis videoDurationMs={videoDurationMs} currentTimeMs={currentTimeMs} />
 			<PlaybackCursor
-				currentTimeMs={currentTimeMs}
+				playbackClock={playbackClock}
+				mapSourceTimeToTimelineTime={mapSourceTimeToTimelineTime}
 				videoDurationMs={videoDurationMs}
-				onSeek={onSeek}
+				onSeekPreview={onSeekPreview}
+				onSeekCommit={onSeekCommit}
 				timelineRef={localTimelineRef}
 				keyframes={keyframes}
 				isLoading={isLoading}

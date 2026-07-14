@@ -867,7 +867,7 @@ export function createEditorWindow(): BrowserWindow {
 			nodeIntegration: false,
 			contextIsolation: true,
 			webSecurity: false,
-			backgroundThrottling: false,
+			backgroundThrottling: true,
 		},
 	});
 

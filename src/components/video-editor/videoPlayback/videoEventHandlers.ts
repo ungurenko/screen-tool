@@ -2,6 +2,7 @@ import type React from "react";
 import { extensionHost } from "@/lib/extensions";
 import { enablePitchPreservingPlayback } from "@/lib/mediaTiming";
 import type { SpeedRegion, TrimRegion } from "../types";
+import type { PlaybackClock } from "./playbackClock";
 
 interface PresentedFrameMetadata {
 	mediaTime?: number;
@@ -22,7 +23,8 @@ interface VideoEventHandlersParams {
 	currentTimeRef: React.MutableRefObject<number>;
 	timeUpdateAnimationRef: React.MutableRefObject<number | null>;
 	onPlayStateChange: (playing: boolean) => void;
-	onTimeUpdate: (time: number) => void;
+	onTimeCommit: (time: number) => void;
+	playbackClock: PlaybackClock;
 	trimRegionsRef: React.MutableRefObject<TrimRegion[]>;
 	speedRegionsRef: React.MutableRefObject<SpeedRegion[]>;
 }
@@ -36,7 +38,8 @@ export function createVideoEventHandlers(params: VideoEventHandlersParams) {
 		currentTimeRef,
 		timeUpdateAnimationRef,
 		onPlayStateChange,
-		onTimeUpdate,
+		onTimeCommit,
+		playbackClock,
 		trimRegionsRef,
 		speedRegionsRef,
 	} = params;
@@ -44,9 +47,16 @@ export function createVideoEventHandlers(params: VideoEventHandlersParams) {
 	let videoFrameRequestId: number | null = null;
 	enablePitchPreservingPlayback(video);
 
-	const emitTime = (timeValue: number) => {
+	const emitFrameTime = (timeValue: number) => {
 		currentTimeRef.current = timeValue * 1000;
-		onTimeUpdate(timeValue);
+		playbackClock.publishFrame(timeValue);
+		extensionHost.emitEvent({ type: "playback:timeupdate", timeMs: timeValue * 1000 });
+	};
+
+	const commitTime = (timeValue: number) => {
+		currentTimeRef.current = timeValue * 1000;
+		playbackClock.commit(timeValue);
+		onTimeCommit(timeValue);
 		extensionHost.emitEvent({ type: "playback:timeupdate", timeMs: timeValue * 1000 });
 	};
 
@@ -74,7 +84,7 @@ export function createVideoEventHandlers(params: VideoEventHandlersParams) {
 		const clampedSkipToTime = Math.min(skipToTime, video.duration);
 
 		video.currentTime = clampedSkipToTime;
-		emitTime(clampedSkipToTime);
+		emitFrameTime(clampedSkipToTime);
 
 		if (clampedSkipToTime >= video.duration) {
 			video.pause();
@@ -139,7 +149,7 @@ export function createVideoEventHandlers(params: VideoEventHandlersParams) {
 			const activeSpeedRegion = findActiveSpeedRegion(currentTimeMs);
 			enablePitchPreservingPlayback(video);
 			video.playbackRate = activeSpeedRegion ? activeSpeedRegion.speed : 1;
-			emitTime(presentedTime);
+			emitFrameTime(presentedTime);
 		}
 
 		scheduleNextUpdate();
@@ -152,6 +162,7 @@ export function createVideoEventHandlers(params: VideoEventHandlersParams) {
 		}
 
 		isPlayingRef.current = true;
+		playbackClock.setPlaying(true);
 		onPlayStateChange(true);
 		cancelScheduledUpdate();
 		scheduleNextUpdate();
@@ -159,13 +170,15 @@ export function createVideoEventHandlers(params: VideoEventHandlersParams) {
 
 	const handlePause = () => {
 		isPlayingRef.current = false;
+		playbackClock.setPlaying(false);
 		onPlayStateChange(false);
 		cancelScheduledUpdate();
-		emitTime(video.currentTime);
+		commitTime(video.currentTime);
 	};
 
 	const handleSeeked = () => {
 		isSeekingRef.current = false;
+		playbackClock.setSeeking(false);
 
 		const currentTimeMs = video.currentTime * 1000;
 		const activeTrimRegion = findActiveTrimRegion(currentTimeMs);
@@ -174,13 +187,14 @@ export function createVideoEventHandlers(params: VideoEventHandlersParams) {
 		if (activeTrimRegion) {
 			skipPastTrimRegion(activeTrimRegion);
 		} else {
-			emitTime(video.currentTime);
+			emitFrameTime(video.currentTime);
 		}
 	};
 
 	const handleSeeking = () => {
 		isSeekingRef.current = true;
-		emitTime(video.currentTime);
+		playbackClock.setSeeking(true);
+		emitFrameTime(video.currentTime);
 	};
 
 	return {

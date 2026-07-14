@@ -227,6 +227,11 @@ import {
 	buildLoopedCursorTelemetry,
 	getDisplayedTimelineWindowMs,
 } from "./videoPlayback/cursorLoopTelemetry";
+import {
+	createPlaybackClock,
+	type PlaybackClock,
+	usePlaybackSnapshot,
+} from "./videoPlayback/playbackClock";
 
 type CancelableExporter = {
 	cancel(): void;
@@ -302,6 +307,19 @@ function getErrorMessage(error: unknown): string {
 	}
 
 	return "Something went wrong";
+}
+
+function PlaybackTimecode({
+	playbackClock,
+	mapSourceTimeToTimelineTime,
+	formatTime,
+}: {
+	playbackClock: PlaybackClock;
+	mapSourceTimeToTimelineTime: (timeSec: number) => number;
+	formatTime: (timeSec: number) => string;
+}) {
+	const snapshot = usePlaybackSnapshot(playbackClock);
+	return <>{formatTime(mapSourceTimeToTimelineTime(snapshot.currentTimeSec))}</>;
 }
 
 export default function VideoEditor() {
@@ -382,8 +400,15 @@ export default function VideoEditor() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isPlaying, setIsPlaying] = useState(false);
+	const playbackClock = useMemo(() => createPlaybackClock(), []);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
+	useEffect(() => {
+		const snapshot = playbackClock.getSnapshot();
+		if (!snapshot.isSeeking && snapshot.currentTimeSec !== currentTime) {
+			playbackClock.commit(currentTime);
+		}
+	}, [currentTime, playbackClock]);
 	const [wallpaper, setWallpaper] = useState<string>(initialEditorPreferences.wallpaper);
 	const [shadowIntensity, setShadowIntensity] = useState(
 		initialEditorPreferences.shadowIntensity,
@@ -1097,7 +1122,10 @@ export default function VideoEditor() {
 
 		const previewWidth = previewHandle?.containerRef.current?.clientWidth || 1920;
 		const previewHeight = previewHandle?.containerRef.current?.clientHeight || 1080;
-		const frameTimestampUs = Math.max(0, Math.round(currentTime * 1_000_000));
+		const frameTimestampUs = Math.max(
+			0,
+			Math.round(playbackClock.getSnapshot().currentTimeSec * 1_000_000),
+		);
 
 		if (previewVideo && previewVideo.videoWidth > 0 && previewVideo.videoHeight > 0) {
 			let videoFrame: VideoFrame | null = null;
@@ -1247,7 +1275,7 @@ export default function VideoEditor() {
 		connectedZoomEasing,
 		connectedZoomGapMs,
 		cropRegion,
-		currentTime,
+		playbackClock,
 		cursorClickBounce,
 		cursorClickBounceDuration,
 		cursorClickEffect,
@@ -3495,6 +3523,10 @@ export default function VideoEditor() {
 		(timeMs: number) => resolveSourceTimeToTimelineTime(timeMs, clipRegions),
 		[clipRegions],
 	);
+	const mapSourceTimeSecToTimelineTime = useCallback(
+		(timeSec: number) => mapSourceTimeToTimelineTime(timeSec * 1000) / 1000,
+		[mapSourceTimeToTimelineTime],
+	);
 
 	const effectiveZoomRegions = useMemo<ZoomRegion[]>(
 		() =>
@@ -3506,10 +3538,6 @@ export default function VideoEditor() {
 		[zoomRegions, mapTimelineTimeToSourceTime],
 	);
 
-	const timelinePlayheadTime = useMemo(
-		() => mapSourceTimeToTimelineTime(currentTime * 1000) / 1000,
-		[currentTime, mapSourceTimeToTimelineTime],
-	);
 	const timelineDuration = useMemo(
 		() => getTimelineDurationMs(clipRegions, duration * 1000) / 1000,
 		[clipRegions, duration],
@@ -3548,7 +3576,8 @@ export default function VideoEditor() {
 		defaultSourceAudioTrackSettings,
 		setDefaultSourceAudioTrackSettings,
 		currentTime,
-		timelineTime: timelinePlayheadTime,
+		playbackClock,
+		mapSourceTimeToTimelineTime: mapSourceTimeSecToTimelineTime,
 		duration,
 		isPlaying,
 		previewVolume,
@@ -3592,40 +3621,57 @@ export default function VideoEditor() {
 	const handleSeek = useCallback(
 		(time: number, options: { pause?: boolean } = {}) => {
 			const playback = getActivePlayback();
-			const video = playback?.video;
-			if (!video) return;
+			if (!playback?.video) return;
 
-			if (options.pause && !video.paused) {
-				playback?.pause();
+			if (options.pause && !playback.video.paused) {
+				playback.pause();
 			}
 
-			video.currentTime = mapTimelineTimeToSourceTime(time * 1000) / 1000;
+			playback.seekTo(mapTimelineTimeToSourceTime(time * 1000) / 1000, "commit");
 		},
 		[getActivePlayback, mapTimelineTimeToSourceTime],
 	);
 
-	const handleTimelineSeek = useCallback(
+	const handleTimelineSeekPreview = useCallback(
 		(time: number) => {
-			handleSeek(time, { pause: true });
+			const playback = getActivePlayback();
+			if (!playback?.video) return;
+			if (!playback.video.paused) playback.pause();
+			playback.seekTo(mapTimelineTimeToSourceTime(time * 1000) / 1000, "preview");
 		},
-		[handleSeek],
+		[getActivePlayback, mapTimelineTimeToSourceTime],
+	);
+
+	const handleTimelineSeekCommit = useCallback(
+		(time: number) => {
+			const playback = getActivePlayback();
+			if (!playback?.video) return;
+			playback.seekTo(mapTimelineTimeToSourceTime(time * 1000) / 1000, "commit");
+		},
+		[getActivePlayback, mapTimelineTimeToSourceTime],
 	);
 
 	const handlePreviewSkipBack = useCallback(() => {
-		const currentMs = timelinePlayheadTime * 1000;
+		const liveTimelineTime = mapSourceTimeSecToTimelineTime(
+			playbackClock.getSnapshot().currentTimeSec,
+		);
+		const currentMs = liveTimelineTime * 1000;
 		const keyframes = timelineRef.current?.keyframes ?? [];
 		const previous = [...keyframes]
 			.reverse()
 			.find((keyframe) => keyframe.time < currentMs - 50);
-		handleSeek(previous ? previous.time / 1000 : Math.max(0, timelinePlayheadTime - 5));
-	}, [handleSeek, timelinePlayheadTime]);
+		handleSeek(previous ? previous.time / 1000 : Math.max(0, liveTimelineTime - 5));
+	}, [handleSeek, mapSourceTimeSecToTimelineTime, playbackClock]);
 
 	const handlePreviewSkipForward = useCallback(() => {
-		const currentMs = timelinePlayheadTime * 1000;
+		const liveTimelineTime = mapSourceTimeSecToTimelineTime(
+			playbackClock.getSnapshot().currentTimeSec,
+		);
+		const currentMs = liveTimelineTime * 1000;
 		const keyframes = timelineRef.current?.keyframes ?? [];
 		const next = keyframes.find((keyframe) => keyframe.time > currentMs + 50);
-		handleSeek(next ? next.time / 1000 : Math.min(timelineDuration, timelinePlayheadTime + 5));
-	}, [handleSeek, timelineDuration, timelinePlayheadTime]);
+		handleSeek(next ? next.time / 1000 : Math.min(timelineDuration, liveTimelineTime + 5));
+	}, [handleSeek, mapSourceTimeSecToTimelineTime, playbackClock, timelineDuration]);
 
 	const handleSelectZoom = useCallback((id: string | null) => {
 		setSelectedZoomId(id);
@@ -5441,8 +5487,8 @@ export default function VideoEditor() {
 			videoPath={videoPath || ""}
 			onDurationChange={setDuration}
 			onPreviewReadyChange={setIsPreviewReady}
-			onTimeUpdate={setCurrentTime}
-			currentTime={currentTime}
+			playbackClock={playbackClock}
+			onTimeCommit={setCurrentTime}
 			onPlayStateChange={setIsPlaying}
 			onError={setError}
 			wallpaper={wallpaper}
@@ -6631,7 +6677,13 @@ export default function VideoEditor() {
 							<div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
 								<div className="flex items-center gap-1.5 pointer-events-auto">
 									<span className="mr-1 text-[10px] font-medium tabular-nums text-muted-foreground">
-										{formatTime(timelinePlayheadTime)}
+										<PlaybackTimecode
+											playbackClock={playbackClock}
+											mapSourceTimeToTimelineTime={
+												mapSourceTimeSecToTimelineTime
+											}
+											formatTime={formatTime}
+										/>
 									</span>
 									<Button
 										variant="ghost"
@@ -6736,9 +6788,10 @@ export default function VideoEditor() {
 					<TimelineEditor
 						ref={timelineRef}
 						videoDuration={timelineDuration}
-						currentTime={currentTime}
-						playheadTime={timelinePlayheadTime}
-						onSeek={handleTimelineSeek}
+						playbackClock={playbackClock}
+						mapSourceTimeToTimelineTime={mapSourceTimeSecToTimelineTime}
+						onSeekPreview={handleTimelineSeekPreview}
+						onSeekCommit={handleTimelineSeekCommit}
 						videoPath={videoPath}
 						videoSourcePath={videoSourcePath}
 						cursorTelemetrySourcePath={cursorTelemetrySourcePath}

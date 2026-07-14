@@ -65,6 +65,8 @@ import {
 	type SpringState,
 	stepSpringValue,
 } from "./videoPlayback/motionSmoothing";
+import { type PlaybackClock, usePlaybackSnapshot } from "./videoPlayback/playbackClock";
+import { shouldRunPreviewTicker } from "./videoPlayback/previewTickerPolicy";
 
 function getContributedCursorStylesSignature() {
 	return extensionHost
@@ -344,8 +346,8 @@ interface VideoPlaybackProps {
 	videoPath: string;
 	onDurationChange: (duration: number) => void;
 	onPreviewReadyChange?: (ready: boolean) => void;
-	onTimeUpdate: (time: number) => void;
-	currentTime: number;
+	playbackClock: PlaybackClock;
+	onTimeCommit: (time: number) => void;
 	onPlayStateChange: (playing: boolean) => void;
 	onError: (error: string) => void;
 	wallpaper?: string;
@@ -419,6 +421,7 @@ export interface VideoPlaybackRef {
 	containerRef: React.RefObject<HTMLDivElement>;
 	play: () => Promise<void>;
 	pause: () => void;
+	seekTo: (timeSec: number, phase?: "preview" | "commit") => void;
 	refreshFrame: () => Promise<void>;
 }
 
@@ -428,8 +431,8 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 			videoPath,
 			onDurationChange,
 			onPreviewReadyChange,
-			onTimeUpdate,
-			currentTime,
+			playbackClock,
+			onTimeCommit,
 			onPlayStateChange,
 			onError,
 			wallpaper,
@@ -497,6 +500,8 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 		ref,
 	) => {
 		const t = useScopedT("settings");
+		const playbackSnapshot = usePlaybackSnapshot(playbackClock);
+		const currentTime = playbackSnapshot.currentTimeSec;
 		const videoRef = useRef<HTMLVideoElement | null>(null);
 		const previewFrameRef = useRef<HTMLDivElement | null>(null);
 		const containerRef = useRef<HTMLDivElement | null>(null);
@@ -509,8 +514,12 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 		const motionBlurFilterRef = useRef<MotionBlurFilter | null>(null);
 		const cameraContainerRef = useRef<Container | null>(null);
 		const timeUpdateAnimationRef = useRef<number | null>(null);
+		const singleRenderAnimationRef = useRef<number | null>(null);
 		const [pixiReady, setPixiReady] = useState(false);
 		const [videoReady, setVideoReady] = useState(false);
+		const [isDocumentVisible, setIsDocumentVisible] = useState(
+			typeof document === "undefined" || document.visibilityState !== "hidden",
+		);
 		const [pixiRendererError, setPixiRendererError] = useState<string | null>(null);
 		const [pixiRendererBackend, setPixiRendererBackend] = useState<PixiPreviewBackend | null>(
 			null,
@@ -595,6 +604,7 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 		const isPlayingRef = useRef(isPlaying);
 		const suspendRenderingRef = useRef(suspendRendering);
 		const isSeekingRef = useRef(false);
+		const pendingSeekCommitRef = useRef(false);
 		const allowPlaybackRef = useRef(false);
 		const lockedVideoDimensionsRef = useRef<{
 			width: number;
@@ -693,7 +703,7 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 								resolution: window.devicePixelRatio || 1,
 								autoDensity: true,
 								preference: backend,
-								autoStart: true,
+								autoStart: false,
 								sharedTicker: false,
 							},
 							backend,
@@ -1418,6 +1428,34 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 				}
 				video.pause();
 			},
+			seekTo: (timeSec, phase = "commit") => {
+				const video = videoRef.current;
+				if (!video) return;
+				const targetTime = clampMediaTimeToDuration(
+					timeSec,
+					Number.isFinite(video.duration) ? video.duration : null,
+				);
+				const shouldCommit = phase === "commit";
+				pendingSeekCommitRef.current = shouldCommit;
+				isSeekingRef.current = true;
+				playbackClock.setSeeking(true);
+				playbackClock.publishFrame(targetTime);
+				currentTimeRef.current = targetTime * 1000;
+
+				if (Math.abs(video.currentTime - targetTime) <= 0.0005) {
+					isSeekingRef.current = false;
+					playbackClock.setSeeking(false);
+					if (shouldCommit) {
+						pendingSeekCommitRef.current = false;
+						playbackClock.commit(targetTime);
+						onTimeCommit(targetTime);
+					}
+					appRef.current?.render();
+					return;
+				}
+
+				video.currentTime = targetTime;
+			},
 			refreshFrame: async () => {
 				const video = videoRef.current;
 				if (!video || Number.isNaN(video.currentTime)) {
@@ -1538,6 +1576,47 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 		}, [selectedZoomId]);
 
 		useEffect(() => {
+			const handleVisibilityChange = () => {
+				setIsDocumentVisible(document.visibilityState !== "hidden");
+			};
+			document.addEventListener("visibilitychange", handleVisibilityChange);
+			return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+		}, []);
+
+		useEffect(() => {
+			const app = appRef.current;
+			if (
+				!app ||
+				app.ticker.started ||
+				suspendRenderingRef.current ||
+				!isDocumentVisible ||
+				singleRenderAnimationRef.current !== null
+			) {
+				return;
+			}
+
+			singleRenderAnimationRef.current = requestAnimationFrame(() => {
+				singleRenderAnimationRef.current = null;
+				layoutVideoContentRef.current?.();
+				const videoTextureSource = videoSpriteRef.current?.texture?.source as
+					| { update?: () => void }
+					| undefined;
+				videoTextureSource?.update?.();
+				appRef.current?.render();
+			});
+		});
+
+		useEffect(
+			() => () => {
+				if (singleRenderAnimationRef.current !== null) {
+					cancelAnimationFrame(singleRenderAnimationRef.current);
+					singleRenderAnimationRef.current = null;
+				}
+			},
+			[],
+		);
+
+		useEffect(() => {
 			isPlayingRef.current = isPlaying;
 			extensionHost.emitEvent({
 				type: isPlaying ? "playback:play" : "playback:pause",
@@ -1568,10 +1647,20 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 				return;
 			}
 
-			if (suspendRendering) {
+			const shouldRunTicker = shouldRunPreviewTicker({
+				isPlaying,
+				isSeeking: playbackSnapshot.isSeeking,
+				isInteracting: false,
+				isVisible: isDocumentVisible,
+				suspendRendering,
+			});
+
+			if (!shouldRunTicker) {
 				app.ticker.stop();
-				bgVideoRef.current?.pause();
-				webcamVideoRef.current?.pause();
+				if (suspendRendering || !isDocumentVisible || !isPlaying) {
+					bgVideoRef.current?.pause();
+					webcamVideoRef.current?.pause();
+				}
 				layoutVideoContentRef.current?.();
 				const videoTextureSource = videoSpriteRef.current?.texture?.source as
 					| { update?: () => void }
@@ -1608,7 +1697,7 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 				bgVideoRef.current?.play().catch(() => undefined);
 				webcamVideoRef.current?.play().catch(() => undefined);
 			}
-		}, [pixiReady, suspendRendering]);
+		}, [isDocumentVisible, isPlaying, pixiReady, playbackSnapshot.isSeeking, suspendRendering]);
 
 		// Keep video wallpapers locked to the same source timestamp as the main clip.
 		useEffect(() => {
@@ -2311,7 +2400,8 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 					currentTimeRef,
 					timeUpdateAnimationRef,
 					onPlayStateChange,
-					onTimeUpdate,
+					onTimeCommit,
+					playbackClock,
 					trimRegionsRef,
 					speedRegionsRef,
 				});
@@ -2319,14 +2409,26 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 			video.addEventListener("play", handlePlay);
 			video.addEventListener("pause", handlePause);
 			video.addEventListener("ended", handlePause);
-			video.addEventListener("seeked", handleSeeked);
+			const handleSeekedWithCommit = () => {
+				handleSeeked();
+				if (!pendingSeekCommitRef.current) {
+					appRef.current?.render();
+					return;
+				}
+				pendingSeekCommitRef.current = false;
+				const committedTime = video.currentTime;
+				playbackClock.commit(committedTime);
+				onTimeCommit(committedTime);
+				appRef.current?.render();
+			};
+			video.addEventListener("seeked", handleSeekedWithCommit);
 			video.addEventListener("seeking", handleSeeking);
 
 			return () => {
 				video.removeEventListener("play", handlePlay);
 				video.removeEventListener("pause", handlePause);
 				video.removeEventListener("ended", handlePause);
-				video.removeEventListener("seeked", handleSeeked);
+				video.removeEventListener("seeked", handleSeekedWithCommit);
 				video.removeEventListener("seeking", handleSeeking);
 				dispose();
 
@@ -2345,7 +2447,14 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 
 				videoSpriteRef.current = null;
 			};
-		}, [pixiReady, videoReady, onTimeUpdate, updateOverlayForRegion]);
+		}, [
+			layoutVideoContent,
+			onPlayStateChange,
+			onTimeCommit,
+			pixiReady,
+			playbackClock,
+			videoReady,
+		]);
 
 		useEffect(() => {
 			if (!pixiReady || !videoReady) return;
