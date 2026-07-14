@@ -230,6 +230,25 @@
 			"saved": "Пресет «{{name}}» сохранён"
 		}
 	},
+	"inspector": { "design": "Дизайн", "motion": "Движение", "audio": "Аудио" },
+	"preferences": {
+		"title": "Настройки",
+		"description": "Оформление, сочетания клавиш, расширения и диагностика захвата.",
+		"general": "Основные",
+		"shortcuts": "Сочетания клавиш",
+		"extensions": "Расширения",
+		"diagnostics": "Диагностика",
+		"appearanceDescription": "Следовать настройкам macOS или выбрать постоянную тему.",
+		"language": "Язык",
+		"shortcutsDescription": "Просмотр и настройка сочетаний клавиш редактора.",
+		"customizeShortcuts": "Настроить сочетания",
+		"captureDiagnostics": "Диагностика захвата",
+		"captureUnavailable": "Для этой записи нативный захват недоступен.",
+		"captureAvailable": "Для этой записи проблем с нативным захватом не обнаружено.",
+		"issue": "Проблема",
+		"ready": "Готово",
+		"openDiagnostics": "Открыть диагностику"
+	},
 	"theme": {
 		"appearance": "Оформление",
 		"dark": "Тёмная",

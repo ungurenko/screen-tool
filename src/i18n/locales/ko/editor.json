@@ -230,6 +230,25 @@
 			"saved": "Saved preset \"{{name}}\""
 		}
 	},
+	"inspector": { "design": "디자인", "motion": "모션", "audio": "오디오" },
+	"preferences": {
+		"title": "환경설정",
+		"description": "모양, 단축키, 확장 프로그램 및 캡처 진단입니다.",
+		"general": "일반",
+		"shortcuts": "단축키",
+		"extensions": "확장 프로그램",
+		"diagnostics": "진단",
+		"appearanceDescription": "macOS 설정을 따르거나 고정 테마를 선택합니다.",
+		"language": "언어",
+		"shortcutsDescription": "편집기 단축키를 확인하고 변경합니다.",
+		"customizeShortcuts": "단축키 사용자화",
+		"captureDiagnostics": "캡처 진단",
+		"captureUnavailable": "이 녹화에서는 네이티브 캡처를 사용할 수 없습니다.",
+		"captureAvailable": "네이티브 캡처 문제가 보고되지 않았습니다.",
+		"issue": "문제",
+		"ready": "준비됨",
+		"openDiagnostics": "진단 열기"
+	},
 	"theme": {
 		"appearance": "Appearance",
 		"dark": "Dark",

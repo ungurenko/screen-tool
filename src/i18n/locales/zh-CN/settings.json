@@ -327,7 +327,8 @@
 		"systemLabel": "系统声音",
 		"micLabel": "麦克风",
 		"mixedLabel": "来源",
-		"deleteRegion": "删除音频"
+		"deleteRegion": "删除音频",
+		"noSourceTracks": "没有源音频轨道"
 	},
 	"annotation": {
 		"delete": "Delete Annotation"

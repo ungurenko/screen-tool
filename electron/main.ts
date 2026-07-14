@@ -348,7 +348,11 @@ function isEditorWindow(window: BrowserWindow) {
 }
 
 function sendEditorMenuAction(
-	channel: "menu-load-project" | "menu-save-project" | "menu-save-project-as",
+	channel:
+		| "menu-load-project"
+		| "menu-save-project"
+		| "menu-save-project-as"
+		| "menu-open-preferences",
 ) {
 	let targetWindow = BrowserWindow.getFocusedWindow() ?? mainWindow;
 
@@ -379,6 +383,12 @@ function setupApplicationMenu() {
 		label: "ScreenTool",
 		submenu: [
 			{ role: "about" },
+			{ type: "separator" },
+			{
+				label: tElectron("menu.preferences", "Preferences..."),
+				accelerator: "Cmd+,",
+				click: () => sendEditorMenuAction("menu-open-preferences"),
+			},
 			{ type: "separator" },
 			{ role: "services" },
 			{ type: "separator" },

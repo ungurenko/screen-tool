@@ -230,6 +230,25 @@
 			"saved": "Saved preset \"{{name}}\""
 		}
 	},
+	"inspector": { "design": "设计", "motion": "动效", "audio": "音频" },
+	"preferences": {
+		"title": "偏好设置",
+		"description": "外观、快捷键、扩展和捕获诊断。",
+		"general": "通用",
+		"shortcuts": "快捷键",
+		"extensions": "扩展",
+		"diagnostics": "诊断",
+		"appearanceDescription": "自动跟随 macOS，或选择固定主题。",
+		"language": "语言",
+		"shortcutsDescription": "查看并自定义编辑器快捷键。",
+		"customizeShortcuts": "自定义快捷键",
+		"captureDiagnostics": "捕获诊断",
+		"captureUnavailable": "此录制无法使用原生捕获。",
+		"captureAvailable": "此录制未报告原生捕获问题。",
+		"issue": "问题",
+		"ready": "就绪",
+		"openDiagnostics": "打开诊断"
+	},
 	"theme": {
 		"appearance": "Appearance",
 		"dark": "Dark",

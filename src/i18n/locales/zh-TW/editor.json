@@ -230,6 +230,25 @@
 			"saved": "Saved preset \"{{name}}\""
 		}
 	},
+	"inspector": { "design": "設計", "motion": "動態", "audio": "音訊" },
+	"preferences": {
+		"title": "偏好設定",
+		"description": "外觀、快速鍵、擴充功能與擷取診斷。",
+		"general": "一般",
+		"shortcuts": "快速鍵",
+		"extensions": "擴充功能",
+		"diagnostics": "診斷",
+		"appearanceDescription": "自動跟隨 macOS，或選擇固定主題。",
+		"language": "語言",
+		"shortcutsDescription": "檢視並自訂編輯器快速鍵。",
+		"customizeShortcuts": "自訂快速鍵",
+		"captureDiagnostics": "擷取診斷",
+		"captureUnavailable": "此錄製無法使用原生擷取。",
+		"captureAvailable": "此錄製未回報原生擷取問題。",
+		"issue": "問題",
+		"ready": "就緒",
+		"openDiagnostics": "開啟診斷"
+	},
 	"theme": {
 		"appearance": "Appearance",
 		"dark": "Dark",

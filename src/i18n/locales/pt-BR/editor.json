@@ -230,6 +230,25 @@
 			"saved": "Saved preset \"{{name}}\""
 		}
 	},
+	"inspector": { "design": "Design", "motion": "Movimento", "audio": "Áudio" },
+	"preferences": {
+		"title": "Preferências",
+		"description": "Aparência, atalhos, extensões e diagnóstico de captura.",
+		"general": "Geral",
+		"shortcuts": "Atalhos",
+		"extensions": "Extensões",
+		"diagnostics": "Diagnóstico",
+		"appearanceDescription": "Siga o macOS automaticamente ou escolha um tema fixo.",
+		"language": "Idioma",
+		"shortcutsDescription": "Revise e personalize os atalhos do editor.",
+		"customizeShortcuts": "Personalizar atalhos",
+		"captureDiagnostics": "Diagnóstico de captura",
+		"captureUnavailable": "A captura nativa não está disponível para esta gravação.",
+		"captureAvailable": "Nenhum problema de captura nativa foi detectado.",
+		"issue": "Problema",
+		"ready": "Pronto",
+		"openDiagnostics": "Abrir diagnóstico"
+	},
 	"theme": {
 		"appearance": "Appearance",
 		"dark": "Dark",

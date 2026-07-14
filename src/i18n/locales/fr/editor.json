@@ -230,6 +230,25 @@
 			"saved": "Saved preset \"{{name}}\""
 		}
 	},
+	"inspector": { "design": "Design", "motion": "Mouvement", "audio": "Audio" },
+	"preferences": {
+		"title": "Préférences",
+		"description": "Apparence, raccourcis, extensions et diagnostic de capture.",
+		"general": "Général",
+		"shortcuts": "Raccourcis",
+		"extensions": "Extensions",
+		"diagnostics": "Diagnostic",
+		"appearanceDescription": "Suivez macOS automatiquement ou choisissez un thème fixe.",
+		"language": "Langue",
+		"shortcutsDescription": "Consultez et personnalisez les raccourcis de l’éditeur.",
+		"customizeShortcuts": "Personnaliser les raccourcis",
+		"captureDiagnostics": "Diagnostic de capture",
+		"captureUnavailable": "La capture native est indisponible pour cet enregistrement.",
+		"captureAvailable": "Aucun problème de capture native n’est signalé.",
+		"issue": "Problème",
+		"ready": "Prêt",
+		"openDiagnostics": "Ouvrir le diagnostic"
+	},
 	"theme": {
 		"appearance": "Appearance",
 		"dark": "Dark",

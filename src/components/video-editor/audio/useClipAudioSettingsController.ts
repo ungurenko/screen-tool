@@ -35,6 +35,8 @@ export function useClipAudioSettingsController({
 		onSourceAudioTracksMetaChange,
 		onSelectedClipSourceAudioTrackVolumeChange,
 		onSelectedClipSourceAudioTrackNormalizeChange,
+		onDefaultSourceAudioTrackVolumeChange,
+		onDefaultSourceAudioTrackNormalizeChange,
 	} = useSourceAudioTrackSettings({
 		selectedClipId,
 		activeClipId,
@@ -87,6 +89,8 @@ export function useClipAudioSettingsController({
 		onSourceAudioTracksMetaChange,
 		onSelectedClipSourceAudioTrackVolumeChange,
 		onSelectedClipSourceAudioTrackNormalizeChange,
+		onDefaultSourceAudioTrackVolumeChange,
+		onDefaultSourceAudioTrackNormalizeChange,
 		embeddedSourcePreviewGain,
 		getSourceTrackPreviewGain,
 	};

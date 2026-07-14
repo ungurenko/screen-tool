@@ -230,6 +230,25 @@
 			"saved": "Saved preset \"{{name}}\""
 		}
 	},
+	"inspector": { "design": "Ontwerp", "motion": "Beweging", "audio": "Audio" },
+	"preferences": {
+		"title": "Voorkeuren",
+		"description": "Weergave, sneltoetsen, extensies en opnamediagnose.",
+		"general": "Algemeen",
+		"shortcuts": "Sneltoetsen",
+		"extensions": "Extensies",
+		"diagnostics": "Diagnose",
+		"appearanceDescription": "Volg macOS automatisch of kies een vast thema.",
+		"language": "Taal",
+		"shortcutsDescription": "Bekijk en wijzig de sneltoetsen van de editor.",
+		"customizeShortcuts": "Sneltoetsen aanpassen",
+		"captureDiagnostics": "Opnamediagnose",
+		"captureUnavailable": "Native opname is niet beschikbaar voor deze opname.",
+		"captureAvailable": "Er zijn geen problemen met native opname gemeld.",
+		"issue": "Probleem",
+		"ready": "Gereed",
+		"openDiagnostics": "Diagnose openen"
+	},
 	"theme": {
 		"appearance": "Appearance",
 		"dark": "Dark",

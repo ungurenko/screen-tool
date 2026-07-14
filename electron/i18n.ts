@@ -11,6 +11,7 @@ const dictionaries: Record<ElectronLocale, Record<string, string>> = {
 	en: {
 		"menu.file": "File",
 		"menu.openProjects": "Open Projects...",
+		"menu.preferences": "Preferences...",
 		"menu.saveProject": "Save Project...",
 		"menu.saveProjectAs": "Save Project As...",
 		"menu.edit": "Edit",
@@ -186,6 +187,7 @@ const dictionaries: Record<ElectronLocale, Record<string, string>> = {
 	ru: {
 		"menu.file": "Файл",
 		"menu.openProjects": "Открыть проекты...",
+		"menu.preferences": "Настройки...",
 		"menu.saveProject": "Сохранить проект...",
 		"menu.saveProjectAs": "Сохранить проект как...",
 		"menu.edit": "Правка",

@@ -905,6 +905,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		ipcRenderer.on("menu-save-project-as", listener);
 		return () => ipcRenderer.removeListener("menu-save-project-as", listener);
 	},
+	onMenuOpenPreferences: (callback: () => void) => {
+		const listener = () => callback();
+		ipcRenderer.on("menu-open-preferences", listener);
+		return () => ipcRenderer.removeListener("menu-open-preferences", listener);
+	},
 	getPlatform: () => {
 		return ipcRenderer.invoke("get-platform");
 	},

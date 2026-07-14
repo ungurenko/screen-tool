@@ -327,7 +327,8 @@
 		"systemLabel": "시스템 소스",
 		"micLabel": "마이크 소스",
 		"mixedLabel": "소스",
-		"deleteRegion": "오디오 삭제"
+		"deleteRegion": "오디오 삭제",
+		"noSourceTracks": "소스 오디오 트랙이 없습니다"
 	},
 	"annotation": {
 		"delete": "Delete Annotation"

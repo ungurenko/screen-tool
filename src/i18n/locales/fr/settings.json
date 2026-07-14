@@ -327,7 +327,8 @@
 		"systemLabel": "Son système",
 		"micLabel": "Microphone",
 		"mixedLabel": "Source",
-		"deleteRegion": "Supprimer la zone audio"
+		"deleteRegion": "Supprimer la zone audio",
+		"noSourceTracks": "Aucune piste audio source"
 	},
 	"annotation": {
 		"delete": "Delete Annotation"

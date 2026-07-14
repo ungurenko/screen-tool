@@ -327,7 +327,8 @@
 		"systemLabel": "Systeemaudio",
 		"micLabel": "Microfoon",
 		"mixedLabel": "Bron",
-		"deleteRegion": "Audio verwijderen"
+		"deleteRegion": "Audio verwijderen",
+		"noSourceTracks": "Geen bronaudiosporen"
 	},
 	"annotation": {
 		"delete": "Delete Annotation"

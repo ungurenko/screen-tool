@@ -230,6 +230,25 @@
 			"saved": "Saved preset \"{{name}}\""
 		}
 	},
+	"inspector": { "design": "Design", "motion": "Movimento", "audio": "Audio" },
+	"preferences": {
+		"title": "Preferenze",
+		"description": "Aspetto, scorciatoie, estensioni e diagnostica di acquisizione.",
+		"general": "Generali",
+		"shortcuts": "Scorciatoie",
+		"extensions": "Estensioni",
+		"diagnostics": "Diagnostica",
+		"appearanceDescription": "Segui macOS automaticamente o scegli un tema fisso.",
+		"language": "Lingua",
+		"shortcutsDescription": "Controlla e personalizza le scorciatoie dell’editor.",
+		"customizeShortcuts": "Personalizza scorciatoie",
+		"captureDiagnostics": "Diagnostica acquisizione",
+		"captureUnavailable": "L’acquisizione nativa non è disponibile per questa registrazione.",
+		"captureAvailable": "Non sono segnalati problemi di acquisizione nativa.",
+		"issue": "Problema",
+		"ready": "Pronto",
+		"openDiagnostics": "Apri diagnostica"
+	},
 	"theme": {
 		"appearance": "Appearance",
 		"dark": "Dark",

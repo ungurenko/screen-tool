@@ -108,6 +108,8 @@ export function useVideoEditorAudio({
 		onSourceAudioTracksMetaChange,
 		onSelectedClipSourceAudioTrackVolumeChange,
 		onSelectedClipSourceAudioTrackNormalizeChange,
+		onDefaultSourceAudioTrackVolumeChange,
+		onDefaultSourceAudioTrackNormalizeChange,
 		embeddedSourcePreviewGain,
 		getSourceTrackPreviewGain,
 	} = useClipAudioSettingsController({
@@ -168,6 +170,8 @@ export function useVideoEditorAudio({
 		onSourceAudioTracksMetaChange,
 		onSelectedClipSourceAudioTrackVolumeChange,
 		onSelectedClipSourceAudioTrackNormalizeChange,
+		onDefaultSourceAudioTrackVolumeChange,
+		onDefaultSourceAudioTrackNormalizeChange,
 		embeddedSourcePreviewGain,
 		getSourceTrackPreviewGain,
 	};

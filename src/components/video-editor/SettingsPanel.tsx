@@ -260,7 +260,7 @@ function WallpaperVideoPreview({ src }: { src: string }) {
 /**
  * Renders extension-contributed settings fields (toggle, slider, select, color, text).
  */
-function ExtensionSettingsSection({
+export function ExtensionSettingsSection({
 	extensionId,
 	label,
 	fields,
@@ -3409,39 +3409,96 @@ export function SettingsPanel({
 		const audioSectionContent = (
 			<section className="flex flex-col gap-3">
 				<div className="flex items-center justify-between gap-3">
-					<SectionLabel>{tSettings("audio.volumeTitle", "Audio")}</SectionLabel>
-					<button
-						type="button"
-						onClick={() => {
-							onAudioVolumeChange?.(1);
-							onAudioNormalizeChange?.(false);
-						}}
-						className="text-[10px] text-[#2563EB] transition-opacity hover:opacity-80"
-					>
-						{t("common.actions.reset", "Reset")}
-					</button>
+					<SectionLabel>
+						{selectedAudioId
+							? tSettings("audio.volumeTitle", "Audio")
+							: tSettings("audio.sourceTracksTitle", "Source audio")}
+					</SectionLabel>
 				</div>
-				<SliderControl
-					label={tSettings("audio.volume", "Volume")}
-					value={selectedAudioVolume ?? 1}
-					defaultValue={1}
-					min={0}
-					max={1}
-					step={0.01}
-					onChange={(v) => onAudioVolumeChange?.(v)}
-					formatValue={(v) => `${Math.round(v * 100)}%`}
-					parseInput={(text) => parseFloat(text.replace(/%$/, "")) / 100}
-				/>
-				<div className="flex items-center justify-between rounded-lg bg-foreground/[0.03] px-2.5 py-1.5">
-					<span className="text-[10px] text-muted-foreground">
-						{tSettings("audio.normalize", "Normalize")}
-					</span>
-					<Switch
-						checked={Boolean(selectedAudioNormalize)}
-						onCheckedChange={(v) => onAudioNormalizeChange?.(v)}
-						className="data-[state=checked]:bg-[#2563EB] scale-75"
-					/>
-				</div>
+				{selectedAudioId ? (
+					<>
+						<div className="flex justify-end">
+							<button
+								type="button"
+								onClick={() => {
+									onAudioVolumeChange?.(1);
+									onAudioNormalizeChange?.(false);
+								}}
+								className="text-[10px] text-brand transition-opacity hover:opacity-80"
+							>
+								{t("common.actions.reset", "Reset")}
+							</button>
+						</div>
+						<SliderControl
+							label={tSettings("audio.volume", "Volume")}
+							value={selectedAudioVolume ?? 1}
+							defaultValue={1}
+							min={0}
+							max={1}
+							step={0.01}
+							onChange={(v) => onAudioVolumeChange?.(v)}
+							formatValue={(v) => `${Math.round(v * 100)}%`}
+							parseInput={(text) => parseFloat(text.replace(/%$/, "")) / 100}
+						/>
+						<div className="flex items-center justify-between rounded-lg bg-foreground/[0.03] px-2.5 py-1.5">
+							<span className="text-[10px] text-muted-foreground">
+								{tSettings("audio.normalize", "Normalize")}
+							</span>
+							<Switch
+								checked={Boolean(selectedAudioNormalize)}
+								onCheckedChange={(v) => onAudioNormalizeChange?.(v)}
+								className="scale-75 data-[state=checked]:bg-brand"
+							/>
+						</div>
+					</>
+				) : sourceAudioTrackMeta.length > 0 ? (
+					sourceAudioTrackMeta.map((track) => {
+						const settings = sourceAudioTrackSettings[track.id] ?? {
+							volume: 1,
+							normalize: false,
+						};
+						return (
+							<div
+								key={track.id}
+								className="rounded-xl border border-border/70 bg-foreground/[0.025] p-3"
+							>
+								<div className="mb-3 text-xs font-semibold text-foreground">
+									{track.label}
+								</div>
+								<SliderControl
+									label={tSettings("audio.volume", "Volume")}
+									value={settings.volume}
+									defaultValue={1}
+									min={0}
+									max={1}
+									step={0.01}
+									onChange={(value) =>
+										onSourceAudioTrackVolumeChange?.(track.id, value)
+									}
+									formatValue={(value) => `${Math.round(value * 100)}%`}
+									parseInput={(text) => parseFloat(text.replace(/%$/, "")) / 100}
+								/>
+								<div className="mt-2 flex items-center justify-between rounded-lg bg-foreground/[0.03] px-2.5 py-1.5">
+									<span className="text-[10px] text-muted-foreground">
+										{tSettings("audio.normalize", "Normalize")}
+									</span>
+									<Switch
+										checked={settings.normalize}
+										onCheckedChange={(normalize) =>
+											onSourceAudioTrackNormalizeChange?.(track.id, normalize)
+										}
+										className="scale-75 data-[state=checked]:bg-brand"
+									/>
+								</div>
+							</div>
+						);
+					})
+				) : (
+					<div className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-xs text-muted-foreground">
+						{tSettings("audio.noSourceTracks", "No source audio tracks")}
+					</div>
+				)}
+				{renderExtensionPanelsForSections("audio")}
 			</section>
 		);
 

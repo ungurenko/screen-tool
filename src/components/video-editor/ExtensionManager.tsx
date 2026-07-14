@@ -637,7 +637,7 @@ function TabSwitcher({
 // Main Component
 // ---------------------------------------------------------------------------
 
-export default function ExtensionManager() {
+export default function ExtensionManager({ embedded = false }: { embedded?: boolean }) {
 	const t = useScopedT("extensions");
 	const {
 		extensions,
@@ -780,7 +780,14 @@ export default function ExtensionManager() {
 	);
 
 	return (
-		<div className="flex-[2] w-[332px] min-w-[280px] max-w-[332px] bg-editor-panel border border-foreground/10 rounded-2xl flex flex-col shadow-xl h-full overflow-hidden">
+		<div
+			className={cn(
+				"flex-[2] bg-editor-panel flex flex-col h-full overflow-hidden",
+				embedded
+					? "w-full min-w-0 max-w-none rounded-xl border-0 shadow-none"
+					: "w-[332px] min-w-[280px] max-w-[332px] rounded-2xl border border-foreground/10 shadow-xl",
+			)}
+		>
 			{/* Header */}
 			<div className="flex-shrink-0 p-4 pb-3">
 				<div className="flex items-center justify-between mb-3">

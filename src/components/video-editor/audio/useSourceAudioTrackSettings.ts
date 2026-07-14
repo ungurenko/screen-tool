@@ -25,6 +25,8 @@ export interface UseSourceAudioTrackSettingsResult {
 	onSourceAudioTracksMetaChange: (tracks: SourceAudioTrackMeta) => void;
 	onSelectedClipSourceAudioTrackVolumeChange: (id: string, volume: number) => void;
 	onSelectedClipSourceAudioTrackNormalizeChange: (id: string, normalize: boolean) => void;
+	onDefaultSourceAudioTrackVolumeChange: (id: string, volume: number) => void;
+	onDefaultSourceAudioTrackNormalizeChange: (id: string, normalize: boolean) => void;
 }
 
 function isSameTrackMeta(left: SourceAudioTrackMeta, right: SourceAudioTrackMeta): boolean {
@@ -70,34 +72,37 @@ export function useSourceAudioTrackSettings({
 		};
 	}, [defaultSourceAudioTrackSettings, selectedClipId, sourceAudioTrackSettingsByClip]);
 
-	const onSourceAudioTracksMetaChange = useCallback((tracks: SourceAudioTrackMeta) => {
-		setSourceAudioTrackMeta((prev) => (isSameTrackMeta(prev, tracks) ? prev : tracks));
-		setDefaultSourceAudioTrackSettings((prev) => {
-			const next: SourceAudioTrackSettings = {};
-			for (const track of tracks) {
-				next[track.id] = prev[track.id] ?? { volume: 1, normalize: false };
-			}
-			const prevKeys = Object.keys(prev);
-			const nextKeys = Object.keys(next);
-			if (prevKeys.length !== nextKeys.length) {
-				return next;
-			}
-			for (const key of nextKeys) {
-				const prevSetting = prev[key];
-				const nextSetting = next[key];
-				if (!prevSetting || !nextSetting) {
+	const onSourceAudioTracksMetaChange = useCallback(
+		(tracks: SourceAudioTrackMeta) => {
+			setSourceAudioTrackMeta((prev) => (isSameTrackMeta(prev, tracks) ? prev : tracks));
+			setDefaultSourceAudioTrackSettings((prev) => {
+				const next: SourceAudioTrackSettings = {};
+				for (const track of tracks) {
+					next[track.id] = prev[track.id] ?? { volume: 1, normalize: false };
+				}
+				const prevKeys = Object.keys(prev);
+				const nextKeys = Object.keys(next);
+				if (prevKeys.length !== nextKeys.length) {
 					return next;
 				}
-				if (
-					prevSetting.volume !== nextSetting.volume ||
-					prevSetting.normalize !== nextSetting.normalize
-				) {
-					return next;
+				for (const key of nextKeys) {
+					const prevSetting = prev[key];
+					const nextSetting = next[key];
+					if (!prevSetting || !nextSetting) {
+						return next;
+					}
+					if (
+						prevSetting.volume !== nextSetting.volume ||
+						prevSetting.normalize !== nextSetting.normalize
+					) {
+						return next;
+					}
 				}
-			}
-			return prev;
-		});
-	}, []);
+				return prev;
+			});
+		},
+		[setDefaultSourceAudioTrackSettings],
+	);
 
 	const getSourceAudioTrackSettingsForClip = useCallback(
 		(clipId: string | null): SourceAudioTrackSettings => {
@@ -139,7 +144,7 @@ export function useSourceAudioTrackSettings({
 				};
 			});
 		},
-		[defaultSourceAudioTrackSettings, selectedClipId],
+		[defaultSourceAudioTrackSettings, selectedClipId, setSourceAudioTrackSettingsByClip],
 	);
 
 	const onSelectedClipSourceAudioTrackNormalizeChange = useCallback(
@@ -163,7 +168,33 @@ export function useSourceAudioTrackSettings({
 				};
 			});
 		},
-		[defaultSourceAudioTrackSettings, selectedClipId],
+		[defaultSourceAudioTrackSettings, selectedClipId, setSourceAudioTrackSettingsByClip],
+	);
+
+	const onDefaultSourceAudioTrackVolumeChange = useCallback(
+		(id: string, volume: number) => {
+			setDefaultSourceAudioTrackSettings((prev) => ({
+				...prev,
+				[id]: {
+					volume: Number.isFinite(volume) ? Math.max(0, Math.min(1, volume)) : 1,
+					normalize: prev[id]?.normalize ?? false,
+				},
+			}));
+		},
+		[setDefaultSourceAudioTrackSettings],
+	);
+
+	const onDefaultSourceAudioTrackNormalizeChange = useCallback(
+		(id: string, normalize: boolean) => {
+			setDefaultSourceAudioTrackSettings((prev) => ({
+				...prev,
+				[id]: {
+					volume: prev[id]?.volume ?? 1,
+					normalize,
+				},
+			}));
+		},
+		[setDefaultSourceAudioTrackSettings],
 	);
 
 	return {
@@ -174,5 +205,7 @@ export function useSourceAudioTrackSettings({
 		onSourceAudioTracksMetaChange,
 		onSelectedClipSourceAudioTrackVolumeChange,
 		onSelectedClipSourceAudioTrackNormalizeChange,
+		onDefaultSourceAudioTrackVolumeChange,
+		onDefaultSourceAudioTrackNormalizeChange,
 	};
 }
